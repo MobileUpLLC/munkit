@@ -82,7 +82,6 @@ public enum ServerError: Error {
         return detailsTitle.isEmpty == false ? detailsTitle : defaultTitle
     }
     
-    // swiftlint:disable:next cyclomatic_complexity
     public static func handleError(_ error: Error, response: Response) -> ServerError {
         let responseCode = response.statusCode
         
