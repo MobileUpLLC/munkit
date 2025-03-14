@@ -1,5 +1,4 @@
 import Foundation
-import Moya
 
 public typealias MoyaProvider = Moya.MoyaProvider
 
@@ -143,7 +142,7 @@ private extension BaseNetworkService {
         private var onTokenRefreshFailed: (() -> Void)?
 
         func executeTokenRefreshFailed() async {
-            guard !hasRun else { return }
+            guard hasRun == false else { return }
             hasRun = true
             onTokenRefreshFailed?()
             Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. Send onTokenRefreshFailed"))

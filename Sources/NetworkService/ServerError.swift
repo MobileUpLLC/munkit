@@ -1,8 +1,7 @@
-import Moya
 import Alamofire
 import Foundation
 
-public struct ErrorDetails: Sendable{
+public struct ErrorDetails: Sendable {
     public var statusCode: Int?
     public var message = ""
     public var error: Error?
@@ -19,28 +18,20 @@ public enum ServerError: Error {
     case badRequest(details: ErrorDetails)
     /// statusCode: 401
     case unauthorized(details: ErrorDetails)
-    
     /// statusCode: 403
     case forbidden(details: ErrorDetails)
-    
     /// statusCode: 404
     case notFound(details: ErrorDetails)
-    
     /// statusCode: 409
     case tokenExpired(details: ErrorDetails)
-    
     /// statusCode: 500
     case internalServerError(details: ErrorDetails)
-    
     /// statusCode: 502
     case badGateway(details: ErrorDetails)
-    
     /// statusCode: 503
     case serviceUnavailable(details: ErrorDetails)
-    
     /// statusCode: 504
     case gatewayTimeOut(details: ErrorDetails)
-    
     case networkError(details: ErrorDetails)
     case unknown(details: ErrorDetails)
     case systemError(details: ErrorDetails)
@@ -80,6 +71,7 @@ public enum ServerError: Error {
     public var title: String {
         let defaultTitle = "Ошибка"
         var detailsTitle = ""
+        
         switch self {
         case .networkError:
             detailsTitle = "Нет подключения к интернету"

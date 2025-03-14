@@ -1,4 +1,3 @@
-import Moya
 import Foundation
 
 extension MoyaProvider {
