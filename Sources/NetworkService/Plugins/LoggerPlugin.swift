@@ -1,10 +1,9 @@
 import Foundation
-@preconcurrency import Moya
 
 enum LoggerPlugin {
-    static let instance = NetworkLoggerPlugin(configuration: configuration)
+    nonisolated(unsafe) static let instance = NetworkLoggerPlugin(configuration: configuration)
 
-    private static let configuration = NetworkLoggerPlugin.Configuration(output: defaultOutput, logOptions: .verbose)
+    nonisolated(unsafe) private static let configuration = NetworkLoggerPlugin.Configuration(output: defaultOutput, logOptions: .verbose)
     
     private static func defaultOutput(target: TargetType, items: [String]) {
         var logMessage = "---------------------------REQUEST START---------------------------\n"

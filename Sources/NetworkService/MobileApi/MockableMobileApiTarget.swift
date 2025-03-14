@@ -18,7 +18,7 @@ extension MockableMobileApiTarget {
             return Data()
         }
 
-        return getSampleDataFromFilWithName(mockFileName)
+        return getSampleDataFromFileWithName(mockFileName)
     }
 }
 
@@ -46,14 +46,14 @@ extension MockablePaginationMobileApiTarget {
             mockFileName = "\(mockFileName)&PI=\(pageIndex)&PS=\(pageSize)"
         }
 
-        return getSampleDataFromFilWithName(mockFileName)
+        return getSampleDataFromFileWithName(mockFileName)
     }
 }
 
 // MARK: - Fileprivate extensions
 
 fileprivate extension MockableMobileApiTarget {
-    func getSampleDataFromFilWithName(_ mockFileName: String) -> Data {
+    func getSampleDataFromFileWithName(_ mockFileName: String) -> Data {
         let logStart = "Для запроса \(path) моковые данные"
         let mockExtension = "json"
 

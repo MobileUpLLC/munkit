@@ -3,9 +3,7 @@ import os
 
 extension Log {
     static let networkService = Log(subsystem: subsystem, category: "NetworkService")
-    
     static let refreshTokenFlow = Log(subsystem: subsystem, category: "refreshTokenFlow")
-
     static let mockableMobileApiTarget = Log(subsystem: subsystem, category: "MockableMobileApiTarget")
 
     private static let subsystem = Bundle.main.bundleIdentifier ?? ""

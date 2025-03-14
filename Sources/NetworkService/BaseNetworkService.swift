@@ -5,6 +5,7 @@ public typealias MoyaProvider = Moya.MoyaProvider
 public protocol NetworkService {
     associatedtype Target: MobileApiTargetType
     var onTokenRefreshFailed: (() -> Void)? { get set }
+
     func request<T: Decodable & Sendable>(target: Target) async throws -> T
     func request(target: Target) async throws
 }
@@ -142,7 +143,9 @@ private extension BaseNetworkService {
         private var onTokenRefreshFailed: (() -> Void)?
 
         func executeTokenRefreshFailed() async {
-            guard hasRun == false else { return }
+            guard hasRun == false else {
+                return
+            }
             hasRun = true
             onTokenRefreshFailed?()
             Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. Send onTokenRefreshFailed"))
