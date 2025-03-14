@@ -90,6 +90,7 @@ public enum ServerError: Error {
         errorDetails.statusCode = responseCode
         
         let serverError: ServerError
+        
         switch responseCode {
         case 200:
             errorDetails.message = "Decoding Error"

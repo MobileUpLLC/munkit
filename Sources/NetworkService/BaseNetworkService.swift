@@ -4,6 +4,7 @@ public typealias MoyaProvider = Moya.MoyaProvider
 
 public protocol NetworkService {
     associatedtype Target: MobileApiTargetType
+    
     var onTokenRefreshFailed: (() -> Void)? { get set }
 
     func request<T: Decodable & Sendable>(target: Target) async throws -> T
