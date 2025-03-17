@@ -22,7 +22,8 @@ actor LoggingConfiguration {
     /// Асинхронный метод для получения значения isRelease.
     func getIsRelease() -> Bool {
         guard let value = _isRelease else {
-            fatalError("LoggingConfiguration не настроена. Необходимо вызвать configure(isRelease:) до использования.")
+            assertionFailure("LoggingConfiguration не настроена. Необходимо вызвать configure(isRelease:) до использования.")
+            return true
         }
         return value
     }

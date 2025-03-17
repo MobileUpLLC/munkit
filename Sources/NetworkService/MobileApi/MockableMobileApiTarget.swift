@@ -1,7 +1,5 @@
 import Foundation
 
-// MARK: - MockableMobileApiTarget
-
 public protocol MockableMobileApiTarget: MobileApiTargetType {
     var isMockEnabled: Bool { get }
     
@@ -21,8 +19,6 @@ extension MockableMobileApiTarget {
         return getSampleDataFromFileWithName(mockFileName)
     }
 }
-
-// MARK: - MockablePaginationMobileApiTarget
 
 public protocol MockablePaginationMobileApiTarget: MockableMobileApiTarget {
     var pageIndexParameterName: String { get }
@@ -49,8 +45,6 @@ extension MockablePaginationMobileApiTarget {
         return getSampleDataFromFileWithName(mockFileName)
     }
 }
-
-// MARK: - Fileprivate extensions
 
 fileprivate extension MockableMobileApiTarget {
     func getSampleDataFromFileWithName(_ mockFileName: String) -> Data {
