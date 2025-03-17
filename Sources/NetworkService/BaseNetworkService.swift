@@ -1,7 +1,5 @@
 import Foundation
 
-public typealias MoyaProvider = Moya.MoyaProvider
-
 public protocol NetworkService {
     associatedtype Target: MobileApiTargetType
     
