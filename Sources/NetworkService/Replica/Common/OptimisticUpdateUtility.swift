@@ -1,28 +1,22 @@
-/// утилиты для выполнения оптимистичных обновлений данных.
-/// оптимистичное обновление - это, например, изменение UI до подтверждения сервером
-public struct OptimisticUpdateUtility {
-    /// Функция для выполнения оптимистичного обновления данных.
-    public typealias Update<T> = (T) -> T where T: AnyObject
+import Foundation
 
-    /// Применяет список оптимистичных обновлений к данным.
-    public static func applyAll<T>(updates: [Update<T>], to data: T) -> T {
-        updates.reduce(data) { result, update in update(result) }
-    }
+typealias OptimisticUpdate<T> = (T) -> T
 
-    /// Выполняет оптимистичное обновление с возможностью отката при ошибке или отмене.
-    ///
+/// Управляет выполнением оптимистичных (до подтверждения сервером) обновлений. 
+actor OptimisticUpdateManager {
+    /// Выполняет оптимистичное обновление с указанными действиями для начала, подтверждения, отката и обработки результатов.
     /// - Parameters:
     ///   - begin: Действие, выполняемое перед началом операции.
     ///   - commit: Действие, выполняемое при успешном завершении.
-    ///   - rollback: Действие отката, выполняемое при ошибке или отмене.
-    ///   - onSuccess: Опциональный коллбек при успехе.
-    ///   - onError: Опциональный коллбек при ошибке.
-    ///   - onCanceled: Опциональный коллбек при отмене.
-    ///   - onFinished: Опциональный коллбек после завершения (успех, ошибка или отмена).
-    ///   - block: Основная операция, возвращающая результат.
-    /// - Returns: Результат операции.
-    /// - Throws: Перебрасывает исключения из `block`.
-    public static func performOptimisticUpdate<R>(
+    ///   - rollback: Асинхронное действие для отката при ошибке или отмене.
+    ///   - onSuccess: Опциональный callback для успеха.
+    ///   - onError: Опциональный callback для обработки ошибки.
+    ///   - onCanceled: Опциональный callback для отмены.
+    ///   - onFinished: Опциональный callback, вызываемый в конце независимо от результата.
+    ///   - block: Асинхронный блок, выполняющий основную операцию.
+    /// - Returns: Результат выполнения блока.
+    /// - Throws: Перебрасывает ошибки из блока или отмену.
+    func performOptimisticUpdate<T: Sendable>(
         begin: () -> Void,
         commit: () -> Void,
         rollback: () async -> Void,
@@ -30,8 +24,8 @@ public struct OptimisticUpdateUtility {
         onError: ((Error) async -> Void)? = nil,
         onCanceled: (() async -> Void)? = nil,
         onFinished: (() async -> Void)? = nil,
-        block: () async throws -> R
-    ) async throws -> R {
+        block: () async throws -> T
+    ) async throws -> T {
         begin()
         do {
             let result = try await block()
@@ -40,17 +34,26 @@ public struct OptimisticUpdateUtility {
             await onFinished?()
             return result
         } catch is CancellationError {
-            // Откатываем изменения даже при отмене задачи
             await rollback()
             await onCanceled?()
             await onFinished?()
             throw CancellationError()
         } catch {
-            // Откатываем изменения при любой другой ошибке
             await rollback()
             await onError?(error)
             await onFinished?()
             throw error
+        }
+    }
+}
+
+extension Array {
+    /// Применяет все оптимистичные обновления к данным.
+    /// - Parameter data: Исходные данные.
+    /// - Returns: Данные с применёнными обновлениями.
+    func applyAll<T>(to data: T) -> T where Element == OptimisticUpdate<T> {
+        reduce(data) { currentData, update in
+            update(currentData)
         }
     }
 }

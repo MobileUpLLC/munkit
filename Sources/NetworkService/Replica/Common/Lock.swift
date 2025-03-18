@@ -30,7 +30,7 @@ actor Lock {
     /// Выполняет блок кода с гарантированной синхронизацией.
     /// - Parameter block: Асинхронный блок кода для выполнения.
     /// - Returns: Результат выполнения блока.
-    func withLock<T>(_ block: @Sendable () async throws -> T) async rethrows -> T {
+    func withLock<T: Sendable>(_ block: @Sendable () async throws -> T) async rethrows -> T {
         await lock()
         defer { unlock() } // Автоматически снимаем блокировку после выполнения
         return try await block()
