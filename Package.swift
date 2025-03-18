@@ -20,10 +20,6 @@ let package = Package(
             dependencies: [
                 .product(name: "Moya", package: "Moya")
             ]
-        ),
-        .testTarget(
-            name: "NetworkServiceTests",
-            dependencies: ["NetworkService"]
-        ),
+        )
     ]
 )

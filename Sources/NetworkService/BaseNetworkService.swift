@@ -1,8 +1,10 @@
 import Foundation
 
+typealias ConcurrencyTask = _Concurrency.Task
+
 public protocol NetworkService {
     associatedtype Target: MobileApiTargetType
-    
+
     var onTokenRefreshFailed: (() -> Void)? { get set }
 
     func request<T: Decodable & Sendable>(target: Target) async throws -> T
@@ -34,7 +36,7 @@ open class BaseNetworkService<Target: MobileApiTargetType>: NetworkService {
         do {
             return try await apiProvider.request(target: target)
         } catch {
-            try _Concurrency.Task.checkCancellation()
+            try ConcurrencyTask.checkCancellation()
 
             if target.isRefreshTokenRequest == false,
                let serverError = error as? ServerError,
@@ -56,7 +58,7 @@ open class BaseNetworkService<Target: MobileApiTargetType>: NetworkService {
         do {
             return try await apiProvider.request(target: target)
         } catch {
-            try _Concurrency.Task.checkCancellation()
+            try ConcurrencyTask.checkCancellation()
 
             if target.isRefreshTokenRequest == false,
                let serverError = error as? ServerError,
@@ -76,7 +78,7 @@ open class BaseNetworkService<Target: MobileApiTargetType>: NetworkService {
         do {
             try await tokenRefresher.refreshToken()
         } catch let error {
-            try _Concurrency.Task.checkCancellation()
+            try ConcurrencyTask.checkCancellation()
 
             if let serverError = error as? ServerError,
                case .unauthorized = serverError {
@@ -97,7 +99,7 @@ open class BaseNetworkService<Target: MobileApiTargetType>: NetworkService {
 private extension BaseNetworkService {
     actor TokenRefresher {
         private let tokenRefreshProvider: TokenRefreshProvider
-        private var refreshTokenTask: _Concurrency.Task<Void, Error>?
+        private var refreshTokenTask: ConcurrencyTask<Void, Error>?
 
         init(tokenRefreshProvider: TokenRefreshProvider) {
             self.tokenRefreshProvider = tokenRefreshProvider
@@ -106,34 +108,25 @@ private extension BaseNetworkService {
         func refreshToken() async throws {
             Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. RefreshToken method called"))
 
-            if refreshTokenTask == nil {
-                refreshTokenTask = _Concurrency.Task {
-                    defer { refreshTokenTask = nil }
+            if let task = refreshTokenTask {
+                return try await task.value
+            }
 
-                    let attempts = 1
-                    var lastError: Error?
+            refreshTokenTask = ConcurrencyTask { [weak self] in
+                guard let self else { throw CancellationError() }
 
-                    for attempt in 1...attempts {
-                        let logText = "NetworkService. RefreshToken request started with attempt number \(attempt)"
-                        Log.refreshTokenFlow.debug(logEntry: .text(logText))
+                Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. RefreshToken request started"))
 
-                        do {
-                            _ = try await tokenRefreshProvider.refreshToken()
-                            Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. RefreshToken updated"))
-                            lastError = nil
-                            break
-                        } catch {
-                            lastError = error
-                        }
-                    }
-
-                    if let lastError {
-                        throw lastError
-                    }
+                do {
+                    _ = try await tokenRefreshProvider.refreshToken()
+                    Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. RefreshToken updated"))
+                } catch {
+                    Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. RefreshToken failed: \(error)"))
+                    throw error
                 }
             }
 
-            try await refreshTokenTask!.value
+            try await refreshTokenTask?.value
         }
     }
 
