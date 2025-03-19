@@ -10,17 +10,17 @@ public protocol PhysicalReplica<T>: Replica {
     var tags: Set<ReplicaTag> { get }
 
     /// Поток состояний реплики.
-    var stateFlow: AsyncStream<ReplicaState<T>> { get }
+    var stateFlow: AsyncStream<ReplicaState<T>> { get async }
 
     /// Поток событий реплики.
-    var eventFlow: AsyncStream<ReplicaEvent<T>> { get }
+    var eventFlow: AsyncStream<ReplicaEvent<T>> { get async }
 
     func setData(_ data: T) async throws
     func mutateData(_ transform: @escaping (T) -> T) async throws
     func invalidate(mode: InvalidationMode) async throws
     func makeFresh() async throws
-    func cancel()
-    func clear(removeFromStorage: Bool) async throws
+    func cancel() async
+    func clear(invalidationMode: InvalidationMode, removeFromStorage: Bool) async
     func clearError() async throws
     func beginOptimisticUpdate(_ update: OptimisticUpdate<T>) async throws
     func commitOptimisticUpdate(_ update: OptimisticUpdate<T>) async throws
@@ -31,7 +31,7 @@ extension PhysicalReplica {
     var currentState: ReplicaState<T> {
         get async {
             var lastState: ReplicaState<T>?
-            for await state in stateFlow {
+            for await state in await stateFlow {
                 lastState = state
                 break
             }

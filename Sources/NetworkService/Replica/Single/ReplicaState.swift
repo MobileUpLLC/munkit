@@ -32,4 +32,20 @@ public struct ReplicaState<T: AnyObject & Sendable> {
             error: error.map { CombinedLoadingError(errors: [$0]) }
         )
     }
+
+    func copy(
+        observingState: ObservingState? = nil,
+        loading: Bool? = nil,
+        dataRequested: Bool? = nil,
+        preloading: Bool? = nil,
+        loadingFromStorageRequired: Bool? = nil
+    ) -> ReplicaState<T> {
+        ReplicaState(
+            loading: loading ?? self.loading,
+            observingState: observingState ?? self.observingState,
+            dataRequested: dataRequested ?? self.dataRequested,
+            preloading: preloading ?? self.preloading,
+            loadingFromStorageRequired: loadingFromStorageRequired ?? self.loadingFromStorageRequired
+        )
+    }
 }

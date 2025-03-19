@@ -2,7 +2,7 @@ import Foundation
 
 /// Состояние реплики, которое можно наблюдать во View
 /// Содержит минимальный набор полей в отличие от ReplicaState.
-public struct LoadableReplicaState<T>: AbstractLoadable { // ?? naming
+public struct LoadableReplicaState<T>: AbstractLoadable {
     /// Указывает, выполняется ли загрузка в данный момент.
     public let loading: Bool
 

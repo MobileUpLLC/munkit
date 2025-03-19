@@ -1,7 +1,7 @@
 import Foundation
 
 /// Протокол базовой реплики с минимальным API.
-public protocol Replica<T>: Sendable {
+public protocol Replica<T> {
     associatedtype T: AnyObject & Sendable
 
     /// Начинает наблюдение за репликой.
@@ -17,11 +17,11 @@ public protocol Replica<T>: Sendable {
 
     /// Загружает свежие данные из сети.
     /// - Note: Не вызывает новый запрос, если другой уже выполняется.
-    func refresh()
+    func refresh() async
 
     /// Загружает свежие данные из сети, если текущие данные устарели.
     /// - Note: Не вызывает новый запрос, если другой уже выполняется.
-    func revalidate()
+    func revalidate() async
 
     /// Загружает и возвращает данные.
     /// - Parameter forceRefresh: Принудительно выполняет запрос, даже если данные свежие.

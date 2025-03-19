@@ -1,7 +1,7 @@
 /// Извлекает данные с сервера. Может выбросить ошибку при неудаче.
-public protocol Fetcher {
-    associatedtype Data
+public protocol Fetcher<T> {
+    associatedtype T
 
     /// Выполняет запрос данных.
-    func fetch() async throws -> Data
+    func fetch() async throws -> T
 }
