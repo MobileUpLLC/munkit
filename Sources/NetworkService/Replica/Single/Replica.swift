@@ -1,8 +1,8 @@
 import Foundation
 
 /// Протокол базовой реплики с минимальным API.
-public protocol Replica {
-    associatedtype ReplicaData
+public protocol Replica<T>: Sendable {
+    associatedtype T: AnyObject & Sendable
 
     /// Начинает наблюдение за репликой.
     /// - Parameters:
@@ -28,12 +28,12 @@ public protocol Replica {
     /// - Returns: Свежие данные.
     /// - Throws: Ошибка, если загрузка не удалась.
     /// - Note: Всегда возвращает свежие данные, выполняя запрос при необходимости.
-    func getData(forceRefresh: Bool) async throws -> ReplicaData
+    func getData(forceRefresh: Bool) async throws -> T
 }
 
 public extension Replica {
     /// Загружает и возвращает данные без принудительного обновления.
-    func getData() async throws -> ReplicaData {
+    func getData() async throws -> T {
         try await getData(forceRefresh: false)
     }
 }

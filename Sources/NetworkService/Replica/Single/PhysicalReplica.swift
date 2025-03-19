@@ -3,43 +3,39 @@ import Foundation
 public struct ReplicaTag: Hashable {}
 
 /// Реплика с расширенным API для управления данными.
-public protocol PhysicalReplica: Replica {
+public protocol PhysicalReplica<T>: Replica {
     var id: UUID { get }
     var name: String { get }
     var settings: ReplicaSettings { get }
     var tags: Set<ReplicaTag> { get }
 
     /// Поток состояний реплики.
-    var stateFlow: AsyncStream<ReplicaState<ReplicaData>> { get }
+    var stateFlow: AsyncStream<ReplicaState<T>> { get }
 
     /// Поток событий реплики.
-    var eventFlow: AsyncStream<ReplicaEvent<ReplicaData>> { get }
+    var eventFlow: AsyncStream<ReplicaEvent<T>> { get }
 
-    func setData(_ data: ReplicaData) async throws
-    func mutateData(_ transform: @escaping (ReplicaData) -> ReplicaData) async throws
+    func setData(_ data: T) async throws
+    func mutateData(_ transform: @escaping (T) -> T) async throws
     func invalidate(mode: InvalidationMode) async throws
     func makeFresh() async throws
     func cancel()
     func clear(removeFromStorage: Bool) async throws
     func clearError() async throws
-    func beginOptimisticUpdate(_ update: OptimisticUpdate<ReplicaData>) async throws
-    func commitOptimisticUpdate(_ update: OptimisticUpdate<ReplicaData>) async throws
-    func rollbackOptimisticUpdate(_ update: OptimisticUpdate<ReplicaData>) async throws
+    func beginOptimisticUpdate(_ update: OptimisticUpdate<T>) async throws
+    func commitOptimisticUpdate(_ update: OptimisticUpdate<T>) async throws
+    func rollbackOptimisticUpdate(_ update: OptimisticUpdate<T>) async throws
 }
 
-public extension PhysicalReplica {
-    func invalidate() async throws {
-        try await invalidate(mode: .refreshIfHasObservers)
-    }
-
-    var currentState: ReplicaState<ReplicaData> {
+extension PhysicalReplica {
+    var currentState: ReplicaState<T> {
         get async {
-            var lastState: ReplicaState<ReplicaData> = .createEmpty(hasStorage: false)
+            var lastState: ReplicaState<T>?
             for await state in stateFlow {
                 lastState = state
                 break
             }
-            return lastState
+            return lastState ?? .createEmpty(hasStorage: false)
         }
     }
 }

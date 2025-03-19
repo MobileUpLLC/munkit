@@ -1,7 +1,7 @@
 import Foundation
 
 /// Событие, произошедшее в реплике.
-public enum ReplicaEvent<T> {
+public enum ReplicaEvent<T: Sendable>: Sendable {
     /// События, связанные с загрузкой.
     case loading(LoadingEvent<T>)
     /// События, связанные со свежестью данных.
@@ -12,7 +12,7 @@ public enum ReplicaEvent<T> {
     case observerCountChanged(ObserversCountInfo)
 }
 
-public enum LoadingFinished<T> {
+public enum LoadingFinished<T: Sendable>: Sendable {
     /// Успешная загрузка с данными.
     case success(data: T)
     /// Загрузка отменена.
@@ -21,7 +21,7 @@ public enum LoadingFinished<T> {
     case error(ServerError)
 }
 
-public enum LoadingEvent<T> {
+public enum LoadingEvent<T: Sendable>: Sendable {
     /// Начало загрузки.
     case loadingStarted
     /// Данные загружены из хранилища.
@@ -30,14 +30,14 @@ public enum LoadingEvent<T> {
     case loadingFinished(LoadingFinished<T>)
 }
 
-public enum FreshnessEvent {
+public enum FreshnessEvent: Sendable {
     /// Данные стали свежими.
     case freshened
     /// Данные устарели.
     case becameStale
 }
 
-public struct ObserversCountInfo {
+public struct ObserversCountInfo: Sendable {
     let count: Int
     let activeCount: Int
     let previousCount: Int

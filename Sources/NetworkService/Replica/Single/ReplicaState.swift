@@ -1,6 +1,6 @@
 import Foundation
 
-public struct ReplicaState<T> {
+public struct ReplicaState<T: AnyObject & Sendable> {
     var loading: Bool
     var data: ReplicaData<T>?
     var error: LoadingError?
