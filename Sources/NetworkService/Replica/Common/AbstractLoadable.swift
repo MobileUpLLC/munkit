@@ -1,5 +1,5 @@
 /// Определяет базовое состояние загрузки данных для объекта.
-public protocol AbstractLoadable {
+public protocol AbstractLoadable: Sendable {
     associatedtype Data
 
     /// Указывает, выполняется ли загрузка в данный момент.

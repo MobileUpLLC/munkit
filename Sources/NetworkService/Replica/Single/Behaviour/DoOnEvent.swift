@@ -5,7 +5,7 @@ struct DoOnEvent<T: AnyObject & Sendable>: ReplicaBehaviour {
 
     func setup(replica: any PhysicalReplica<T>) async {
         _Concurrency.Task { @Sendable in
-            for await event in replica.eventFlow {
+            for await event in await replica.eventFlow {
                 await action(replica, event)
             }
         }

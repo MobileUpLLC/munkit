@@ -1,5 +1,5 @@
 //
-//  File 2.swift
+//  ObserversController.swift
 //  NetworkService
 //
 //  Created by Natalia Luzyanina on 19.03.2025.
@@ -8,8 +8,7 @@
 import Foundation
 
 actor ObserversController<T: AnyObject & Sendable> {
-    private let timeProvider: any TimeProvider
-    private let dispatcher: DispatchQueue // Оставлен для совместимости, но не обязателен
+    private let timeProvider: TimeProvider
     private var replicaState: ReplicaState<T>
     private var eventContinuation: AsyncStream<ReplicaEvent<T>>.Continuation?
 
@@ -25,17 +24,12 @@ actor ObserversController<T: AnyObject & Sendable> {
         }
     }
 
-    init(
-        timeProvider: any TimeProvider,
-        dispatcher: DispatchQueue,
-        initialState: ReplicaState<T>
-    ) {
+    init(timeProvider: any TimeProvider, initialState: ReplicaState<T>) {
         self.timeProvider = timeProvider
-        self.dispatcher = dispatcher
         self.replicaState = initialState
     }
     
-    func onObserverAdded(observerId: Int64, active: Bool) async {
+    func onObserverAdded(observerId: UUID, active: Bool) async {
         let state = replicaState
         let observingState = state.observingState
         
@@ -56,12 +50,12 @@ actor ObserversController<T: AnyObject & Sendable> {
         )
     }
     
-    func onObserverRemoved(observerId: Int64) async {
+    func onObserverRemoved(observerId: UUID) async {
         let state = replicaState
         let observingState = state.observingState
         
         let lastActiveObserver = observingState.activeObserverIds.count == 1 && observingState.activeObserverIds.contains(observerId)
-        let newObservingTime = lastActiveObserver ? ObservingTime.timeInPast(timeProvider.currentTime()) : observingState.observingTime
+        let newObservingTime = lastActiveObserver ? ObservingTime.timeInPast(timeProvider.currentTime) : observingState.observingTime
         
         replicaState = state.copy(
             observingState: ObservingState(
@@ -77,7 +71,7 @@ actor ObserversController<T: AnyObject & Sendable> {
         )
     }
     
-    func onObserverActive(observerId: Int64) async {
+    func onObserverActive(observerId: UUID) async {
         let state = replicaState
         let observingState = state.observingState
         
@@ -95,12 +89,12 @@ actor ObserversController<T: AnyObject & Sendable> {
         )
     }
     
-    func onObserverInactive(observerId: Int64) async {
+    func onObserverInactive(observerId: UUID) async {
         let state = replicaState
         let observingState = state.observingState
         
         let lastActiveObserver = observingState.activeObserverIds.count == 1 && observingState.activeObserverIds.contains(observerId)
-        let newObservingTime = lastActiveObserver ? ObservingTime.timeInPast(timeProvider.currentTime()) : observingState.observingTime
+        let newObservingTime = lastActiveObserver ? ObservingTime.timeInPast(timeProvider.currentTime) : observingState.observingTime
 
         replicaState = state.copy(
             observingState: ObservingState(

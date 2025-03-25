@@ -1,5 +1,5 @@
 /// Извлекает данные с сервера. Может выбросить ошибку при неудаче.
-public protocol Fetcher<T> {
+public protocol Fetcher<T>: Sendable {
     associatedtype T
 
     /// Выполняет запрос данных.

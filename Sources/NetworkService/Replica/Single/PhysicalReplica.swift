@@ -7,7 +7,6 @@ public protocol PhysicalReplica<T>: Replica {
     var id: UUID { get }
     var name: String { get }
     var settings: ReplicaSettings { get }
-    var tags: Set<ReplicaTag> { get }
 
     /// Поток состояний реплики.
     var stateFlow: AsyncStream<ReplicaState<T>> { get async }
@@ -16,15 +15,15 @@ public protocol PhysicalReplica<T>: Replica {
     var eventFlow: AsyncStream<ReplicaEvent<T>> { get async }
 
     func setData(_ data: T) async throws
-    func mutateData(_ transform: @escaping (T) -> T) async throws
+    func mutateData(_ transform: @escaping @Sendable (T) -> T) async throws
     func invalidate(mode: InvalidationMode) async throws
     func makeFresh() async throws
     func cancel() async
     func clear(invalidationMode: InvalidationMode, removeFromStorage: Bool) async
     func clearError() async throws
-    func beginOptimisticUpdate(_ update: OptimisticUpdate<T>) async throws
-    func commitOptimisticUpdate(_ update: OptimisticUpdate<T>) async throws
-    func rollbackOptimisticUpdate(_ update: OptimisticUpdate<T>) async throws
+    func beginOptimisticUpdate(_ update: any OptimisticUpdate<T>) async throws
+    func commitOptimisticUpdate(_ update: any OptimisticUpdate<T>) async throws
+    func rollbackOptimisticUpdate(_ update: any OptimisticUpdate<T>) async throws
 }
 
 extension PhysicalReplica {

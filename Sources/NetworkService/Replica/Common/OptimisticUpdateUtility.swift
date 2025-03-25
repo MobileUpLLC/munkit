@@ -1,6 +1,16 @@
 import Foundation
 
-public typealias OptimisticUpdate<T> = (T) -> T
+// public typealias OptimisticUpdate<T> = (T) -> T
+
+/// Протокол, представляющий действие для оптимистичного обновления данных.
+/// Определяет функцию, которая применяет обновление к данным типа `T`.
+public protocol OptimisticUpdate<T>: Sendable, AnyObject {
+    associatedtype T: Sendable
+    /// Применяет оптимистичное обновление к данным.
+    /// - Parameter data: Текущие данные типа `T`.
+    /// - Returns: Обновленные данные после применения действия.
+    func apply(_ data: T) -> T
+}
 
 /// Управляет выполнением оптимистичных (до подтверждения сервером) обновлений. 
 actor OptimisticUpdateManager {
@@ -47,13 +57,13 @@ actor OptimisticUpdateManager {
     }
 }
 
+/// Расширение для массива оптимистичных обновлений, позволяющее применить все обновления к данным.
+/// - Parameter data: Исходные данные типа `T`.
+/// - Returns: Данные после последовательного применения всех обновлений.
 extension Array {
-    /// Применяет все оптимистичные обновления к данным.
-    /// - Parameter data: Исходные данные.
-    /// - Returns: Данные с применёнными обновлениями.
-    func applyAll<T>(to data: T) -> T where Element == OptimisticUpdate<T> {
-        reduce(data) { currentData, update in
-            update(currentData)
+    func applyAll<T>(to data: T) -> T where Element == any OptimisticUpdate<T> {
+        reduce(data) { result, update in
+            update.apply(result)
         }
     }
 }

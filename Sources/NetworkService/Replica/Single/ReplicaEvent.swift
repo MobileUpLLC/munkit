@@ -18,7 +18,7 @@ public enum LoadingFinished<T: Sendable>: Sendable {
     /// Загрузка отменена.
     case canceled
     /// Ошибка загрузки.
-    case error(ServerError)
+    case error(Error)
 }
 
 public enum LoadingEvent<T: Sendable>: Sendable {

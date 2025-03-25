@@ -1,5 +1,6 @@
 import Foundation
 
+// createBehavioursForReplicaSettings в оригинальной replica
 struct ReplicaBehavioursFactory<T: AnyObject & Sendable> {
     static func createBehavioursForReplicaSettings(
         settings: ReplicaSettings,
@@ -42,7 +43,7 @@ struct ReplicaBehavioursFactory<T: AnyObject & Sendable> {
             },
             startDelay: clearTime,
             action: { replica in
-                try await replica.clear(removeFromStorage: true)
+                await replica.clear(invalidationMode: .dontRefresh, removeFromStorage: true)
             }
         )
     }
@@ -68,7 +69,7 @@ struct ReplicaBehavioursFactory<T: AnyObject & Sendable> {
             },
             startDelay: cancelTime,
             action: { replica in
-                replica.cancel()
+                await replica.cancel()
             }
         )
     }
@@ -78,7 +79,7 @@ struct ReplicaBehavioursFactory<T: AnyObject & Sendable> {
             switch event {
             case .observerCountChanged(let observerEvent):
                 if observerEvent.activeCount > observerEvent.previousActiveCount {
-                    replica.revalidate()
+                    await replica.revalidate()
                 }
             default:
                 break
@@ -94,7 +95,7 @@ struct ReplicaBehavioursFactory<T: AnyObject & Sendable> {
             action: { replica, connected in
                 let state = await replica.currentState
                 if connected && state.observingState.status == .active {
-                    replica.revalidate()
+                    await replica.revalidate()
                 }
             }
         )

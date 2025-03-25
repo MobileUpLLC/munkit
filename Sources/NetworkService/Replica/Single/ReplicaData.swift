@@ -1,9 +1,9 @@
 import Foundation
 
 /// Данные, хранимые в реплике.
-struct ReplicaData<T> {
+struct ReplicaData<T: Sendable>: Sendable {
     let value: T
-    let isFresh: Bool
+    var isFresh: Bool
     let changingDate: Date
     let optimisticUpdates: [OptimisticUpdate<T>]
 
@@ -22,5 +22,20 @@ struct ReplicaData<T> {
         self.isFresh = isFresh
         self.changingDate = changingDate
         self.optimisticUpdates = optimisticUpdates
+    }
+
+    /// Метод для создания копии состояния с возможностью изменения некоторых свойств.
+    func copy(
+        value: T? = nil,
+        isFresh: Bool? = nil,
+        changingDate: Date? = nil,
+        optimisticUpdates: [OptimisticUpdate<T>]? = nil
+    ) -> ReplicaData {
+        return ReplicaData(
+            value: value ?? self.value,
+            isFresh: isFresh ?? self.isFresh,
+            changingDate: changingDate ?? self.changingDate,
+            optimisticUpdates: optimisticUpdates ?? self.optimisticUpdates
+        )
     }
 }

@@ -10,7 +10,7 @@ actor StaleAfterGivenTime<T: AnyObject & Sendable>: ReplicaBehaviour {
 
     func setup(replica: any PhysicalReplica<T>) async {
         _Concurrency.Task { @Sendable in
-            for await event in replica.eventFlow {
+            for await event in await replica.eventFlow {
                 switch event {
                 case .freshness(let event):
                     switch event {

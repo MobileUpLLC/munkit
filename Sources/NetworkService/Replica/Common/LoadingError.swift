@@ -1,5 +1,5 @@
 /// Представляет собой ошибку, возникшую во время сетевого запроса.
-public struct LoadingError {
+public struct LoadingError: Sendable {
     public let reason: LoadingReason
-    public let error: ServerError
+    public let error: Error
 }

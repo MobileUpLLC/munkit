@@ -1,5 +1,5 @@
 /// Представляет набор ошибок, возникших во время сетевого запроса.
-public struct CombinedLoadingError {
+public struct CombinedLoadingError: Sendable {
     public let errors: [LoadingError]
 
     /// Создаёт комбинированную ошибку из списка ошибок.
