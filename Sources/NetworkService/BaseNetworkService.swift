@@ -1,6 +1,5 @@
+import Moya
 import Foundation
-
-typealias ConcurrencyTask = _Concurrency.Task
 
 public protocol NetworkService {
     associatedtype Target: MobileApiTargetType
@@ -36,7 +35,7 @@ open class BaseNetworkService<Target: MobileApiTargetType>: NetworkService {
         do {
             return try await apiProvider.request(target: target)
         } catch {
-            try ConcurrencyTask.checkCancellation()
+            try _Concurrency.Task.checkCancellation()
 
             if target.isRefreshTokenRequest == false,
                let serverError = error as? ServerError,
@@ -58,7 +57,7 @@ open class BaseNetworkService<Target: MobileApiTargetType>: NetworkService {
         do {
             return try await apiProvider.request(target: target)
         } catch {
-            try ConcurrencyTask.checkCancellation()
+            try _Concurrency.Task.checkCancellation()
 
             if target.isRefreshTokenRequest == false,
                let serverError = error as? ServerError,
@@ -78,7 +77,7 @@ open class BaseNetworkService<Target: MobileApiTargetType>: NetworkService {
         do {
             try await tokenRefresher.refreshToken()
         } catch let error {
-            try ConcurrencyTask.checkCancellation()
+            try _Concurrency.Task.checkCancellation()
 
             if let serverError = error as? ServerError,
                case .unauthorized = serverError {
@@ -99,7 +98,7 @@ open class BaseNetworkService<Target: MobileApiTargetType>: NetworkService {
 private extension BaseNetworkService {
     actor TokenRefresher {
         private let tokenRefreshProvider: TokenRefreshProvider
-        private var refreshTokenTask: ConcurrencyTask<Void, Error>?
+        private var refreshTokenTask: _Concurrency.Task<Void, Error>?
 
         init(tokenRefreshProvider: TokenRefreshProvider) {
             self.tokenRefreshProvider = tokenRefreshProvider
@@ -112,7 +111,7 @@ private extension BaseNetworkService {
                 return try await task.value
             }
 
-            refreshTokenTask = ConcurrencyTask { [weak self] in
+            refreshTokenTask = _Concurrency.Task { [weak self] in
                 guard let self else { throw CancellationError() }
 
                 Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. RefreshToken request started"))

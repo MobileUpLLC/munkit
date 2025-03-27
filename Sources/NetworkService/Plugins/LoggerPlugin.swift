@@ -1,4 +1,4 @@
-import Foundation
+import Moya
 
 enum LoggerPlugin {
     nonisolated(unsafe) static let instance = NetworkLoggerPlugin(configuration: configuration)

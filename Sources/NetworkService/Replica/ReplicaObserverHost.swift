@@ -12,7 +12,7 @@ public struct ReplicaObserverHost {
     /// - Parameters:
     ///   - task: Задача, определяющая время жизни наблюдателя
     ///   - initialActive: Начальное состояние активности наблюдателя
-    init(task: _Concurrency.Task<Void, Never>, observerActive: AsyncStream<Bool>) {
+    init(task: Task<Void, Never>, observerActive: AsyncStream<Bool>) {
         self.observerTask = task
         self.observerActive = observerActive
     }

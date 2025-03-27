@@ -1,4 +1,5 @@
 import Alamofire
+import Moya
 import Foundation
 
 public struct ErrorDetails: Sendable {

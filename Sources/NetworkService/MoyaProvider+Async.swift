@@ -1,4 +1,4 @@
-import Foundation
+import Moya
 
 extension MoyaProvider {
     func request<T: Decodable & Sendable>(target: Target) async throws -> T {
