@@ -31,7 +31,7 @@ actor DataLoader<T> where T: Sendable {
     private let fetcher: any Fetcher<T>
 
     /// Асинхронная задача, выполняющая текущую операцию загрузки.
-    private var loadingTask: _Concurrency.Task<Void, Never>?
+    private var loadingTask: Task<Void, Never>?
 
     init(storage: (any Storage<T>)?, fetcher: any Fetcher<T>) {
         self.storage = storage
@@ -48,12 +48,12 @@ actor DataLoader<T> where T: Sendable {
     func load(loadingFromStorageRequired: Bool) async {
         await cancel()
 
-        loadingTask = _Concurrency.Task { [weak self] in
+        loadingTask = Task { [weak self] in
             guard let self else { return }
 
             do {
                 if loadingFromStorageRequired {
-                    if _Concurrency.Task.isCancelled {
+                    if Task.isCancelled {
                         return
                     }
 
@@ -66,7 +66,7 @@ actor DataLoader<T> where T: Sendable {
 
                 let data = try await fetcher.fetch()
 
-                if _Concurrency.Task.isCancelled {
+                if Task.isCancelled {
                     return
                 }
 
@@ -74,7 +74,7 @@ actor DataLoader<T> where T: Sendable {
                     try await storage.write(data: data)
                 }
 
-                if _Concurrency.Task.isCancelled {
+                if Task.isCancelled {
                     return
                 }
 
@@ -83,7 +83,7 @@ actor DataLoader<T> where T: Sendable {
             } catch is CancellationError {
                 return
             } catch {
-                if !_Concurrency.Task.isCancelled {
+                if !Task.isCancelled {
                     await outputContinuation?.yield(.loadingFinished(.error(error)))
                 }
             }

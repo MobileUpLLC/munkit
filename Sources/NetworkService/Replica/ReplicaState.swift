@@ -29,14 +29,28 @@ public struct ReplicaState<T>: Sendable where T: Sendable {
         preloading: Bool? = nil,
         loadingFromStorageRequired: Bool? = nil
     ) -> ReplicaState<T> {
-            ReplicaState(
-                loading: loading ?? self.loading,
-                data: data ?? self.data,
-                error: error ?? self.error,
-                observingState: observingState ?? self.observingState,
-                dataRequested: dataRequested ?? self.dataRequested,
-                preloading: preloading ?? self.preloading,
-                loadingFromStorageRequired: loadingFromStorageRequired ?? self.loadingFromStorageRequired
-            )
-        }
+        ReplicaState(
+            loading: loading ?? self.loading,
+            data: data ?? self.data,
+            error: error ?? self.error,
+            observingState: observingState ?? self.observingState,
+            dataRequested: dataRequested ?? self.dataRequested,
+            preloading: preloading ?? self.preloading,
+            loadingFromStorageRequired: loadingFromStorageRequired ?? self.loadingFromStorageRequired
+        )
+    }
+
+    static func createEmpty(hasStorage: Bool) -> ReplicaState<T> {
+        let observingState = ObservingState(observerIds: [], activeObserverIds: [], observingTime: .never)
+
+        return ReplicaState(
+            loading: false,
+            data: nil,
+            error: nil,
+            observingState: observingState,
+            dataRequested: false,
+            preloading: false,
+            loadingFromStorageRequired: hasStorage
+        )
+    }
 }
