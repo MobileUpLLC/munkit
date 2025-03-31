@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Concrete</key>
+	<true/>
+	<key>Options</key>
+	<array>
+		<dict>
+			<key>Identifier</key>
+			<string>productName</string>
+			<key>Type</key>
+			<string>text</string>
+			<key>Required</key>
+			<true/>
+			<key>Description</key>
+			<string>Module name</string>
+			<key>Name</key>
+			<string>Module name:</string>
+			<key>NotPersisted</key>
+			<string>true</string>
+		</dict>
+	</array>
+	<key>Name</key>
+	<string>MVVM + C</string>
+	<key>Summary</key>
+	<string>An UIKit MVVM module</string>
+	<key>Description</key>
+	<string>An UIKit MVVM module</string>
+	<key>SupportsSwiftPackage</key>
+	<true/>
+	<key>Kind</key>
+	<string>Xcode.IDEKit.TextSubstitutionFileTemplateKind</string>
+	<key>Image</key>
+	<dict>
+		<key>FileTypeIcon</key>
+		<string>swift</string>
+	</dict>
+	<key>AllowedTypes</key>
+	<array>
+		<string>public.swift-source</string>
+	</array>
+	<key>Platforms</key>
+	<array/>
+	<key>DefaultCompletionName</key>
+	<string>Module</string>
+	<key>MainTemplateFile</key>
+	<string>___FILEBASENAME___.swift</string>
+</dict>
+</plist>

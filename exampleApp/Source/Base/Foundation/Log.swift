@@ -2,41 +2,20 @@ import Foundation
 import os
 
 extension Log {
-    static let networkService = Log(subsystem: subsystem, category: "NetworkService")
-    static let refreshTokenFlow = Log(subsystem: subsystem, category: "refreshTokenFlow")
-    static let mockableMobileApiTarget = Log(subsystem: subsystem, category: "MockableMobileApiTarget")
-
+    static let environments = Log(subsystem: subsystem, category: "Environments")
+    
     private static let subsystem = Bundle.main.bundleIdentifier ?? ""
 }
 
-actor LoggingConfiguration {
-    static let shared = LoggingConfiguration()
-    private var _isRelease: Bool?
-
-    /// Метод конфигурации, который можно вызвать только один раз.
-    func configure(isRelease: Bool) {
-        precondition(_isRelease == nil, "LoggingConfiguration уже настроена")
-        _isRelease = isRelease
-    }
-
-    /// Асинхронный метод для получения значения isRelease.
-    func getIsRelease() -> Bool {
-        guard let value = _isRelease else {
-           // assertionFailure("LoggingConfiguration не настроена. Необходимо вызвать configure(isRelease:) до использования.")
-            return false
-        }
-        return value
-    }
-}
-
-public struct Log: Sendable {
-    enum LogEntry: Sendable{
+struct Log {
+    enum LogEntry {
         case text(String)
+        case detailed(text: String, parameters: [AnyHashable: Any])
     }
-
+    
     private let logger: Logger
     private let category: String
-
+    
     init(subsystem: String, category: String) {
         self.logger = Logger(subsystem: subsystem, category: category)
         self.category = category
@@ -96,21 +75,37 @@ public struct Log: Sendable {
     
     /// Disable logging for release builds.
     private func log(level: OSLogType, logEntry: LogEntry) {
-        Task { @Sendable in
-            if await LoggingConfiguration.shared.getIsRelease() {
-                return
-            }
-
-            let logMessage = getLogMessage(logEntry: logEntry)
-            logger.log(level: level, "\(logMessage)")
+        if Environments.isRelease {
+            return
         }
+        
+        let logMessage = getLogMessage(logEntry: logEntry)
+        
+        logger.log(level: level, "\(logMessage)")
     }
     
     private func getLogMessage(logEntry: LogEntry) -> String {
         switch logEntry {
         case .text(let value):
             return value
+        case let .detailed(text, parameters):
+            return getDetailedLogMessage(text: text, parameters: parameters)
         }
     }
+    
+    private func getDetailedLogMessage(text: String, parameters: [AnyHashable: Any]) -> String {
+        guard
+            let jsonData = try? JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted),
+            let jsonString = String(data: jsonData, encoding: .utf8)
+        else {
+            return text
+        }
+        
+        let logMessage = """
+                        \(text)
+                        \(jsonString)
+                        """
+        
+        return logMessage
+    }
 }
-

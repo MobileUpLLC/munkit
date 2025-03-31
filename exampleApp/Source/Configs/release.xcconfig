@@ -1,0 +1,11 @@
+// Configuration settings file format documentation can be found at:
+// https://help.apple.com/xcode/#/dev745c5c974
+
+INSTANCE = release
+
+BUNDLE_NAME = $(PRODUCT_NAME).$(INSTANCE)
+BUNDLE_DISPLAY_NAME = $(APP_DISPLAY_NAME)
+
+MOBILE_API_URL = https:$(SLASH)/www.dnd5eapi.co
+
+APP_DISPLAY_NAME = exampleApp
