@@ -3,10 +3,10 @@ import SwiftUI
 extension ClassOverviewView {
     struct ViewItem {
         let name: String
-        let hitDie: String // Например, "1d12"
-        let savingThrows: [String] // Например, ["Strength", "Constitution"]
-        let proficiencies: [String] // Например, ["Light Armor", "Simple Weapons"]
-        let description: String? // Описание, если есть
+        let hitDie: String
+        let savingThrows: [String]
+        let proficiencies: [String]
+        let description: String?
     }
 }
 
@@ -45,13 +45,6 @@ struct ClassOverviewView: View {
         .onFirstAppear {
             viewModel.getData()
         }
-//        .onAppear(perform: viewModel.handleViewFirstAppearance)
-//        .skeleton(isLoading: viewModel.state == .loading) {
-//            SkeletonClassView()
-//        }
-//        .errorState(isError: viewModel.state == .error) {
-//            ErrorView(action: viewModel.handleViewFirstAppearance)
-//        }
     }
 }
 

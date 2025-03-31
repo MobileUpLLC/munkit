@@ -66,17 +66,13 @@ actor DataLoader<T> where T: Sendable {
 
                 let data = try await fetcher.fetch()
 
-                if Task.isCancelled {
-                    return
-                }
+                try Task.checkCancellation()
 
                 if let storage = storage {
                     try await storage.write(data: data)
                 }
 
-                if Task.isCancelled {
-                    return
-                }
+                try Task.checkCancellation()
 
                 await outputContinuation?.yield(.loadingFinished(.success(data)))
 

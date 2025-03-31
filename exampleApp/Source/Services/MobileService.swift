@@ -1,10 +1,3 @@
-//
-//  MobileService.swift
-//  exampleApp
-//
-//  Created by Natalia Luzyanina on 31.03.2025.
-//
-
 import Foundation
 import NetworkService
 import Moya

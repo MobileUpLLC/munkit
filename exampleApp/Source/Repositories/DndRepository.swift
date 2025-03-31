@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  Example
-//
-//  Created by Natalia Luzyanina on 30.03.2025.
-//
-
 import Foundation
 import NetworkService
 import Moya

@@ -9,8 +9,6 @@ final class DndClassesViewModel: ObservableObject {
     init(coordinator: DndClassesCoordinator, repository: DndRepository) {
         self.coordinator = coordinator
         self.repository = repository
-
-     //   getData()
     }
 
     @MainActor func handleTapOnItem(with id: String) {

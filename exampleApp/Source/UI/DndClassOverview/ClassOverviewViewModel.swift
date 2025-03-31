@@ -11,8 +11,6 @@ final class ClassOverviewViewModel: ObservableObject {
         self.dndClassId = id
         self.coordinator = coordinator
         self.repository = repository
-
-      //  getData(id)
     }
 
     @MainActor

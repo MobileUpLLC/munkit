@@ -10,14 +10,12 @@
 		07D84C43C478815B6B76AF97 /* SkeletonModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4DF1F6BE0AE16712DB70DA /* SkeletonModifier.swift */; };
 		08DE73FCB1BEAD3BAEA80934 /* EmptyStateModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3319CD2EF218084A36A46675 /* EmptyStateModifier.swift */; };
 		0DC804E39829CAC6FF41BBC0 /* LoadingViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4D398DF6485C7273955210 /* LoadingViewModifier.swift */; };
-		0E14B4F4EF4C0483F8D7EA9D /* PresentationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7188C96CC8CC2EC0B1AD5670 /* PresentationRouter.swift */; };
 		1E0E6B0AF1DA20620F5A6D27 /* EnvironmentsConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42D7C367C98D61A4B02AF096 /* EnvironmentsConfiguration.swift */; };
 		1F183261514B6232CFCD7CAB /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0C1BABFE775D7C38E3A31616 /* Images.xcassets */; };
 		1F85C1A2330917600BD46ED4 /* FirstAppearModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5695C08D2FFC8BB1CB762D06 /* FirstAppearModifier.swift */; };
 		2FB2ABB52B2562774206E9AF /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D1F26C15F42EF3B80D84F22D /* Colors.xcassets */; };
 		3CB24A82746398327B318AFC /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = D412D9A710230C4123B6843F /* Log.swift */; };
 		45FEF3C6E5D589019A735903 /* ShimmerModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E627D843D560292037C8BDF6 /* ShimmerModifier.swift */; };
-		4F215DCE799F1A2C8C64E2FE /* RootRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15136AEED5229A82DBF13349 /* RootRouter.swift */; };
 		5E1F061DF48C252722F38098 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0D8DF10B4B13AC391B38614 /* AppDelegate.swift */; };
 		6CCF9FFF9870E35143303FA5 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53F6E1116D86C0A5B764385C /* ErrorView.swift */; };
 		6D2A84A92D9AC01D00E345CD /* NetworkService in Frameworks */ = {isa = PBXBuildFile; productRef = 6D2A84A82D9AC01D00E345CD /* NetworkService */; };
@@ -50,7 +48,6 @@
 
 /* Begin PBXFileReference section */
 		0C1BABFE775D7C38E3A31616 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
-		15136AEED5229A82DBF13349 /* RootRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootRouter.swift; sourceTree = "<group>"; };
 		1E51AC7483F79F39B1CA99B8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		3319CD2EF218084A36A46675 /* EmptyStateModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateModifier.swift; sourceTree = "<group>"; };
 		35880DC94C5B00DBE04DD83A /* NavigationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationRouter.swift; sourceTree = "<group>"; };
@@ -75,7 +72,6 @@
 		6DFE1EDE2D9A8884006B827D /* ClassOverviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassOverviewViewModel.swift; sourceTree = "<group>"; };
 		6DFE1EE52D9A888D006B827D /* DndRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DndRepository.swift; sourceTree = "<group>"; };
 		6E701FDDCB641F520C42F839 /* prod.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = prod.xcconfig; sourceTree = "<group>"; };
-		7188C96CC8CC2EC0B1AD5670 /* PresentationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationRouter.swift; sourceTree = "<group>"; };
 		9F387818C8F2D81A82F68045 /* TextDebounceModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextDebounceModifier.swift; sourceTree = "<group>"; };
 		A0D8DF10B4B13AC391B38614 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A1976FBA4DD4FF1BE4F9BD9B /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -165,6 +161,7 @@
 				98030BE61FD16270AB0448D8 /* UI */,
 				8B90DD7C274B82A576C267C2 /* Resources */,
 				E052DFCF98788E74F94644F6 /* Models */,
+				6D2A84B22D9AD9AD00E345CD /* Services */,
 				AEE0603168986C91C50EBAF3 /* Repositories */,
 			);
 			path = Source;
@@ -179,6 +176,15 @@
 				0C1BABFE775D7C38E3A31616 /* Images.xcassets */,
 			);
 			path = Assets;
+			sourceTree = "<group>";
+		};
+		6D2A84B22D9AD9AD00E345CD /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				6D2A84AE2D9AC0DC00E345CD /* MobileService.swift */,
+				6D2A84B02D9AC1A700E345CD /* MobileApi.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		6D8B3E122D9A89E100343A02 /* Frameworks */ = {
@@ -247,8 +253,6 @@
 			isa = PBXGroup;
 			children = (
 				35880DC94C5B00DBE04DD83A /* NavigationRouter.swift */,
-				7188C96CC8CC2EC0B1AD5670 /* PresentationRouter.swift */,
-				15136AEED5229A82DBF13349 /* RootRouter.swift */,
 			);
 			path = Routers;
 			sourceTree = "<group>";
@@ -258,8 +262,6 @@
 			children = (
 				EBB1506AAD167A8BC7F32C6B /* AuthRepository.swift */,
 				6DFE1EE52D9A888D006B827D /* DndRepository.swift */,
-				6D2A84AE2D9AC0DC00E345CD /* MobileService.swift */,
-				6D2A84B02D9AC1A700E345CD /* MobileApi.swift */,
 			);
 			path = Repositories;
 			sourceTree = "<group>";
@@ -417,7 +419,6 @@
 				0DC804E39829CAC6FF41BBC0 /* LoadingViewModifier.swift in Sources */,
 				3CB24A82746398327B318AFC /* Log.swift in Sources */,
 				D6083B3CF54E8E3C545A8CEA /* NavigationRouter.swift in Sources */,
-				0E14B4F4EF4C0483F8D7EA9D /* PresentationRouter.swift in Sources */,
 				6DFE1ED52D9A8880006B827D /* DndClassesViewModel.swift in Sources */,
 				6DFE1ED62D9A8880006B827D /* DndClassesCoordinator.swift in Sources */,
 				6DFE1ED72D9A8880006B827D /* DndClassesView.swift in Sources */,
@@ -425,7 +426,6 @@
 				6DFE1ED92D9A8880006B827D /* DndClassesController.swift in Sources */,
 				6DFE1EE62D9A888D006B827D /* DndRepository.swift in Sources */,
 				6D2A84AF2D9AC0DC00E345CD /* MobileService.swift in Sources */,
-				4F215DCE799F1A2C8C64E2FE /* RootRouter.swift in Sources */,
 				D6779AFBB07985CB3634FDBF /* SceneDelegate.swift in Sources */,
 				45FEF3C6E5D589019A735903 /* ShimmerModifier.swift in Sources */,
 				07D84C43C478815B6B76AF97 /* SkeletonModifier.swift in Sources */,
