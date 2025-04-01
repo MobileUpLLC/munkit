@@ -1,7 +1,7 @@
 import Foundation
 
 /// Протокол базовой реплики с минимальным API.
-public protocol Replica where T: Sendable {
+public protocol Replica<T> where T: Sendable {
     associatedtype T
 
     /// Начинает наблюдение за репликой.

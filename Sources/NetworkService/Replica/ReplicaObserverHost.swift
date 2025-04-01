@@ -1,5 +1,5 @@
 /// Обеспечивает функциональность для управления наблюдателями.
-public protocol ReplicaObserverHost: Sendable {
+public protocol ReplicaObserverHost {
     /// Задача, представляющая время жизни наблюдателя.
     /// При отмене этой задачи наблюдатель прекращает работу.
     var observerTask: Task<Void, Never> { get }

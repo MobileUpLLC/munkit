@@ -13,3 +13,11 @@ final class DndRepository {
         return try await mobileService.request(target: .classOverview(index))
     }
 }
+
+final class DndClassesRepository: Fetcher {
+    typealias T = ClassesListModel
+
+    func fetch() async throws -> T {
+        return try await MobileService.shared.request(target: .classes)
+    }
+}

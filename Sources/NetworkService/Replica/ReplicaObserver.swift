@@ -2,7 +2,7 @@ import Foundation
 
 public actor ReplicaObserver<T> where T: Sendable {
     // MARK: - ReplicaStateStream
-    var replicaStateStream: AsyncStream<ReplicaState<T>>?
+    public var replicaStateStream: AsyncStream<ReplicaState<T>>?
     private var replicaStateStreamContinuation: AsyncStream<ReplicaState<T>>.Continuation?
     private let externalReplicaStateStream: AsyncStream<ReplicaState<T>>
     private var replicaStateObservingTask: Task<Void, Never>?

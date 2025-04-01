@@ -1,8 +1,8 @@
 import Foundation
 
 /// Данные, хранимые в реплике.
-struct ReplicaData<T>: Sendable where T: Sendable {
-    let value: T
+public struct ReplicaData<T>: Sendable where T: Sendable {
+    public let value: T
     var isFresh: Bool
     let changingDate: Date
     let optimisticUpdates: [OptimisticUpdate<T>]

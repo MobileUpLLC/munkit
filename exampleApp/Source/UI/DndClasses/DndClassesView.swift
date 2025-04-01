@@ -30,7 +30,7 @@ struct DndClassesView: View {
 #Preview {
     DndClassesView(
         viewModel: DndClassesViewModel(
-            coordinator: DndClassesCoordinator(), repository: DndRepository()
+            coordinator: DndClassesCoordinator(), repository: DndClassesRepository()
         )
     )
 }
