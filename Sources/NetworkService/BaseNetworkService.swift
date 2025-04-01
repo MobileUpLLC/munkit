@@ -1,3 +1,10 @@
+//
+//  BaseNetworkService.swift
+//  NetworkService
+//
+//  Created by Natalia Luzyanina on 01.04.2025.
+//
+
 import Moya
 
 open class BaseNetworkService<Target: MobileApiTargetType> {

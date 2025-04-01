@@ -1,3 +1,10 @@
+//
+//  MockableMobileApiTarget.swift
+//  NetworkService
+//
+//  Created by Natalia Luzyanina on 01.04.2025.
+//
+
 import Foundation
 
 public protocol MockableMobileApiTarget: MobileApiTargetType {

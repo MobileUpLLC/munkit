@@ -1,3 +1,10 @@
+//
+//  MUNKTokenProvider.swift
+//  NetworkService
+//
+//  Created by Natalia Luzyanina on 01.04.2025.
+//
+
 import Foundation
 import Moya
 

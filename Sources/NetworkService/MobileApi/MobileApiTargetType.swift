@@ -1,3 +1,10 @@
+//
+//  MobileApiTargetType.swift
+//  NetworkService
+//
+//  Created by Natalia Luzyanina on 01.04.2025.
+//
+
 import Moya
 
 public protocol MobileApiTargetType: TargetType, AccessTokenAuthorizable {
