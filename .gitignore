@@ -1,22 +1,10 @@
 *.DS_Store
-*.generated.swift
 
 ## Build generated
-build/
-DerivedData/
 xcuserdata/
 xcshareddata/
 /.swiftpm
-*.xcuserstate
-
-## Other
-*.moved-aside
-*.xccheckout
-*.xcscmblueprint
 
 # Swift Package Manager
-.build/
-Package.resolved*
+*Package.resolved*
 
-# SwiftLint
-lintOutput.json
