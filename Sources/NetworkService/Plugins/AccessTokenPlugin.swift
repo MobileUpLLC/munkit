@@ -1,14 +1,17 @@
 import Foundation
 import Moya
 
-protocol AccessTokenProvider {
+public protocol MUNKTokenProvider: Sendable {
     var accessToken: String? { get }
+
+    @discardableResult
+    func refreshToken() async throws -> String
 }
 
 struct AccessTokenPlugin: PluginType {
-    private let accessTokenProvider: AccessTokenProvider
-    
-    init(accessTokenProvider: AccessTokenProvider) {
+    private let accessTokenProvider: MUNKTokenProvider
+
+    init(accessTokenProvider: MUNKTokenProvider) {
         self.accessTokenProvider = accessTokenProvider
     }
     

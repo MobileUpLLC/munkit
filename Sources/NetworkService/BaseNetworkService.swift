@@ -1,20 +1,15 @@
 import Moya
 
-public protocol TokenRefreshProvider: Sendable {
-    @discardableResult
-    func refreshToken() async throws -> String
-}
-
 open class BaseNetworkService<Target: MobileApiTargetType> {
     public var onTokenRefreshFailed: (() -> Void)? { didSet { onceExecutor = OnceExecutor() } }
 
     public let apiProvider: MoyaProvider<Target>
-    public let tokenRefreshProvider: TokenRefreshProvider
+    public let tokenRefreshProvider: MUNKTokenProvider
 
     private var tokenRefresher: TokenRefresher { TokenRefresher(tokenRefreshProvider: tokenRefreshProvider) }
     private var onceExecutor: OnceExecutor?
 
-    public init(apiProvider: MoyaProvider<Target>, tokenRefreshProvider: TokenRefreshProvider) {
+    public init(apiProvider: MoyaProvider<Target>, tokenRefreshProvider: MUNKTokenProvider) {
         self.apiProvider = apiProvider
         self.tokenRefreshProvider = tokenRefreshProvider
     }
