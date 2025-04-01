@@ -1,9 +1,9 @@
 import Moya
 
-enum LoggerPlugin {
-    nonisolated(unsafe) static let instance = NetworkLoggerPlugin(configuration: configuration)
+actor LoggerPlugin {
+    static let instance = NetworkLoggerPlugin(configuration: configuration)
 
-    nonisolated(unsafe) private static let configuration = NetworkLoggerPlugin.Configuration(output: defaultOutput, logOptions: .verbose)
+    private static let configuration = NetworkLoggerPlugin.Configuration(output: defaultOutput, logOptions: .verbose)
     
     private static func defaultOutput(target: TargetType, items: [String]) {
         var logMessage = "---------------------------REQUEST START---------------------------\n"
