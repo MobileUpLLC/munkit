@@ -1,0 +1,23 @@
+//
+//  OnceExecutor.swift
+//  NetworkService
+//
+//  Created by Natalia Luzyanina on 01.04.2025.
+//
+
+import Foundation
+
+actor OnceExecutor {
+    private var hasRun = false
+    private var onTokenRefreshFailed: (() -> Void)?
+
+    func executeTokenRefreshFailed() async {
+        guard hasRun == false else {
+            return
+        }
+        hasRun = true
+        onTokenRefreshFailed?()
+
+        Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. Send onTokenRefreshFailed"))
+    }
+}
