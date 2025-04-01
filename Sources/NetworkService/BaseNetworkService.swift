@@ -39,10 +39,13 @@ open class BaseNetworkService<Target: MobileApiTargetType>: NetworkService {
             try ConcurrencyTask.checkCancellation()
 
             if target.isRefreshTokenRequest == false,
-               let serverError = error as? ServerError,
-               case .unauthorized = serverError {
+               let serverError = error as? MoyaError,
+               serverError.errorCode == 403
+            {
                 try await refreshToken()
+
                 Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. Request \(target) started"))
+
                 return try await apiProvider.request(target: target)
             } else {
                 let logText = "NetworkService. Request \(target) failed with error \(error)"
@@ -61,14 +64,18 @@ open class BaseNetworkService<Target: MobileApiTargetType>: NetworkService {
             try ConcurrencyTask.checkCancellation()
 
             if target.isRefreshTokenRequest == false,
-               let serverError = error as? ServerError,
-               case .unauthorized = serverError {
+               let serverError = error as? MoyaError,
+               serverError.errorCode == 403
+            {
                 try await refreshToken()
+
                 Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. Request \(target) started"))
+
                 return try await apiProvider.request(target: target)
             } else {
                 let logText = "NetworkService. Request \(target) failed with error \(error)"
                 Log.refreshTokenFlow.debug(logEntry: .text(logText))
+
                 throw error
             }
         }
@@ -80,13 +87,11 @@ open class BaseNetworkService<Target: MobileApiTargetType>: NetworkService {
         } catch let error {
             try ConcurrencyTask.checkCancellation()
 
-            if let serverError = error as? ServerError,
-               case .unauthorized = serverError {
+            if let serverError = error as? MoyaError, serverError.errorCode == 403 {
                 await onceExecutor?.executeTokenRefreshFailed()
             }
 
-            if let serverError = error as? ServerError,
-               case .tokenExpired = serverError {
+            if let serverError = error as? MoyaError, serverError.errorCode == 409 {
                 await onceExecutor?.executeTokenRefreshFailed()
             }
 
