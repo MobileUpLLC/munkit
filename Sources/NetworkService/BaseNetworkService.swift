@@ -10,6 +10,7 @@ public protocol NetworkService {
     func request<T: Decodable & Sendable>(target: Target) async throws -> T
     func request(target: Target) async throws
 }
+import Moya
 
 public protocol TokenRefreshProvider: Sendable {
     @discardableResult
