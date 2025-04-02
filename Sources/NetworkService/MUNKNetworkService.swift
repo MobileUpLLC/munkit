@@ -1,5 +1,5 @@
 //
-//  BaseNetworkService.swift
+//  MUNKNetworkService.swift
 //  NetworkService
 //
 //  Created by Natalia Luzyanina on 01.04.2025.
@@ -7,7 +7,7 @@
 
 import Moya
 
-open class BaseNetworkService<Target: MobileApiTargetType> {
+open class MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     public var onTokenRefreshFailed: (() -> Void)? { didSet { onceExecutor = OnceExecutor() } }
 
     public let apiProvider: MoyaProvider<Target>

@@ -1,5 +1,5 @@
 //
-//  MUNKTokenProvider.swift
+//  AccessTokenPlugin.swift
 //  NetworkService
 //
 //  Created by Natalia Luzyanina on 01.04.2025.
@@ -7,13 +7,6 @@
 
 import Foundation
 import Moya
-
-public protocol MUNKTokenProvider: Sendable {
-    var accessToken: String? { get }
-
-    @discardableResult
-    func refreshToken() async throws -> String
-}
 
 struct AccessTokenPlugin: PluginType {
     private let accessTokenProvider: MUNKTokenProvider
@@ -23,14 +16,14 @@ struct AccessTokenPlugin: PluginType {
     }
     
     func prepare(_ request: URLRequest, target: TargetType) -> URLRequest {
-        guard let mobileApiTarget = target as? MobileApiTargetType else {
+        guard let mobileApiTarget = target as? MUNKMobileApiTargetType else {
             return request
         }
         
         return prepare(request, target: mobileApiTarget)
     }
 
-    private func prepare(_ request: URLRequest, target: MobileApiTargetType) -> URLRequest {
+    private func prepare(_ request: URLRequest, target: MUNKMobileApiTargetType) -> URLRequest {
         var request = request
         
         if target.isAccessTokenRequired, let accessToken = accessTokenProvider.accessToken {

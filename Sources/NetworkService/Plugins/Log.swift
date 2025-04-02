@@ -103,7 +103,7 @@ public struct Log: Sendable {
     
     /// Disable logging for release builds.
     private func log(level: OSLogType, logEntry: LogEntry) {
-        _Concurrency.Task { @Sendable in
+        Task { @Sendable in
             if await LoggingConfiguration.shared.getIsRelease() {
                 return
             }

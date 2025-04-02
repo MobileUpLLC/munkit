@@ -5,11 +5,9 @@
 //  Created by Natalia Luzyanina on 01.04.2025.
 //
 
-import Foundation
-
 actor TokenRefresher {
     private let tokenRefreshProvider: MUNKTokenProvider
-    private var refreshTokenTask: _Concurrency.Task<Void, Error>?
+    private var refreshTokenTask: Task<Void, Error>?
 
     init(tokenRefreshProvider: MUNKTokenProvider) {
         self.tokenRefreshProvider = tokenRefreshProvider
@@ -22,8 +20,10 @@ actor TokenRefresher {
             return try await task.value
         }
 
-        refreshTokenTask = _Concurrency.Task { [weak self] in
-            guard let self else { throw CancellationError() }
+        refreshTokenTask = Task { [weak self] in
+            guard let self else {
+                throw CancellationError()
+            }
 
             Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. RefreshToken request started"))
 

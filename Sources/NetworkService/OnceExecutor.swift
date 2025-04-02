@@ -5,8 +5,6 @@
 //  Created by Natalia Luzyanina on 01.04.2025.
 //
 
-import Foundation
-
 actor OnceExecutor {
     private var hasRun = false
     private var onTokenRefreshFailed: (() -> Void)?
