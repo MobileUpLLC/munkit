@@ -10,13 +10,11 @@ actor ObserversController<T> where T: Sendable {
         replicaState: ReplicaState<T>,
         replicaStateStream: AsyncStream<ReplicaState<T>>,
         replicaEventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation
-    ) async {
+    ) {
         self.replicaState = replicaState
 
         self.replicaStateStream = replicaStateStream
         self.replicaEventStreamContinuation = replicaEventStreamContinuation
-
-        launchStateObserving()
     }
 
     /// Обрабатывает добавление нового наблюдателя.
@@ -121,14 +119,6 @@ actor ObserversController<T> where T: Sendable {
                     )
                 )
             )
-        }
-    }
-
-    private func launchStateObserving() {
-        Task {
-            for await replicaState in replicaStateStream {
-                self.replicaState = replicaState
-            }
         }
     }
 }

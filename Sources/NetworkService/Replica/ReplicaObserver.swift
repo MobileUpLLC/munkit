@@ -12,18 +12,18 @@ public actor ReplicaObserver<T> where T: Sendable {
     private var replicaEventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation?
     private let externalReplicaEventStream: AsyncStream<ReplicaEvent<T>>
 
-    private let observerHost: ReplicaObserverHost
+    private let observerActive: AsyncStream<Bool>
     private var observerControllingTask: Task<Void, Never>?
     private let observersController: ObserversController<T>
 
     // MARK: - Initialization
     init(
-        observerHost: ReplicaObserverHost,
+        observerActive: AsyncStream<Bool>,
         externalStateStream: AsyncStream<ReplicaState<T>>,
         externalEventStream: AsyncStream<ReplicaEvent<T>>,
         observersController: ObserversController<T>
     ) async {
-        self.observerHost = observerHost
+        self.observerActive = observerActive
         self.observersController = observersController
         self.externalReplicaStateStream = externalStateStream
         self.externalReplicaEventStream = externalEventStream
@@ -53,7 +53,7 @@ public actor ReplicaObserver<T> where T: Sendable {
         await observersController.onObserverAdded(observerId: observerId, active: true)
 
         observerControllingTask = Task {
-            for await active in observerHost.observerActive {
+            for await active in await observerActive {
                 if active {
                     await observersController.onObserverActive(observerId: observerId)
                 } else {

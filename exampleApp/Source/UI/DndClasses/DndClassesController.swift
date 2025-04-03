@@ -6,8 +6,5 @@ final class DndClassesController: HostingController<DndClassesView> {
 
         navigationItem.title = "D&D Classes"
         navigationItem.largeTitleDisplayMode = .always
-      //  navigationController?.navigationBar.prefersLargeTitles = true
-//        let centralItem = NavigationBarInfoItem(item: .title("D&D Classes"))
-//        navigationBarModel = NavigationBarModel(infoToolbarItem: centralItem, isLargeTitle: true)
     }
 }

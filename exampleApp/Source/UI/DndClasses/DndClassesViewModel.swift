@@ -1,76 +1,67 @@
 import Foundation
 import NetworkService
 
-final class DndClassesViewModel: ObservableObject, ReplicaObserverHost {
-    var observerActive: AsyncStream<Bool>
-    
+final class DndClassesViewModel: ObservableObject {
     @Published private(set) var classItems: [DndClassesView.ViewItem]?
 
     private let coordinator: DndClassesCoordinator
-   // private let repository: DndClassesRepository
-
     private let replica: any Replica<ClassesListModel>
-    private var observer: ReplicaObserver<ClassesListModel>?
-    private var observationTask: Task<Void, Never>?
+    private let observerStateStream: AsyncStream<Bool>
+    private let observerContinuation: AsyncStream<Bool>.Continuation
+    private var observerTask: Task<Void, Never>?
 
-    // MARK: - ReplicaObserverHost
-    lazy var observerTask: Task<Void, Never> = Task { }
-
-    var observerActive: AsyncStream<Bool>?
-    var observerContinuation: AsyncStream<Bool>.Continuation
-
-    // MARK: - Initialization
     init(coordinator: DndClassesCoordinator, replica: any Replica<ClassesListModel>) {
         self.coordinator = coordinator
         self.replica = replica
 
-        observerActive = AsyncStream { continuation in
-            self.observerContinuation = continuation
-        }
-
-        startObserving()
+        let (observerActive, observerContinuation) = AsyncStream<Bool>.makeStream()
+        
+        self.observerStateStream = observerActive
+        self.observerContinuation = observerContinuation
     }
 
-    // MARK: - Private Methods
-    private func startObserving() {
-        observationTask = Task {
-            let observer = await replica.observe(observerHost: self)
-            observerContinuation.yield(true)
-            self.observer = observer
+    @MainActor
+    func refresh() {
+        Task { [weak self] in
+            await self?.replica.refresh()
+        }
+    }
+
+    @MainActor
+    func startObserving() {
+        Log.replica.debug(logEntry: .text("startObserving"))
+        
+        observerTask = Task { [weak self] in
+            guard let self else {
+                return
+            }
+
+            let observer = await replica.observe(observerActive: observerStateStream)
+            
+            self.observerContinuation.yield(true)
 
             guard let stateStream = await observer.replicaStateStream else {
                 return
             }
+            
             for await state in stateStream {
                 let viewItems = state.data?.value.results.map {
                     DndClassesView.ViewItem(id: $0.index, name: $0.name)
                 }
+
+                Log.replica.debug(logEntry: .text("Получено состояние реплики: \(String(describing: viewItems))"))
                 self.classItems = viewItems
             }
         }
     }
 
-    @MainActor func handleTapOnItem(with id: String) {
+    @MainActor
+    func handleTapOnItem(with id: String) {
         coordinator.showClassOverview(for: id)
     }
 
-    @MainActor
-    func getData() {
-        Task { [weak self] in
-            guard let self else {
-                return
-            }
-
-            do {
-//                let classes = try await repository.fetch()
-//                let viewItems = classes.results.map { DndClassesView.ViewItem(id: $0.index, name: $0.name) }
-//
-//                await MainActor.run {
-//                    self.classItems = viewItems
-//                }
-            } catch {
-                print("error")
-            }
-        }
+    deinit {
+        observerContinuation.finish()
+        observerTask = nil
     }
 }

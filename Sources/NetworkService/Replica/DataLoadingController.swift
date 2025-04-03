@@ -6,16 +6,20 @@ actor DataLoadingController<T> where T: Sendable {
     private var replicaState: ReplicaState<T>
     /// Поток событий реплики.
     private let replicaEventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation
+    /// Поток состояний  реплики.
+    private let replicaStateStreamContinuation: AsyncStream<ReplicaState<T>>.Continuation
 
     /// Загрузчик данных для выполнения операций загрузки.
     private let dataLoader: DataLoader<T>
 
     init(
         replicaState: ReplicaState<T>,
+        replicaStateStreamContinuation: AsyncStream<ReplicaState<T>>.Continuation,
         replicaEventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation,
         dataLoader: DataLoader<T>
     ) {
         self.replicaState = replicaState
+        self.replicaStateStreamContinuation = replicaStateStreamContinuation
         self.replicaEventStreamContinuation = replicaEventStreamContinuation
         self.dataLoader = dataLoader
 
@@ -175,6 +179,9 @@ actor DataLoadingController<T> where T: Sendable {
                 dataRequested: false,
                 preloading: false
             )
+
+            replicaStateStreamContinuation.yield(replicaState)
+            // ????
             replicaEventStreamContinuation.yield(.loading(.loadingFinished(.success(data: data.value))))
             replicaEventStreamContinuation.yield(.freshness(.freshened))
 

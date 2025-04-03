@@ -5,7 +5,7 @@ public protocol Replica<T> where T: Sendable {
     associatedtype T
 
     /// Начинает наблюдение за репликой.
-    func observe(observerHost: ReplicaObserverHost) async -> ReplicaObserver<T>
+    func observe(observerActive: AsyncStream<Bool>) async -> ReplicaObserver<T>
 
     /// Загружает свежие данные из сети.
     /// - Note: Не вызывает новый запрос, если другой уже выполняется.

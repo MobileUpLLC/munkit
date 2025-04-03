@@ -1,6 +1,6 @@
 import Foundation
 
-actor PhysicalReplica<T: Sendable>: Replica {
+public actor PhysicalReplica<T: Sendable>: Replica {
     private let id: UUID
 
     private let storage: (any Storage<T>)?
@@ -16,7 +16,7 @@ actor PhysicalReplica<T: Sendable>: Replica {
     private let observersController: ObserversController<T>
     private let dataLoadingController: DataLoadingController<T>
 
-    init(id: UUID = UUID(), storage: (any Storage<T>)?, fetcher: any Fetcher<T>) async {
+    public init(id: UUID = UUID(), storage: (any Storage<T>)?, fetcher: any Fetcher<T>) {
         self.id = id
         self.storage = storage
         self.fetcher = fetcher
@@ -30,7 +30,7 @@ actor PhysicalReplica<T: Sendable>: Replica {
         replicaEventStream = eventStream
         replicaEventStreamContinuation = eventContinuation
 
-        self.observersController = await ObserversController(
+        self.observersController = ObserversController(
             replicaState: replicaState,
             replicaStateStream: replicaStateStream,
             replicaEventStreamContinuation: replicaEventStreamContinuation
@@ -39,29 +39,30 @@ actor PhysicalReplica<T: Sendable>: Replica {
         let dataLoader = DataLoader(storage: storage, fetcher: fetcher)
         self.dataLoadingController = DataLoadingController(
             replicaState: replicaState,
+            replicaStateStreamContinuation: replicaStateStreamContinuation,
             replicaEventStreamContinuation: replicaEventStreamContinuation,
             dataLoader: dataLoader
         )
     }
-
-    func observe(observerHost: ReplicaObserverHost) async -> ReplicaObserver<T> {
+    
+    public func observe(observerActive: AsyncStream<Bool>) async -> ReplicaObserver<T> {
         await ReplicaObserver<T>(
-            observerHost: observerHost,
+            observerActive: observerActive,
             externalStateStream: replicaStateStream,
             externalEventStream: replicaEventStream,
             observersController: observersController
         )
     }
 
-    func refresh() async {
+    public func refresh() async {
         await dataLoadingController.refresh()
     }
 
-    func revalidate() async {
+    public func revalidate() async {
         await dataLoadingController.revalidate()
     }
 
-    func getData(forceRefresh: Bool) async throws -> T {
+    public func getData(forceRefresh: Bool) async throws -> T {
         try await dataLoadingController.getData(forceRefresh: forceRefresh)
     }
 

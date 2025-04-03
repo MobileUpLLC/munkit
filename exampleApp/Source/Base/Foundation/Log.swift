@@ -3,7 +3,7 @@ import os
 
 extension Log {
     static let environments = Log(subsystem: subsystem, category: "Environments")
-    
+    static let replica = Log(subsystem: subsystem, category: "Replica")
     private static let subsystem = Bundle.main.bundleIdentifier ?? ""
 }
 

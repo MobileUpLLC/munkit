@@ -1,7 +1,7 @@
 import SwiftUI
 
 extension DndClassesView {
-    struct ViewItem {
+    struct ViewItem: Sendable {
         let id: String
         let name: String
     }
@@ -21,16 +21,7 @@ struct DndClassesView: View {
                 }
             }
         }
-        .onFirstAppear {
-           viewModel.getData()
-        }
+        .onFirstAppear { viewModel.startObserving() }
+        .onAppear { viewModel.refresh() }
     }
-}
-
-#Preview {
-    DndClassesView(
-        viewModel: DndClassesViewModel(
-            coordinator: DndClassesCoordinator(), repository: DndClassesRepository()
-        )
-    )
 }
