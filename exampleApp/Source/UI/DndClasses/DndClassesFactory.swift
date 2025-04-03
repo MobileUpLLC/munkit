@@ -2,14 +2,16 @@ import UIKit
 import NetworkService
 
 enum DndClassesFactory {
-    @MainActor static func createDndClassesController() -> UINavigationController {
-        let repository = DndClassesRepository()
-        let replica = PhysicalReplica<ClassesListModel>(storage: nil, fetcher: repository)
+    @MainActor static func createDndClassesController() async -> DndClassesController {
+        //  let replica = await DndClassesRepository.shared.getReplica()
+
+        let repository = await DndClassesRepository()
+
         let coordinator = DndClassesCoordinator()
-        let viewModel = DndClassesViewModel(coordinator: coordinator, replica: replica)
+        let viewModel = DndClassesViewModel(coordinator: coordinator, replica: repository.replica)
         let controller = DndClassesController(viewModel: viewModel)
         coordinator.router = controller
-        
-        return UINavigationController(rootViewController: controller)
+
+        return controller
     }
 }

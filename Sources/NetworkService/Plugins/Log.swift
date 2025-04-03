@@ -6,6 +6,8 @@ extension Log {
     static let refreshTokenFlow = Log(subsystem: subsystem, category: "refreshTokenFlow")
     static let mockableMobileApiTarget = Log(subsystem: subsystem, category: "MockableMobileApiTarget")
 
+    static let replica = Log(subsystem: subsystem, category: "Replica")
+
     private static let subsystem = Bundle.main.bundleIdentifier ?? ""
 }
 

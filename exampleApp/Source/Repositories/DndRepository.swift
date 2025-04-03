@@ -14,10 +14,14 @@ final class DndRepository {
     }
 }
 
-final class DndClassesRepository: Fetcher {
-    typealias T = ClassesListModel
+final class DndClassesRepository: Sendable {
+    let replica: any PhysicalReplica<ClassesListModel>
 
-    func fetch() async throws -> T {
-        return try await MobileService.shared.request(target: .classes)
+    init() async {
+        self.replica = await ReplicaClient.shared.createReplica(
+            name: "DndReplica",
+            storage: nil,
+            fetcher: { try await MobileService.shared.request(target: .classes) }
+        )
     }
 }

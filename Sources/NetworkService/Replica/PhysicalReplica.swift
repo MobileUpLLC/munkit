@@ -1,10 +1,18 @@
 import Foundation
 
-public actor PhysicalReplica<T: Sendable>: Replica {
-    private let id: UUID
+public protocol PhysicalReplica<T>: Replica {
+    associatedtype T: Sendable
 
+    var name: String { get }
+
+    init(id: UUID, storage: (any Storage<T>)?, fetcher: @escaping Fetcher<T>, name: String) 
+}
+
+public actor PhysicalReplicaImpl<T: Sendable>: PhysicalReplica {
+    private let id: UUID
+    public let name: String
     private let storage: (any Storage<T>)?
-    private let fetcher: any Fetcher<T>
+    private let fetcher: Fetcher<T>
     private var replicaState: ReplicaState<T>
 
     private var replicaStateStreamContinuation: AsyncStream<ReplicaState<T>>.Continuation
@@ -16,8 +24,9 @@ public actor PhysicalReplica<T: Sendable>: Replica {
     private let observersController: ObserversController<T>
     private let dataLoadingController: DataLoadingController<T>
 
-    public init(id: UUID = UUID(), storage: (any Storage<T>)?, fetcher: any Fetcher<T>) {
+    public init(id: UUID = UUID(), storage: (any Storage<T>)?, fetcher: @escaping Fetcher<T>, name: String) {
         self.id = id
+        self.name = name
         self.storage = storage
         self.fetcher = fetcher
         self.replicaState = ReplicaState<T>.createEmpty(hasStorage: storage != nil)
@@ -43,6 +52,10 @@ public actor PhysicalReplica<T: Sendable>: Replica {
             replicaEventStreamContinuation: replicaEventStreamContinuation,
             dataLoader: dataLoader
         )
+
+        Task { [weak self] in
+            await self?.listenReplicaEvent()
+        }
     }
     
     public func observe(observerActive: AsyncStream<Bool>) async -> ReplicaObserver<T> {
@@ -68,5 +81,17 @@ public actor PhysicalReplica<T: Sendable>: Replica {
 
     func cancel() async {
         await dataLoadingController.cancel()
+    }
+
+    /// взято из createBehavioursForReplicaSettings оригинальной реплики
+    private func listenReplicaEvent() async {
+        for await event in await self.replicaEventStream {
+            Log.replica.debug(logEntry: .text("\(self): Получено событие \(event)"))
+
+            if case .observerCountChanged(let info) = event,
+               info.activeCount > info.previousActiveCount {
+                await revalidate()
+            }
+        }
     }
 }

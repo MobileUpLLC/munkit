@@ -18,21 +18,23 @@ actor ObserversController<T> where T: Sendable {
     }
 
     /// Обрабатывает добавление нового наблюдателя.
-    func onObserverAdded(observerId: UUID, active: Bool) {
+    func onObserverAdded(observerId: UUID, isObserverActive: Bool) {
         let previousObservingState = replicaState.observingState
         
-        let newActiveObserverIds = active
+        let newActiveObserverIds = isObserverActive
         ? previousObservingState.activeObserverIds.union([observerId])
         : previousObservingState.activeObserverIds
 
-        let newObservingTime = active ? .now : previousObservingState.observingTime
+        let newObservingTime = isObserverActive ? .now : previousObservingState.observingTime
 
         let newObservingState = ObservingState(
             observerIds: previousObservingState.observerIds.union([observerId]),
             activeObserverIds: newActiveObserverIds,
             observingTime: newObservingTime
         )
-        
+
+        replicaState = replicaState.copy(observingState: newObservingState)
+
         yieldObservingStateIfNeeded(
             previousObservingState: previousObservingState,
             newObservingState: newObservingState
@@ -54,6 +56,8 @@ actor ObserversController<T> where T: Sendable {
             observingTime: newObservingTime
         )
 
+        replicaState = replicaState.copy(observingState: newObservingState)
+
         yieldObservingStateIfNeeded(
             previousObservingState: previousObservingState,
             newObservingState: newObservingState
@@ -72,6 +76,8 @@ actor ObserversController<T> where T: Sendable {
             activeObserverIds: newActiveObserverIds,
             observingTime: .now
         )
+
+        replicaState = replicaState.copy(observingState: newObservingState)
 
         yieldObservingStateIfNeeded(
             previousObservingState: previousObservingState,
@@ -94,6 +100,8 @@ actor ObserversController<T> where T: Sendable {
             observingTime: newObservingTime
         )
 
+        replicaState = replicaState.copy(observingState: newObservingState)
+        
         yieldObservingStateIfNeeded(
             previousObservingState: previousObservingState,
             newObservingState: newObservingState

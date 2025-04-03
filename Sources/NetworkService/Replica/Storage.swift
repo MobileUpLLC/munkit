@@ -1,6 +1,6 @@
 /// Интерфейс для сохранения данных реплики в постоянное хранилище.
 public protocol Storage<T>: Sendable {
-    associatedtype T
+    associatedtype T: Sendable
 
     /// Записывает данные в хранилище.
     func write(data: T) async throws

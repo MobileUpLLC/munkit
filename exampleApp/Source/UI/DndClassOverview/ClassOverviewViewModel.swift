@@ -39,4 +39,8 @@ final class ClassOverviewViewModel: ObservableObject {
             }
         }
     }
+
+    deinit {
+        print("deinit ClassOverviewViewModel")
+    }
 }

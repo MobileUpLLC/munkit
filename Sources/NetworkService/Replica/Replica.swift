@@ -1,8 +1,8 @@
 import Foundation
 
 /// Протокол базовой реплики с минимальным API.
-public protocol Replica<T> where T: Sendable {
-    associatedtype T
+public protocol Replica<T>: Actor {
+    associatedtype T: Sendable
 
     /// Начинает наблюдение за репликой.
     func observe(observerActive: AsyncStream<Bool>) async -> ReplicaObserver<T>

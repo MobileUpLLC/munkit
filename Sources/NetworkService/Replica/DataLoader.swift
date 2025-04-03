@@ -28,12 +28,12 @@ actor DataLoader<T> where T: Sendable {
     private let storage: (any Storage<T>)?
 
     /// Интерфейс для получения данных из внешнего источника.
-    private let fetcher: any Fetcher<T>
+    private let fetcher: Fetcher<T>
 
     /// Асинхронная задача, выполняющая текущую операцию загрузки.
     private var loadingTask: Task<Void, Never>?
 
-    init(storage: (any Storage<T>)?, fetcher: any Fetcher<T>) {
+    init(storage: (any Storage<T>)?, fetcher: @escaping Fetcher<T>) {
         self.storage = storage
         self.fetcher = fetcher
 
@@ -46,6 +46,7 @@ actor DataLoader<T> where T: Sendable {
     /// - Parameter loadingFromStorageRequired: Указывает, нужно ли сначала пытаться загрузить данные из хранилища.
     ///  Результаты загрузки передаются в поток `outputStream` в виде событий `Output`.
     func load(loadingFromStorageRequired: Bool) async {
+        Log.replica.debug(logEntry: .text("\(self): load(loadingFromStorageRequired: \(loadingFromStorageRequired)"))
         await cancel()
 
         loadingTask = Task { [weak self] in
@@ -64,7 +65,7 @@ actor DataLoader<T> where T: Sendable {
                     }
                 }
 
-                let data = try await fetcher.fetch()
+                let data = try await fetcher()
 
                 try Task.checkCancellation()
 

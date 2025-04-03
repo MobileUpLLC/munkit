@@ -22,6 +22,6 @@ struct DndClassesView: View {
             }
         }
         .onFirstAppear { viewModel.startObserving() }
-        .onAppear { viewModel.refresh() }
+        .onDisappear { viewModel.deinitObserver() }
     }
 }

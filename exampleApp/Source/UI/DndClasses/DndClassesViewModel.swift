@@ -14,6 +14,10 @@ final class DndClassesViewModel: ObservableObject {
         self.coordinator = coordinator
         self.replica = replica
 
+//        Task { [weak self] in
+//            self?.replica = await DndClassesRepository.shared.getReplica()
+//        }
+
         let (observerActive, observerContinuation) = AsyncStream<Bool>.makeStream()
         
         self.observerStateStream = observerActive
@@ -21,23 +25,26 @@ final class DndClassesViewModel: ObservableObject {
     }
 
     @MainActor
-    func refresh() {
-        Task { [weak self] in
-            await self?.replica.refresh()
-        }
+    func refresh() async {
+        await replica.refresh()
+    }
+
+    @MainActor
+    func revalidate() async {
+        await replica.revalidate()
     }
 
     @MainActor
     func startObserving() {
-        Log.replica.debug(logEntry: .text("startObserving"))
-        
+        Log.replica.debug(logEntry: .text("\(self): startObserving"))
+
         observerTask = Task { [weak self] in
             guard let self else {
                 return
             }
 
             let observer = await replica.observe(observerActive: observerStateStream)
-            
+
             self.observerContinuation.yield(true)
 
             guard let stateStream = await observer.replicaStateStream else {
@@ -49,7 +56,9 @@ final class DndClassesViewModel: ObservableObject {
                     DndClassesView.ViewItem(id: $0.index, name: $0.name)
                 }
 
-                Log.replica.debug(logEntry: .text("Получено состояние реплики: \(String(describing: viewItems))"))
+                Log.replica.debug(logEntry:
+                        .text("\(self): Получено состояние реплики: \(String(describing: viewItems))")
+                )
                 self.classItems = viewItems
             }
         }
@@ -61,7 +70,12 @@ final class DndClassesViewModel: ObservableObject {
     }
 
     deinit {
+        print("deinit DndClassesViewModel")
+    }
+
+    func deinitObserver() {
         observerContinuation.finish()
+        observerTask?.cancel()
         observerTask = nil
     }
 }

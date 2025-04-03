@@ -47,13 +47,14 @@ public actor ReplicaObserver<T> where T: Sendable {
         replicaStateObservingTask = nil
     }
 
+    /// отслеживает активность наблюдателя
     private func launchObserverControlling() async {
         let observerId = UUID()
 
-        await observersController.onObserverAdded(observerId: observerId, active: true)
+        await observersController.onObserverAdded(observerId: observerId, isObserverActive: true)
 
         observerControllingTask = Task {
-            for await active in await observerActive {
+            for await active in observerActive {
                 if active {
                     await observersController.onObserverActive(observerId: observerId)
                 } else {
@@ -65,6 +66,7 @@ public actor ReplicaObserver<T> where T: Sendable {
         }
     }
 
+    /// подписывается на изменения состояния replicaStateFlow.
     private func launchStateObserving() async {
         replicaStateObservingTask = Task {
             for await replicaState in externalReplicaStateStream {
