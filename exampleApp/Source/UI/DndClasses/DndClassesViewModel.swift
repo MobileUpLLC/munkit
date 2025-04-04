@@ -46,19 +46,13 @@ final class DndClassesViewModel: ObservableObject {
             let observer = await replica.observe(observerActive: observerStateStream)
 
             self.observerContinuation.yield(true)
-
-            guard let stateStream = await observer.replicaStateStream else {
-                return
-            }
             
-            for await state in stateStream {
+            for await state in await observer.replicaStateStream {
                 let viewItems = state.data?.value.results.map {
                     DndClassesView.ViewItem(id: $0.index, name: $0.name)
                 }
 
-                Log.replica.debug(logEntry:
-                        .text("\(self): Получено состояние реплики: \(String(describing: viewItems))")
-                )
+                Log.replica.debug(logEntry:.text("🐉 DndClassesViewModel: \(viewItems)"))
                 self.classItems = viewItems
             }
         }

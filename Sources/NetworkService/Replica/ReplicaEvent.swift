@@ -9,23 +9,23 @@ public enum ReplicaEvent<T>: Sendable where T: Sendable  {
     /// Данные и ошибки очищены.
     case cleared
     /// Изменение количества наблюдателей.
-    case observerCountChanged(ObserversCountInfo)
+    case observerCountChanged(ObservingState)
 }
 
 public enum LoadingFinished<T>: Sendable where T: Sendable {
     /// Успешная загрузка с данными.
-    case success(data: T)
+    case success(ReplicaState<T>)
     /// Загрузка отменена.
-    case canceled
+    case canceled(ReplicaState<T>)
     /// Ошибка загрузки.
-    case error(Error)
+    case error(ReplicaState<T>)
 }
 
 public enum LoadingEvent<T>: Sendable where T: Sendable {
     /// Начало загрузки.
-    case loadingStarted
+    case loadingStarted(ReplicaState<T>)
     /// Данные загружены из хранилища.
-    case dataFromStorageLoaded(data: T)
+    case dataFromStorageLoaded(ReplicaState<T>)
     /// Результат завершения загрузки.
     case loadingFinished(LoadingFinished<T>)
 }

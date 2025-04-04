@@ -14,6 +14,6 @@ public actor LoggerPlugin {
 
         logMessage.append(contentsOf: "\n\n---------------------------REQUEST END-----------------------------\n\n")
         
-        Log.networkService.debug(logEntry: .text(logMessage))
+        Log.networkService.default(logEntry: .text(logMessage))
     }
 }

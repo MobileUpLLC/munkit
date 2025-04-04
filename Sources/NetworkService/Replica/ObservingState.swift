@@ -1,21 +1,17 @@
 import Foundation
 
 /// Содержит информацию о наблюдателях реплики.
-struct ObservingState {
+public struct ObservingState: Sendable {
     let observerIds: Set<UUID>
     let activeObserverIds: Set<UUID>
     /// Время последнего наблюдения за репликой.
     let observingTime: ObservingTime
-    /// Количество наблюдателей.
-    var observerCount: Int { observerIds.count }
-    /// Количество активных наблюдателей.
-    var activeObserverCount: Int { activeObserverIds.count }
 
     /// Текущий статус наблюдения, основанный на количестве наблюдателей.
     var status: ObservingStatus {
-        if activeObserverCount > 0 {
+        if activeObserverIds.count > 0 {
             return .active
-        } else if observerCount > 0 {
+        } else if observerIds.count > 0 {
             return .inactive
         } else {
             return .none

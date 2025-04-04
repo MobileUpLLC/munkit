@@ -2,15 +2,13 @@ import Foundation
 
 public actor ReplicaObserver<T> where T: Sendable {
     // MARK: - ReplicaStateStream
-    public var replicaStateStream: AsyncStream<ReplicaState<T>>?
+    public let replicaStateStream: AsyncStream<ReplicaState<T>>
     private var replicaStateStreamContinuation: AsyncStream<ReplicaState<T>>.Continuation?
-    private let externalReplicaStateStream: AsyncStream<ReplicaState<T>>
     private var replicaStateObservingTask: Task<Void, Never>?
 
     // MARK: - ReplicaEventStream
     var replicaEventStream: AsyncStream<ReplicaEvent<T>>?
     private var replicaEventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation?
-    private let externalReplicaEventStream: AsyncStream<ReplicaEvent<T>>
 
     private let observerActive: AsyncStream<Bool>
     private var observerControllingTask: Task<Void, Never>?
@@ -19,24 +17,19 @@ public actor ReplicaObserver<T> where T: Sendable {
     // MARK: - Initialization
     init(
         observerActive: AsyncStream<Bool>,
-        externalStateStream: AsyncStream<ReplicaState<T>>,
+        replicaStateStream: AsyncStream<ReplicaState<T>>,
         externalEventStream: AsyncStream<ReplicaEvent<T>>,
         observersController: ObserversController<T>
     ) async {
         self.observerActive = observerActive
         self.observersController = observersController
-        self.externalReplicaStateStream = externalStateStream
-        self.externalReplicaEventStream = externalEventStream
-        self.replicaStateStreamContinuation = nil
+        self.replicaStateStream = replicaStateStream
         self.replicaEventStreamContinuation = nil
-        self.replicaStateStream = nil
         self.replicaEventStream = nil
 
-        self.replicaStateStream = AsyncStream<ReplicaState<T>> { self.replicaStateStreamContinuation = $0 }
         self.replicaEventStream = AsyncStream<ReplicaEvent<T>> { self.replicaEventStreamContinuation = $0 }
 
         await launchObserverControlling()
-        await launchStateObserving()
     }
 
     func cancelObserving() async {
@@ -63,15 +56,6 @@ public actor ReplicaObserver<T> where T: Sendable {
             }
 
             await observersController.onObserverRemoved(observerId: observerId)
-        }
-    }
-
-    /// подписывается на изменения состояния replicaStateFlow.
-    private func launchStateObserving() async {
-        replicaStateObservingTask = Task {
-            for await replicaState in externalReplicaStateStream {
-                replicaStateStreamContinuation?.yield(replicaState)
-            }
         }
     }
 }

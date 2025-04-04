@@ -2,8 +2,6 @@ import Foundation
 
 actor ObserversController<T> where T: Sendable {
     private var replicaState: ReplicaState<T>
-
-    private let replicaStateStream: AsyncStream<ReplicaState<T>>
     private let replicaEventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation
 
     init(
@@ -12,9 +10,19 @@ actor ObserversController<T> where T: Sendable {
         replicaEventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation
     ) {
         self.replicaState = replicaState
-
-        self.replicaStateStream = replicaStateStream
         self.replicaEventStreamContinuation = replicaEventStreamContinuation
+
+        Task {
+            await subscribeForReplicaStreams(replicaStateStream: replicaStateStream)
+        }
+    }
+
+    private func subscribeForReplicaStreams(replicaStateStream: AsyncStream<ReplicaState<T>>) async {
+        Task {
+            for await newReplicaState in replicaStateStream {
+                replicaState = newReplicaState
+            }
+        }
     }
 
     /// Обрабатывает добавление нового наблюдателя.
@@ -32,8 +40,6 @@ actor ObserversController<T> where T: Sendable {
             activeObserverIds: newActiveObserverIds,
             observingTime: newObservingTime
         )
-
-        replicaState = replicaState.copy(observingState: newObservingState)
 
         yieldObservingStateIfNeeded(
             previousObservingState: previousObservingState,
@@ -56,8 +62,6 @@ actor ObserversController<T> where T: Sendable {
             observingTime: newObservingTime
         )
 
-        replicaState = replicaState.copy(observingState: newObservingState)
-
         yieldObservingStateIfNeeded(
             previousObservingState: previousObservingState,
             newObservingState: newObservingState
@@ -76,8 +80,6 @@ actor ObserversController<T> where T: Sendable {
             activeObserverIds: newActiveObserverIds,
             observingTime: .now
         )
-
-        replicaState = replicaState.copy(observingState: newObservingState)
 
         yieldObservingStateIfNeeded(
             previousObservingState: previousObservingState,
@@ -99,8 +101,6 @@ actor ObserversController<T> where T: Sendable {
             activeObserverIds: previousObservingState.activeObserverIds.subtracting([observerId]),
             observingTime: newObservingTime
         )
-
-        replicaState = replicaState.copy(observingState: newObservingState)
         
         yieldObservingStateIfNeeded(
             previousObservingState: previousObservingState,
@@ -114,18 +114,11 @@ actor ObserversController<T> where T: Sendable {
         newObservingState: ObservingState
     ) {
         if
-            previousObservingState.observerCount != newObservingState.observerCount
-            || previousObservingState.activeObserverCount != newObservingState.activeObserverCount
+            previousObservingState.observerIds.count != newObservingState.observerIds.count
+            || previousObservingState.activeObserverIds.count != newObservingState.activeObserverIds.count
         {
             replicaEventStreamContinuation.yield(
-                .observerCountChanged(
-                    ObserversCountInfo(
-                        count: newObservingState.observerCount,
-                        activeCount: newObservingState.activeObserverCount,
-                        previousCount: previousObservingState.observerCount,
-                        previousActiveCount: previousObservingState.activeObserverCount
-                    )
-                )
+                .observerCountChanged(newObservingState)
             )
         }
     }

@@ -6,20 +6,17 @@ actor DataLoadingController<T> where T: Sendable {
     private var replicaState: ReplicaState<T>
     /// Поток событий реплики.
     private let replicaEventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation
-    /// Поток состояний  реплики.
-    private let replicaStateStreamContinuation: AsyncStream<ReplicaState<T>>.Continuation
 
     /// Загрузчик данных для выполнения операций загрузки.
     private let dataLoader: DataLoader<T>
 
     init(
         replicaState: ReplicaState<T>,
-        replicaStateStreamContinuation: AsyncStream<ReplicaState<T>>.Continuation,
+        replicaStateStream: AsyncStream<ReplicaState<T>>,
         replicaEventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation,
         dataLoader: DataLoader<T>
     ) {
         self.replicaState = replicaState
-        self.replicaStateStreamContinuation = replicaStateStreamContinuation
         self.replicaEventStreamContinuation = replicaEventStreamContinuation
         self.dataLoader = dataLoader
 
@@ -27,6 +24,18 @@ actor DataLoadingController<T> where T: Sendable {
         Task {
             for await output in dataLoader.outputStream {
                 await onDataLoaderOutput(output: output)
+            }
+        }
+
+        Task {
+            await subscribeForReplicaStreams(replicaStateStream: replicaStateStream)
+        }
+    }
+
+    private func subscribeForReplicaStreams(replicaStateStream: AsyncStream<ReplicaState<T>>) async {
+        Task {
+            for await newReplicaState in replicaStateStream {
+                replicaState = newReplicaState
             }
         }
     }
@@ -49,13 +58,13 @@ actor DataLoadingController<T> where T: Sendable {
 
         await dataLoader.cancel()
 
-        replicaState = replicaState.copy(
+        let replicaState = replicaState.copy(
             loading: false,
             dataRequested: false,
             preloading: false
         )
 
-        replicaEventStreamContinuation.yield(.loading(.loadingFinished(.canceled)))
+        replicaEventStreamContinuation.yield(.loading(.loadingFinished(.canceled(replicaState))))
     }
 
     /// Обновляет данные после инвалидации в зависимости от указанного режима.
@@ -124,8 +133,6 @@ actor DataLoadingController<T> where T: Sendable {
     ///   - setDataRequested: Устанавливает флаг запроса данных.
     private func loadData(skipLoadingIfFresh: Bool, setDataRequested: Bool = false) async {
         if skipLoadingIfFresh && replicaState.hasFreshData {
-            replicaStateStreamContinuation.yield(replicaState)
-            replicaEventStreamContinuation.yield(with: .success(.freshness(.freshened)))
             return
         }
 
@@ -140,14 +147,14 @@ actor DataLoadingController<T> where T: Sendable {
 
         let preloading = replicaState.observingState.status == .none
 
-        replicaState = replicaState.copy(
+        let replicaState = replicaState.copy(
             loading: true,
             dataRequested: setDataRequested || replicaState.dataRequested,
             preloading: preloading || replicaState.preloading
         )
 
         if loadingStarted {
-            replicaEventStreamContinuation.yield(.loading(.loadingStarted))
+            replicaEventStreamContinuation.yield(.loading(.loadingStarted(replicaState)))
         }
     }
 
@@ -159,13 +166,12 @@ actor DataLoadingController<T> where T: Sendable {
             let data = ReplicaData(value: data, isFresh: false, changingDate: .now)
 
             if replicaState.data == nil {
-                replicaState = replicaState.copy(data: data, loadingFromStorageRequired: false)
-                replicaEventStreamContinuation.yield(.loading(.dataFromStorageLoaded(data: data.value)))
+                let replicaState = replicaState.copy(data: data, loadingFromStorageRequired: false)
+                replicaEventStreamContinuation.yield(.loading(.dataFromStorageLoaded(replicaState)))
             }
 
         case .storageRead(.empty):
-            replicaState = replicaState.copy(loadingFromStorageRequired: false)
-
+            fatalError()
         case .loadingFinished(.success(let data)):
             let data = ReplicaData(
                 value: data,
@@ -174,27 +180,24 @@ actor DataLoadingController<T> where T: Sendable {
                 optimisticUpdates: replicaState.data?.optimisticUpdates ?? []
             )
 
-            replicaState = replicaState.copy(
+            let replicaState = replicaState.copy(
                 loading: false,
                 data: data,
                 error: nil,
                 dataRequested: false,
                 preloading: false
             )
-
-            replicaStateStreamContinuation.yield(replicaState)
-            // ????
-            replicaEventStreamContinuation.yield(.loading(.loadingFinished(.success(data: data.value))))
+            replicaEventStreamContinuation.yield(.loading(.loadingFinished(.success(replicaState))))
             replicaEventStreamContinuation.yield(.freshness(.freshened))
 
         case .loadingFinished(.error(let error)):
-            replicaState = replicaState.copy(
+            let replicaState = replicaState.copy(
                 loading: false,
                 error: error,
                 dataRequested: false,
                 preloading: false
             )
-            replicaEventStreamContinuation.yield(.loading(.loadingFinished(.error(error))))
+            replicaEventStreamContinuation.yield(.loading(.loadingFinished(.error(replicaState))))
         }
     }
 }
