@@ -18,10 +18,11 @@ public actor ReplicaClient {
         name: String,
         storage: (any Storage<T>)?,
         fetcher: @escaping Fetcher<T>
-    ) -> any PhysicalReplica<T> {
-//        if let replica = replicas.first(where: { $0.name == name })  {
-//            return replica
-//        }
+    ) async -> any PhysicalReplica<T> {
+
+        if let replica = await findReplica(by: name) as? any PhysicalReplica<T> {
+            return replica
+        }
 
         let replica = PhysicalReplicaImpl(
             id: UUID(),
@@ -34,6 +35,15 @@ public actor ReplicaClient {
             replicas.append(replica)
         }
         return replica
+    }
+
+    private func findReplica(by name: String) async -> (any PhysicalReplica)? {
+        for replica in replicas {
+            if await replica.name == name {
+                return replica
+            }
+        }
+        return nil
     }
 }
 

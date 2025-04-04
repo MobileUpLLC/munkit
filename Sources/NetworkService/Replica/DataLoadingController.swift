@@ -124,6 +124,8 @@ actor DataLoadingController<T> where T: Sendable {
     ///   - setDataRequested: Устанавливает флаг запроса данных.
     private func loadData(skipLoadingIfFresh: Bool, setDataRequested: Bool = false) async {
         if skipLoadingIfFresh && replicaState.hasFreshData {
+            replicaStateStreamContinuation.yield(replicaState)
+            replicaEventStreamContinuation.yield(with: .success(.freshness(.freshened)))
             return
         }
 

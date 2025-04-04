@@ -74,7 +74,7 @@ final class DndClassesViewModel: ObservableObject {
     }
 
     func deinitObserver() {
-        observerContinuation.finish()
+        observerContinuation.yield(false)
         observerTask?.cancel()
         observerTask = nil
     }
