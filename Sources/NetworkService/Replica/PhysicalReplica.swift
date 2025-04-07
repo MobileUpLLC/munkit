@@ -2,12 +2,11 @@ import Foundation
 
 public protocol PhysicalReplica<T>: Replica where T: Sendable {
     var name: String { get }
+
     init(id: UUID, storage: (any Storage<T>)?, fetcher: @escaping Fetcher<T>, name: String)
 }
 
-typealias AsyncStreamBundle<T> = (stream: AsyncStream<T>, continuation: AsyncStream<T>.Continuation)
-
-public actor PhysicalReplicaImpl<T: Sendable>: PhysicalReplica {
+public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     private let identifier: UUID
     public let name: String
     private let storage: (any Storage<T>)?

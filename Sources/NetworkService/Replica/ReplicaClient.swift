@@ -24,7 +24,7 @@ public actor ReplicaClient {
             return replica
         }
 
-        let replica = PhysicalReplicaImpl(
+        let replica = PhysicalReplicaImplementation(
             id: UUID(),
             storage: storage,
             fetcher: fetcher,
