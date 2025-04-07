@@ -1,8 +1,6 @@
 import Foundation
 
-public protocol PhysicalReplica<T>: Replica {
-    associatedtype T: Sendable
-
+public protocol PhysicalReplica<T>: Replica where T: Sendable {
     var name: String { get }
 
     init(id: UUID, storage: (any Storage<T>)?, fetcher: @escaping Fetcher<T>, name: String) 
@@ -15,11 +13,27 @@ public actor PhysicalReplicaImpl<T: Sendable>: PhysicalReplica {
     private let fetcher: Fetcher<T>
     private var replicaState: ReplicaState<T>
 
-    private let replicaStateStream: (
+    private var observerStateStreams: [
+        (stream: AsyncStream<ReplicaState<T>>, continuation: AsyncStream<ReplicaState<T>>.Continuation)
+    ] = []
+
+    private var observerEventStreams: [
+        (stream: AsyncStream<ReplicaEvent<T>>, continuation: AsyncStream<ReplicaEvent<T>>.Continuation)
+    ] = []
+
+    private let observersControllerStateStream: (
         stream: AsyncStream<ReplicaState<T>>,
         continuation: AsyncStream<ReplicaState<T>>.Continuation
     )
-    private let replicaEventStream: (
+    private let observersControllerEventStream: (
+        stream: AsyncStream<ReplicaEvent<T>>,
+        continuation: AsyncStream<ReplicaEvent<T>>.Continuation
+    )
+    private let loaderControllerStateStream: (
+        stream: AsyncStream<ReplicaState<T>>,
+        continuation: AsyncStream<ReplicaState<T>>.Continuation
+    )
+    private let loaderControllerEventStream: (
         stream: AsyncStream<ReplicaEvent<T>>,
         continuation: AsyncStream<ReplicaEvent<T>>.Continuation
     )
@@ -33,8 +47,10 @@ public actor PhysicalReplicaImpl<T: Sendable>: PhysicalReplica {
         self.storage = storage
         self.fetcher = fetcher
         self.replicaState = ReplicaState<T>.createEmpty(hasStorage: storage != nil)
-        self.replicaStateStream = AsyncStream.makeStream(of: ReplicaState<T>.self)
-        self.replicaEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
+        self.observersControllerStateStream = AsyncStream.makeStream(of: ReplicaState<T>.self)
+        self.observersControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
+        self.loaderControllerStateStream = AsyncStream.makeStream(of: ReplicaState<T>.self)
+        self.loaderControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
         self.observersController = nil
         self.dataLoadingController = nil
 
@@ -44,32 +60,41 @@ public actor PhysicalReplicaImpl<T: Sendable>: PhysicalReplica {
     }
 
     private func setupControllers() async {
-        let controllersReplicaStateStream = AsyncStream.makeStream(of: ReplicaState<T>.self)
-        let controllersReplicaEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
-
         self.observersController = ObserversController(
             replicaState: replicaState,
-            replicaStateStream: replicaStateStream.stream,
-            replicaEventStreamContinuation: controllersReplicaEventStream.continuation
+            replicaStateStream: observersControllerStateStream.stream,
+            replicaEventStreamContinuation: observersControllerEventStream.continuation
         )
 
         let dataLoader = DataLoader(storage: storage, fetcher: fetcher)
         self.dataLoadingController = DataLoadingController(
             replicaState: replicaState,
-            replicaStateStream: replicaStateStream.stream,
-            replicaEventStreamContinuation: controllersReplicaEventStream.continuation,
+            replicaStateStream: loaderControllerStateStream.stream,
+            replicaEventStreamContinuation: loaderControllerEventStream.continuation,
             dataLoader: dataLoader
         )
 
-        for await newReplicaEvent in controllersReplicaEventStream.stream {
-            handleReplicaEvent(newReplicaEvent)
+        Task {
+            for await newReplicaEvent in loaderControllerEventStream.stream {
+                handleReplicaEvent(newReplicaEvent)
+            }
+        }
+
+        Task {
+            for await newReplicaEvent in observersControllerEventStream.stream {
+                handleReplicaEvent(newReplicaEvent)
+            }
         }
     }
 
     private func updateReplicaState(_ newReplicaState: ReplicaState<T>) {
         Log.replica.debug(logEntry: .text("💾 Replica \(self) обновила состояние: \(newReplicaState)"))
         replicaState = newReplicaState
-        replicaStateStream.continuation.yield(replicaState)
+
+        let stateStreams = observerStateStreams
+            + [loaderControllerStateStream, observersControllerStateStream]
+
+        stateStreams.forEach { $0.continuation.yield(replicaState) }
     }
 
     private func handleReplicaEvent(_ newReplicaEvent: ReplicaEvent<T>) {
@@ -102,10 +127,16 @@ public actor PhysicalReplicaImpl<T: Sendable>: PhysicalReplica {
     }
 
     public func observe(observerActive: AsyncStream<Bool>) async -> ReplicaObserver<T> {
-        await ReplicaObserver<T>(
+        let stateStream = AsyncStream<ReplicaState<T>>.makeStream()
+        observerStateStreams.append(stateStream)
+
+        let eventStreams = AsyncStream<ReplicaEvent<T>>.makeStream()
+        observerEventStreams.append(eventStreams)
+
+        return await ReplicaObserver<T>(
             observerActive: observerActive,
-            replicaStateStream: replicaStateStream.stream,
-            externalEventStream: replicaEventStream.stream,
+            replicaStateStream: stateStream.stream,
+            externalEventStream: eventStreams.stream,
             observersController: observersController!
         )
     }

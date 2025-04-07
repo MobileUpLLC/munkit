@@ -16,6 +16,7 @@
 		2FB2ABB52B2562774206E9AF /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D1F26C15F42EF3B80D84F22D /* Colors.xcassets */; };
 		3CB24A82746398327B318AFC /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = D412D9A710230C4123B6843F /* Log.swift */; };
 		45FEF3C6E5D589019A735903 /* ShimmerModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E627D843D560292037C8BDF6 /* ShimmerModifier.swift */; };
+		4AD7AEB22DA3F88B00AAC747 /* NetworkService in Frameworks */ = {isa = PBXBuildFile; productRef = 4AD7AEB12DA3F88B00AAC747 /* NetworkService */; };
 		5E1F061DF48C252722F38098 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0D8DF10B4B13AC391B38614 /* AppDelegate.swift */; };
 		6CCF9FFF9870E35143303FA5 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53F6E1116D86C0A5B764385C /* ErrorView.swift */; };
 		6D1FD8CC2D9EBACB00EBD46D /* RootController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1FD8C72D9EBACB00EBD46D /* RootController.swift */; };
@@ -107,6 +108,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6D2A84B52D9AE40200E345CD /* NetworkService in Frameworks */,
+				4AD7AEB22DA3F88B00AAC747 /* NetworkService in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -353,6 +355,7 @@
 			name = exampleApp;
 			packageProductDependencies = (
 				6D2A84B42D9AE40200E345CD /* NetworkService */,
+				4AD7AEB12DA3F88B00AAC747 /* NetworkService */,
 			);
 			productName = exampleApp;
 			productReference = F79D02FECCD574BEB3CCBF74 /* exampleApp.app */;
@@ -377,7 +380,7 @@
 			);
 			mainGroup = 4E74B99E795A73CCB09D2D99;
 			packageReferences = (
-				6D2A84B32D9AE40200E345CD /* XCLocalSwiftPackageReference "../../MobileUp-2" */,
+				4AD7AEB02DA3F88B00AAC747 /* XCLocalSwiftPackageReference "../../MobileUp-2" */,
 			);
 			projectDirPath = "";
 			projectRoot = "";
@@ -723,13 +726,17 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		6D2A84B32D9AE40200E345CD /* XCLocalSwiftPackageReference "../../MobileUp-2" */ = {
+		4AD7AEB02DA3F88B00AAC747 /* XCLocalSwiftPackageReference "../../MobileUp-2" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "../../MobileUp-2";
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		4AD7AEB12DA3F88B00AAC747 /* NetworkService */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = NetworkService;
+		};
 		6D2A84B42D9AE40200E345CD /* NetworkService */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = NetworkService;
