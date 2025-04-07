@@ -1,7 +1,7 @@
 import Foundation
 
 /// Контроллер загрузки данных для управления состоянием и событиями реплики.
-actor DataLoadingController<T> where T: Sendable {
+actor ReplicaLoadingController<T> where T: Sendable {
     /// Состояние реплики
     private var replicaState: ReplicaState<T>
     /// Поток событий реплики.

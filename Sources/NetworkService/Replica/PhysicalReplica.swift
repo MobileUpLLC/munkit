@@ -2,158 +2,141 @@ import Foundation
 
 public protocol PhysicalReplica<T>: Replica where T: Sendable {
     var name: String { get }
-
-    init(id: UUID, storage: (any Storage<T>)?, fetcher: @escaping Fetcher<T>, name: String) 
+    init(id: UUID, storage: (any Storage<T>)?, fetcher: @escaping Fetcher<T>, name: String)
 }
 
+typealias AsyncStreamBundle<T> = (stream: AsyncStream<T>, continuation: AsyncStream<T>.Continuation)
+
 public actor PhysicalReplicaImpl<T: Sendable>: PhysicalReplica {
-    private let id: UUID
+    private let identifier: UUID
     public let name: String
     private let storage: (any Storage<T>)?
     private let fetcher: Fetcher<T>
-    private var replicaState: ReplicaState<T>
+    private var currentReplicaState: ReplicaState<T>
 
-    private var observerStateStreams: [
-        (stream: AsyncStream<ReplicaState<T>>, continuation: AsyncStream<ReplicaState<T>>.Continuation)
-    ] = []
+    private var observerStateStreamPairs: [AsyncStreamBundle<ReplicaState<T>>] = []
+    private var observerEventStreamPairs: [AsyncStreamBundle<ReplicaEvent<T>>] = []
 
-    private var observerEventStreams: [
-        (stream: AsyncStream<ReplicaEvent<T>>, continuation: AsyncStream<ReplicaEvent<T>>.Continuation)
-    ] = []
+    private let observersControllerStateStreamPair: AsyncStreamBundle<ReplicaState<T>>
+    private let observersControllerEventStreamPair: AsyncStreamBundle<ReplicaEvent<T>>
+    private let loadingControllerStateStreamPair: AsyncStreamBundle<ReplicaState<T>>
+    private let loadingControllerEventStreamPair: AsyncStreamBundle<ReplicaEvent<T>>
 
-    private let observersControllerStateStream: (
-        stream: AsyncStream<ReplicaState<T>>,
-        continuation: AsyncStream<ReplicaState<T>>.Continuation
-    )
-    private let observersControllerEventStream: (
-        stream: AsyncStream<ReplicaEvent<T>>,
-        continuation: AsyncStream<ReplicaEvent<T>>.Continuation
-    )
-    private let loaderControllerStateStream: (
-        stream: AsyncStream<ReplicaState<T>>,
-        continuation: AsyncStream<ReplicaState<T>>.Continuation
-    )
-    private let loaderControllerEventStream: (
-        stream: AsyncStream<ReplicaEvent<T>>,
-        continuation: AsyncStream<ReplicaEvent<T>>.Continuation
-    )
-
-    private var observersController: ObserversController<T>?
-    private var dataLoadingController: DataLoadingController<T>?
+    private var observersController: ReplicaObserversController<T>?
+    private var loadingController: ReplicaLoadingController<T>?
 
     public init(id: UUID = UUID(), storage: (any Storage<T>)?, fetcher: @escaping Fetcher<T>, name: String) {
-        self.id = id
+        self.identifier = id
         self.name = name
         self.storage = storage
         self.fetcher = fetcher
-        self.replicaState = ReplicaState<T>.createEmpty(hasStorage: storage != nil)
-        self.observersControllerStateStream = AsyncStream.makeStream(of: ReplicaState<T>.self)
-        self.observersControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
-        self.loaderControllerStateStream = AsyncStream.makeStream(of: ReplicaState<T>.self)
-        self.loaderControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
+        self.currentReplicaState = ReplicaState<T>.createEmpty(hasStorage: storage != nil)
+        self.observersControllerStateStreamPair = AsyncStream.makeStream(of: ReplicaState<T>.self)
+        self.observersControllerEventStreamPair = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
+        self.loadingControllerStateStreamPair = AsyncStream.makeStream(of: ReplicaState<T>.self)
+        self.loadingControllerEventStreamPair = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
         self.observersController = nil
-        self.dataLoadingController = nil
+        self.loadingController = nil
 
         Task {
-            await setupControllers()
+            await initializeControllers()
         }
     }
 
-    private func setupControllers() async {
-        self.observersController = ObserversController(
-            replicaState: replicaState,
-            replicaStateStream: observersControllerStateStream.stream,
-            replicaEventStreamContinuation: observersControllerEventStream.continuation
+    private func initializeControllers() async {
+        self.observersController = ReplicaObserversController(
+            replicaState: currentReplicaState,
+            replicaStateStream: observersControllerStateStreamPair.stream,
+            replicaEventStreamContinuation: observersControllerEventStreamPair.continuation
         )
 
         let dataLoader = DataLoader(storage: storage, fetcher: fetcher)
-        self.dataLoadingController = DataLoadingController(
-            replicaState: replicaState,
-            replicaStateStream: loaderControllerStateStream.stream,
-            replicaEventStreamContinuation: loaderControllerEventStream.continuation,
+        self.loadingController = ReplicaLoadingController(
+            replicaState: currentReplicaState,
+            replicaStateStream: loadingControllerStateStreamPair.stream,
+            replicaEventStreamContinuation: loadingControllerEventStreamPair.continuation,
             dataLoader: dataLoader
         )
 
         Task {
-            for await newReplicaEvent in loaderControllerEventStream.stream {
-                handleReplicaEvent(newReplicaEvent)
+            for await event in loadingControllerEventStreamPair.stream {
+                processReplicaEvent(event)
             }
         }
 
         Task {
-            for await newReplicaEvent in observersControllerEventStream.stream {
-                handleReplicaEvent(newReplicaEvent)
+            for await event in observersControllerEventStreamPair.stream {
+                processReplicaEvent(event)
             }
         }
     }
 
-    private func updateReplicaState(_ newReplicaState: ReplicaState<T>) {
-        Log.replica.debug(logEntry: .text("💾 Replica \(self) обновила состояние: \(newReplicaState)"))
-        replicaState = newReplicaState
+    private func updateState(_ newState: ReplicaState<T>) {
+        Log.replica.debug(logEntry: .text("💾 Replica \(self) обновила состояние: \(newState)"))
+        currentReplicaState = newState
 
-        let stateStreams = observerStateStreams
-            + [loaderControllerStateStream, observersControllerStateStream]
+        let allStateStreamPairs = observerStateStreamPairs
+            + [loadingControllerStateStreamPair, observersControllerStateStreamPair]
 
-        stateStreams.forEach { $0.continuation.yield(replicaState) }
+        allStateStreamPairs.forEach { $0.continuation.yield(currentReplicaState) }
     }
 
-    private func handleReplicaEvent(_ newReplicaEvent: ReplicaEvent<T>) {
-        switch newReplicaEvent {
+    private func processReplicaEvent(_ event: ReplicaEvent<T>) {
+        switch event {
         case .loading(let loadingEvent):
             switch loadingEvent {
             case .loadingStarted(let state):
-                updateReplicaState(state)
+                updateState(state)
             case .dataFromStorageLoaded(let state):
-                updateReplicaState(state)
+                updateState(state)
             case .loadingFinished(let state):
                 switch state {
                 case .success(let state), .canceled(let state), .error(let state):
-                    updateReplicaState(state)
+                    updateState(state)
                 }
             }
-        case .freshness(let freshnessEvent):
+        case .freshness:
             break
         case .cleared:
             fatalError()
         case .observerCountChanged(let observingState):
-            let previousReplicaState = replicaState
+            let previousState = currentReplicaState
+            updateState(currentReplicaState.copy(observingState: observingState))
 
-            updateReplicaState(replicaState.copy(observingState: observingState))
-
-            if observingState.activeObserverIds.count > previousReplicaState.observingState.activeObserverIds.count {
+            if observingState.activeObserverIds.count > previousState.observingState.activeObserverIds.count {
                 Task { await revalidate() }
             }
         }
     }
 
     public func observe(observerActive: AsyncStream<Bool>) async -> ReplicaObserver<T> {
-        let stateStream = AsyncStream<ReplicaState<T>>.makeStream()
-        observerStateStreams.append(stateStream)
+        let stateStreamPair = AsyncStream<ReplicaState<T>>.makeStream()
+        observerStateStreamPairs.append(stateStreamPair)
 
-        let eventStreams = AsyncStream<ReplicaEvent<T>>.makeStream()
-        observerEventStreams.append(eventStreams)
+        let eventStreamPair = AsyncStream<ReplicaEvent<T>>.makeStream()
+        observerEventStreamPairs.append(eventStreamPair)
 
         return await ReplicaObserver<T>(
             observerActive: observerActive,
-            replicaStateStream: stateStream.stream,
-            externalEventStream: eventStreams.stream,
+            replicaStateStream: stateStreamPair.stream,
+            externalEventStream: eventStreamPair.stream,
             observersController: observersController!
         )
     }
 
     public func refresh() async {
-        await dataLoadingController!.refresh()
+        await loadingController!.refresh()
     }
 
     public func revalidate() async {
-        await dataLoadingController!.revalidate()
+        await loadingController!.revalidate()
     }
 
     public func getData(forceRefresh: Bool) async throws -> T {
-        try await dataLoadingController!.getData(forceRefresh: forceRefresh)
+        try await loadingController!.getData(forceRefresh: forceRefresh)
     }
 
     func cancel() async {
-        await dataLoadingController!.cancel()
+        await loadingController!.cancel()
     }
 }

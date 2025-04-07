@@ -1,6 +1,6 @@
 import Foundation
 
-actor ObserversController<T> where T: Sendable {
+actor ReplicaObserversController<T> where T: Sendable {
     private var replicaState: ReplicaState<T>
     private let replicaEventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation
 

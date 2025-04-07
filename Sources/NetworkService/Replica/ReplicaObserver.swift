@@ -12,14 +12,14 @@ public actor ReplicaObserver<T> where T: Sendable {
 
     private let observerActive: AsyncStream<Bool>
     private var observerControllingTask: Task<Void, Never>?
-    private let observersController: ObserversController<T>
+    private let observersController: ReplicaObserversController<T>
 
     // MARK: - Initialization
     init(
         observerActive: AsyncStream<Bool>,
         replicaStateStream: AsyncStream<ReplicaState<T>>,
         externalEventStream: AsyncStream<ReplicaEvent<T>>,
-        observersController: ObserversController<T>
+        observersController: ReplicaObserversController<T>
     ) async {
         self.observerActive = observerActive
         self.observersController = observersController

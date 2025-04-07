@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  ReplicaClient.swift
 //  NetworkService
 //
 //  Created by Natalia Luzyanina on 03.04.2025.
