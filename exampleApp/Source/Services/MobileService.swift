@@ -6,7 +6,7 @@ final class MobileService: MUNKNetworkService<MobileApi> {
     nonisolated(unsafe) static let shared = MobileService()
 
     private init() {
-        let tokenProvider = AuthRepository()
+        let tokenProvider = TokenProvider()
 
         let configuration = URLSessionConfiguration.default
         configuration.headers = .default

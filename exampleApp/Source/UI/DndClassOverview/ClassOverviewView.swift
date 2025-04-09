@@ -51,7 +51,7 @@ struct ClassOverviewView: View {
 #Preview {
     ClassOverviewView(
         viewModel: ClassOverviewViewModel(
-            id: "", coordinator: ClassOverviewCoordinator(), repository: DndRepository()
+            id: "", coordinator: ClassOverviewCoordinator(), repository: DndClassOverviewRepository()
         )
     )
 }

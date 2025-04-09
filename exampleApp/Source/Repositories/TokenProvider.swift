@@ -1,6 +1,6 @@
 import MUNKit
 
-final class AuthRepository: MUNKTokenProvider {
+final class TokenProvider: MUNKTokenProvider {
     let accessToken: String? = nil
 
     func refreshToken() async throws -> String {

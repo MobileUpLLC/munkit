@@ -22,6 +22,7 @@
 		6D2A84AF2D9AC0DC00E345CD /* MobileService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2A84AE2D9AC0DC00E345CD /* MobileService.swift */; };
 		6D2A84B12D9AC1A700E345CD /* MobileApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2A84B02D9AC1A700E345CD /* MobileApi.swift */; };
 		6DBD47FB2DA68B0200021895 /* MUNKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6DBD47FA2DA68B0200021895 /* MUNKit */; };
+		6DBD480C2DA6A6D900021895 /* DndClassOverviewRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DBD480B2DA6A6D900021895 /* DndClassOverviewRepository.swift */; };
 		6DFE1ED52D9A8880006B827D /* DndClassesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1ED32D9A8880006B827D /* DndClassesViewModel.swift */; };
 		6DFE1ED62D9A8880006B827D /* DndClassesCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1ED02D9A8880006B827D /* DndClassesCoordinator.swift */; };
 		6DFE1ED72D9A8880006B827D /* DndClassesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1ED22D9A8880006B827D /* DndClassesView.swift */; };
@@ -32,14 +33,14 @@
 		6DFE1EE22D9A8884006B827D /* ClassOverviewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1EDE2D9A8884006B827D /* ClassOverviewViewModel.swift */; };
 		6DFE1EE32D9A8884006B827D /* ClassOverviewCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1EDB2D9A8884006B827D /* ClassOverviewCoordinator.swift */; };
 		6DFE1EE42D9A8884006B827D /* ClassOverviewFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1EDC2D9A8884006B827D /* ClassOverviewFactory.swift */; };
-		6DFE1EE62D9A888D006B827D /* DndRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1EE52D9A888D006B827D /* DndRepository.swift */; };
+		6DFE1EE62D9A888D006B827D /* DndClassesRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1EE52D9A888D006B827D /* DndClassesRepository.swift */; };
 		7C7FBD4D758CEB3530D93C94 /* Environments.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E1D0CA37E1D6CEC23647CE /* Environments.swift */; };
 		B10919797CF8338A12D5C39F /* URL+LosslessStringConvertible.swift in Sources */ = {isa = PBXBuildFile; fileRef = F47CAB235E5B708F53FC6D00 /* URL+LosslessStringConvertible.swift */; };
 		B753864FFBB80554CADDACBA /* Icons.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 64B46E389BC39E902412A758 /* Icons.xcassets */; };
 		D6083B3CF54E8E3C545A8CEA /* NavigationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35880DC94C5B00DBE04DD83A /* NavigationRouter.swift */; };
 		D6779AFBB07985CB3634FDBF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1976FBA4DD4FF1BE4F9BD9B /* SceneDelegate.swift */; };
 		DA8212CE80FADF2A6A8F572A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 44D34DD6F02C77883B51277D /* Assets.xcassets */; };
-		DAE725AC8EE09631B6726346 /* AuthRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB1506AAD167A8BC7F32C6B /* AuthRepository.swift */; };
+		DAE725AC8EE09631B6726346 /* TokenProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB1506AAD167A8BC7F32C6B /* TokenProvider.swift */; };
 		EA03A04D26F09CB5C94C4A20 /* HostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0968376FE80B12BEC9B5954 /* HostingController.swift */; };
 /* End PBXBuildFile section */
 
@@ -60,6 +61,7 @@
 		6D2A84AC2D9AC09100E345CD /* ClassesListModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassesListModel.swift; sourceTree = "<group>"; };
 		6D2A84AE2D9AC0DC00E345CD /* MobileService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileService.swift; sourceTree = "<group>"; };
 		6D2A84B02D9AC1A700E345CD /* MobileApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileApi.swift; sourceTree = "<group>"; };
+		6DBD480B2DA6A6D900021895 /* DndClassOverviewRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DndClassOverviewRepository.swift; sourceTree = "<group>"; };
 		6DFE1ECF2D9A8880006B827D /* DndClassesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DndClassesController.swift; sourceTree = "<group>"; };
 		6DFE1ED02D9A8880006B827D /* DndClassesCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DndClassesCoordinator.swift; sourceTree = "<group>"; };
 		6DFE1ED12D9A8880006B827D /* DndClassesFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DndClassesFactory.swift; sourceTree = "<group>"; };
@@ -70,19 +72,16 @@
 		6DFE1EDC2D9A8884006B827D /* ClassOverviewFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassOverviewFactory.swift; sourceTree = "<group>"; };
 		6DFE1EDD2D9A8884006B827D /* ClassOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassOverviewView.swift; sourceTree = "<group>"; };
 		6DFE1EDE2D9A8884006B827D /* ClassOverviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassOverviewViewModel.swift; sourceTree = "<group>"; };
-		6DFE1EE52D9A888D006B827D /* DndRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DndRepository.swift; sourceTree = "<group>"; };
-		6E701FDDCB641F520C42F839 /* prod.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = prod.xcconfig; sourceTree = "<group>"; };
+		6DFE1EE52D9A888D006B827D /* DndClassesRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DndClassesRepository.swift; sourceTree = "<group>"; };
 		A0D8DF10B4B13AC391B38614 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A1976FBA4DD4FF1BE4F9BD9B /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		B49562804BCE267110FEBABC /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = debug.xcconfig; sourceTree = "<group>"; };
 		C0968376FE80B12BEC9B5954 /* HostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostingController.swift; sourceTree = "<group>"; };
 		C1E1D0CA37E1D6CEC23647CE /* Environments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environments.swift; sourceTree = "<group>"; };
 		D1F26C15F42EF3B80D84F22D /* Colors.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Colors.xcassets; sourceTree = "<group>"; };
-		EBB1506AAD167A8BC7F32C6B /* AuthRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthRepository.swift; sourceTree = "<group>"; };
+		EBB1506AAD167A8BC7F32C6B /* TokenProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenProvider.swift; sourceTree = "<group>"; };
 		F47CAB235E5B708F53FC6D00 /* URL+LosslessStringConvertible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+LosslessStringConvertible.swift"; sourceTree = "<group>"; };
-		F51F49A60073554AB4BE2D58 /* release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = release.xcconfig; sourceTree = "<group>"; };
 		F79D02FECCD574BEB3CCBF74 /* exampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = exampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		F82A2DD8C2479B09F7516BCD /* dev.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = dev.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,12 +100,9 @@
 			isa = PBXGroup;
 			children = (
 				B49562804BCE267110FEBABC /* debug.xcconfig */,
-				F82A2DD8C2479B09F7516BCD /* dev.xcconfig */,
 				C1E1D0CA37E1D6CEC23647CE /* Environments.swift */,
 				42D7C367C98D61A4B02AF096 /* EnvironmentsConfiguration.swift */,
 				1E51AC7483F79F39B1CA99B8 /* Info.plist */,
-				6E701FDDCB641F520C42F839 /* prod.xcconfig */,
-				F51F49A60073554AB4BE2D58 /* release.xcconfig */,
 			);
 			path = Configs;
 			sourceTree = "<group>";
@@ -261,8 +257,9 @@
 		AEE0603168986C91C50EBAF3 /* Repositories */ = {
 			isa = PBXGroup;
 			children = (
-				EBB1506AAD167A8BC7F32C6B /* AuthRepository.swift */,
-				6DFE1EE52D9A888D006B827D /* DndRepository.swift */,
+				EBB1506AAD167A8BC7F32C6B /* TokenProvider.swift */,
+				6DFE1EE52D9A888D006B827D /* DndClassesRepository.swift */,
+				6DBD480B2DA6A6D900021895 /* DndClassOverviewRepository.swift */,
 			);
 			path = Repositories;
 			sourceTree = "<group>";
@@ -398,7 +395,7 @@
 			files = (
 				6D2A84B12D9AC1A700E345CD /* MobileApi.swift in Sources */,
 				5E1F061DF48C252722F38098 /* AppDelegate.swift in Sources */,
-				DAE725AC8EE09631B6726346 /* AuthRepository.swift in Sources */,
+				DAE725AC8EE09631B6726346 /* TokenProvider.swift in Sources */,
 				7C7FBD4D758CEB3530D93C94 /* Environments.swift in Sources */,
 				6D2A84AD2D9AC09100E345CD /* ClassesListModel.swift in Sources */,
 				1E0E6B0AF1DA20620F5A6D27 /* EnvironmentsConfiguration.swift in Sources */,
@@ -410,7 +407,7 @@
 				6DFE1ED72D9A8880006B827D /* DndClassesView.swift in Sources */,
 				6DFE1ED82D9A8880006B827D /* DndClassesFactory.swift in Sources */,
 				6DFE1ED92D9A8880006B827D /* DndClassesController.swift in Sources */,
-				6DFE1EE62D9A888D006B827D /* DndRepository.swift in Sources */,
+				6DFE1EE62D9A888D006B827D /* DndClassesRepository.swift in Sources */,
 				6D2A84AF2D9AC0DC00E345CD /* MobileService.swift in Sources */,
 				6D1FD8CC2D9EBACB00EBD46D /* RootController.swift in Sources */,
 				6D1FD8CD2D9EBACB00EBD46D /* RootViewModel.swift in Sources */,
@@ -421,6 +418,7 @@
 				6DFE1EE02D9A8884006B827D /* ClassOverviewView.swift in Sources */,
 				6DFE1EE12D9A8884006B827D /* ClassOverviewController.swift in Sources */,
 				6DFE1EE22D9A8884006B827D /* ClassOverviewViewModel.swift in Sources */,
+				6DBD480C2DA6A6D900021895 /* DndClassOverviewRepository.swift in Sources */,
 				6DFE1EE32D9A8884006B827D /* ClassOverviewCoordinator.swift in Sources */,
 				6DFE1EE42D9A8884006B827D /* ClassOverviewFactory.swift in Sources */,
 				6D2A84AB2D9AC06E00E345CD /* ClassOverviewModel.swift in Sources */,
@@ -433,7 +431,6 @@
 /* Begin XCBuildConfiguration section */
 		00235D99F16C414AC42BCCFA /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F51F49A60073554AB4BE2D58 /* release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
@@ -542,7 +539,6 @@
 		};
 		633E722F7F33AC2C3DAB666E /* Dev */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F82A2DD8C2479B09F7516BCD /* dev.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
@@ -634,7 +630,6 @@
 		};
 		E488CB21A86C9367839C65FB /* Prod */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6E701FDDCB641F520C42F839 /* prod.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";

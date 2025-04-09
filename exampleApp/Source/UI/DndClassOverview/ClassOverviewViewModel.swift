@@ -4,10 +4,10 @@ final class ClassOverviewViewModel: ObservableObject {
     @Published private(set) var viewItem: ClassOverviewView.ViewItem?
 
     private let coordinator: ClassOverviewCoordinator
-    private let repository: DndRepository
+    private let repository: DndClassOverviewRepository
     private let dndClassId: String
 
-    init(id: String, coordinator: ClassOverviewCoordinator, repository: DndRepository) {
+    init(id: String, coordinator: ClassOverviewCoordinator, repository: DndClassOverviewRepository) {
         self.dndClassId = id
         self.coordinator = coordinator
         self.repository = repository
