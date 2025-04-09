@@ -14,7 +14,7 @@ open class MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     private var tokenRefresher: NetworkServiceTokenRefresher { NetworkServiceTokenRefresher(tokenRefreshProvider: tokenRefreshProvider) }
     private var onceExecutor: NetworkServiceRefreshTokenActionOnceExecutor?
 
-    init(apiProvider: MoyaProvider<Target>, tokenRefreshProvider: MUNKTokenProvider) {
+    public init(apiProvider: MoyaProvider<Target>, tokenRefreshProvider: MUNKTokenProvider) {
         self.apiProvider = apiProvider
         self.tokenRefreshProvider = tokenRefreshProvider
     }

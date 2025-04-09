@@ -18,7 +18,7 @@ extension MUNKMockableMobileApiTarget {
 
     private func getSampleData() -> Data {
         guard let mockFileName = getMockFileName() else {
-            print("💽🆓 Для запроса \(path) моковые данные не используются.")
+            print("💽🆓 The request \(path) does not use mock data.")
             return Data()
         }
 
@@ -36,7 +36,7 @@ extension MockablePaginationMobileApiTarget {
 
     private func getSampleData() -> Data {
         guard var mockFileName = getMockFileName() else {
-            print("💽🆓 Для запроса \(path) моковые данные не используются.")
+            print("💽🆓 The request \(path) does not use mock data.")
             return Data()
         }
 
@@ -53,20 +53,20 @@ extension MockablePaginationMobileApiTarget {
 
 extension MUNKMockableMobileApiTarget {
     func getSampleDataFromFileWithName(_ mockFileName: String) -> Data {
-        let logStart = "Для запроса \(path) моковые данные"
+        let logStart = "For the request \(path), mock data"
         let mockExtension = "json"
 
         guard let mockFileUrl = Bundle.main.url(forResource: mockFileName, withExtension: mockExtension) else {
-            print("💽🚨 \(logStart) \(mockFileName).\(mockExtension) не найдены.")
+            print("💽🚨 \(logStart) \(mockFileName).\(mockExtension) not found.")
             return Data()
         }
 
         do {
             let data = try Data(contentsOf: mockFileUrl)
-            print("💽✅ \(logStart) успешно прочитаны по URL: \(mockFileUrl).")
+            print("💽✅ \(logStart) successfully read from URL: \(mockFileUrl).")
             return data
         } catch {
-            print("💽🚨\n\(logStart) из файла \(mockFileName).\(mockExtension) невозможно прочитать.\nОшибка: \(error)")
+            print("💽🚨\n\(logStart) from file \(mockFileName).\(mockExtension) could not be read.\nError: \(error)")
             return Data()
         }
     }
