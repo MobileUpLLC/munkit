@@ -1,5 +1,5 @@
 //
-//  MobileApiTargetType.swift
+//  MUNKMobileApiTargetType.swift
 //  NetworkService
 //
 //  Created by Natalia Luzyanina on 01.04.2025.
