@@ -1,11 +1,11 @@
 //
 //  TokenRefresher.swift
-//  NetworkService
+//  MUNKit
 //
 //  Created by Natalia Luzyanina on 01.04.2025.
 //
 
-actor TokenRefresher {
+actor NetworkServiceTokenRefresher {
     private let tokenRefreshProvider: MUNKTokenProvider
     private var refreshTokenTask: Task<Void, Error>?
 

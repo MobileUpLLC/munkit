@@ -1,11 +1,11 @@
 //
 //  MUNKTokenProvider.swift
-//  NetworkService
+//  MUNKit
 //
 //  Created by Natalia Luzyanina on 01.04.2025.
 //
 
-protocol MUNKTokenProvider: Sendable {
+public protocol MUNKTokenProvider: Sendable {
     var accessToken: String? { get }
 
     @discardableResult

@@ -1,19 +1,19 @@
 //
-//  MockableMobileApiTarget.swift
-//  NetworkService
+//  MUNKMockableMobileApiTarget.swift
+//  MUNKit
 //
 //  Created by Natalia Luzyanina on 01.04.2025.
 //
 
 import Foundation
 
-protocol MockableMobileApiTarget: MUNKMobileApiTargetType {
+public protocol MUNKMockableMobileApiTarget: MUNKMobileApiTargetType {
     var isMockEnabled: Bool { get }
     
     func getMockFileName() -> String?
 }
 
-extension MockableMobileApiTarget {
+extension MUNKMockableMobileApiTarget {
     var sampleData: Data { getSampleData() }
 
     private func getSampleData() -> Data {
@@ -26,7 +26,7 @@ extension MockableMobileApiTarget {
     }
 }
 
-protocol MockablePaginationMobileApiTarget: MockableMobileApiTarget {
+public protocol MockablePaginationMobileApiTarget: MUNKMockableMobileApiTarget {
     var pageIndexParameterName: String { get }
     var pageSizeParameterName: String { get }
 }
@@ -51,7 +51,7 @@ extension MockablePaginationMobileApiTarget {
     }
 }
 
-extension MockableMobileApiTarget {
+extension MUNKMockableMobileApiTarget {
     func getSampleDataFromFileWithName(_ mockFileName: String) -> Data {
         let logStart = "Для запроса \(path) моковые данные"
         let mockExtension = "json"

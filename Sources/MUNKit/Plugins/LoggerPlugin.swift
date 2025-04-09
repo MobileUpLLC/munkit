@@ -1,6 +1,6 @@
 //
 //  LoggerPlugin.swift
-//  NetworkService
+//  MUNKit
 //
 //  Created by Natalia Luzyanina on 01.04.2025.
 //

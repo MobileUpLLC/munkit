@@ -1,11 +1,11 @@
 //
 //  OnceExecutor.swift
-//  NetworkService
+//  MUNKit
 //
 //  Created by Natalia Luzyanina on 01.04.2025.
 //
 
-actor OnceExecutor {
+actor NetworkServiceRefreshTokenActionOnceExecutor {
     private var hasRun = false
     private var onTokenRefreshFailed: (() -> Void)?
 
