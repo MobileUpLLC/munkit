@@ -22,8 +22,8 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     private let loadingControllerStateStreamBundle: AsyncStreamBundle<ReplicaState<T>>
     private let loadingControllerEventStreamBundle: AsyncStreamBundle<ReplicaEvent<T>>
 
-    private var replicaObserversController: ReplicaObserversController<T>?
-    private var replicaLoadingController: ReplicaLoadingController<T>?
+    private let replicaObserversController: ReplicaObserversController<T>
+    private let replicaLoadingController: ReplicaLoadingController<T>
 
     public init(id: UUID = UUID(), storage: (any Storage<T>)?, fetcher: @escaping Fetcher<T>, name: String) {
         self.identifier = id
@@ -35,21 +35,11 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         self.observersControllerEventStreamBundle = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
         self.loadingControllerStateStreamBundle = AsyncStream.makeStream(of: ReplicaState<T>.self)
         self.loadingControllerEventStreamBundle = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
-        self.replicaObserversController = nil
-        self.replicaLoadingController = nil
-
-        Task {
-            await initializeControllers()
-        }
-    }
-
-    private func initializeControllers() async {
         self.replicaObserversController = ReplicaObserversController(
             replicaState: currentReplicaState,
             replicaStateStream: observersControllerStateStreamBundle.stream,
             replicaEventStreamContinuation: observersControllerEventStreamBundle.continuation
         )
-
         let dataLoader = DataLoader(storage: storage, fetcher: fetcher)
         self.replicaLoadingController = ReplicaLoadingController(
             replicaState: currentReplicaState,
@@ -58,6 +48,12 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
             dataLoader: dataLoader
         )
 
+        Task {
+            await processReplicaEvent()
+        }
+    }
+
+    private func processReplicaEvent() async {
         Task {
             for await event in loadingControllerEventStreamBundle.stream {
                 processReplicaEvent(event)
@@ -120,23 +116,23 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
             observerActive: observerActive,
             replicaStateStream: stateStreamPair.stream,
             externalEventStream: eventStreamPair.stream,
-            observersController: replicaObserversController!
+            observersController: replicaObserversController
         )
     }
 
     public func refresh() async {
-        await replicaLoadingController!.refresh()
+        await replicaLoadingController.refresh()
     }
 
     public func revalidate() async {
-        await replicaLoadingController!.revalidate()
+        await replicaLoadingController.revalidate()
     }
 
     public func getData(forceRefresh: Bool) async throws -> T {
-        try await replicaLoadingController!.getData(forceRefresh: forceRefresh)
+        try await replicaLoadingController.getData(forceRefresh: forceRefresh)
     }
 
     func cancel() async {
-        await replicaLoadingController!.cancel()
+        await replicaLoadingController.cancel()
     }
 }
