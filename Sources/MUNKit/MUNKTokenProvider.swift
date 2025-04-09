@@ -5,7 +5,7 @@
 //  Created by Natalia Luzyanina on 01.04.2025.
 //
 
-public protocol MUNKTokenProvider: Sendable {
+protocol MUNKTokenProvider: Sendable {
     var accessToken: String? { get }
 
     @discardableResult

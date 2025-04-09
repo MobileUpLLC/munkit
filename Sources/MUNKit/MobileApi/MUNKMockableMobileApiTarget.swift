@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol MUNKMockableMobileApiTarget: MUNKMobileApiTargetType {
+protocol MUNKMockableMobileApiTarget: MUNKMobileApiTargetType {
     var isMockEnabled: Bool { get }
     
     func getMockFileName() -> String?
@@ -26,7 +26,7 @@ extension MUNKMockableMobileApiTarget {
     }
 }
 
-public protocol MUNKMockablePaginationMobileApiTarget: MUNKMockableMobileApiTarget {
+protocol MUNKMockablePaginationMobileApiTarget: MUNKMockableMobileApiTarget {
     var pageIndexParameterName: String { get }
     var pageSizeParameterName: String { get }
 }
@@ -51,7 +51,7 @@ extension MUNKMockablePaginationMobileApiTarget {
     }
 }
 
-fileprivate extension MUNKMockableMobileApiTarget {
+extension MUNKMockableMobileApiTarget {
     func getSampleDataFromFileWithName(_ mockFileName: String) -> Data {
         let logStart = "Для запроса \(path) моковые данные"
         let mockExtension = "json"

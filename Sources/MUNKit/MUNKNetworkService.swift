@@ -8,15 +8,14 @@
 import Moya
 
 open class MUNKNetworkService<Target: MUNKMobileApiTargetType> {
-    public var onTokenRefreshFailed: (() -> Void)? { didSet { onceExecutor = OnceExecutor() } }
-
-    public let apiProvider: MoyaProvider<Target>
-    public let tokenRefreshProvider: MUNKTokenProvider
+    var onTokenRefreshFailed: (() -> Void)? { didSet { onceExecutor = OnceExecutor() } }
+    let apiProvider: MoyaProvider<Target>
+    let tokenRefreshProvider: MUNKTokenProvider
 
     private var tokenRefresher: TokenRefresher { TokenRefresher(tokenRefreshProvider: tokenRefreshProvider) }
     private var onceExecutor: OnceExecutor?
 
-    public init(apiProvider: MoyaProvider<Target>, tokenRefreshProvider: MUNKTokenProvider) {
+    init(apiProvider: MoyaProvider<Target>, tokenRefreshProvider: MUNKTokenProvider) {
         self.apiProvider = apiProvider
         self.tokenRefreshProvider = tokenRefreshProvider
     }
