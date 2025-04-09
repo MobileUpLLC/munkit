@@ -22,7 +22,7 @@ actor ReplicaLoadingController<T> where T: Sendable {
 
         /// Запускаем асинхронную задачу для обработки потока вывода загрузчика данных
         Task {
-            for await output in dataLoader.outputStream {
+            for await output in dataLoader.outputStreamBundle.stream {
                 await onDataLoaderOutput(output: output)
             }
         }
@@ -104,7 +104,7 @@ actor ReplicaLoadingController<T> where T: Sendable {
             Task {
                 await loadData(skipLoadingIfFresh: false, setDataRequested: true)
 
-                for await output in dataLoader.outputStream {
+                for await output in dataLoader.outputStreamBundle.stream {
                     continuation.yield(output)
                     if case .loadingFinished = output {
                         continuation.finish()

@@ -18,12 +18,7 @@ actor DataLoader<T> where T: Sendable {
         }
     }
 
-    /// Поток событий, генерируемых загрузчиком данных.
-    let outputStream: AsyncStream<Output>
-
-    /// Используется для отправки новых событий в поток и завершения его работы.
-    private var outputContinuation: AsyncStream<Output>.Continuation?
-
+    let outputStreamBundle: AsyncStreamBundle<Output>
     /// Опциональное хранилище, используемое для чтения и записи данных типа `T`.
     private let storage: (any Storage<T>)?
 
@@ -36,10 +31,7 @@ actor DataLoader<T> where T: Sendable {
     init(storage: (any Storage<T>)?, fetcher: @escaping Fetcher<T>) {
         self.storage = storage
         self.fetcher = fetcher
-
-        let (stream, continuation) = AsyncStream.makeStream(of: Output.self)
-        self.outputStream = stream
-        self.outputContinuation = continuation
+        self.outputStreamBundle = AsyncStream.makeStream(of: Output.self)
     }
 
     /// Этот метод сначала пытается прочитать данные из хранилища (если  требуется), затем загружает данные из внешнего источника через `fetcher`. Результаты передаются через `outputFlow`.
@@ -54,14 +46,12 @@ actor DataLoader<T> where T: Sendable {
 
             do {
                 if loadingFromStorageRequired {
-                    if Task.isCancelled {
-                        return
-                    }
+                    try Task.checkCancellation()
 
                     if let data = try await storage?.read() {
-                        await outputContinuation?.yield(.storageRead(.data(data)))
+                        await outputStreamBundle.continuation.yield(.storageRead(.data(data)))
                     } else {
-                        await outputContinuation?.yield(.storageRead(.empty))
+                        await outputStreamBundle.continuation.yield(.storageRead(.empty))
                     }
                 }
 
@@ -75,13 +65,13 @@ actor DataLoader<T> where T: Sendable {
 
                 try Task.checkCancellation()
 
-                await outputContinuation?.yield(.loadingFinished(.success(data)))
+                await outputStreamBundle.continuation.yield(.loadingFinished(.success(data)))
 
             } catch is CancellationError {
                 return
             } catch {
-                if !Task.isCancelled {
-                    await outputContinuation?.yield(.loadingFinished(.error(error)))
+                if Task.isCancelled == false {
+                    await outputStreamBundle.continuation.yield(.loadingFinished(.error(error)))
                 }
             }
         }
@@ -95,7 +85,7 @@ actor DataLoader<T> where T: Sendable {
 
     /// Освобождает ресурсы, связанные с загрузчиком данных.
     deinit {
-        outputContinuation?.finish()
+        outputStreamBundle.continuation.finish()
     }
 }
 
