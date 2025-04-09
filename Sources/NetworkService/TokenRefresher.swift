@@ -14,7 +14,7 @@ actor TokenRefresher {
     }
 
     func refreshToken() async throws {
-        Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. RefreshToken method called"))
+        print("NetworkService. RefreshToken method called")
 
         if let task = refreshTokenTask {
             return try await task.value
@@ -25,13 +25,13 @@ actor TokenRefresher {
                 throw CancellationError()
             }
 
-            Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. RefreshToken request started"))
+            print("NetworkService. RefreshToken request started")
 
             do {
                 _ = try await tokenRefreshProvider.refreshToken()
-                Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. RefreshToken updated"))
+                print("NetworkService. RefreshToken updated")
             } catch {
-                Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. RefreshToken failed: \(error)"))
+                print("NetworkService. RefreshToken failed: \(error)")
                 throw error
             }
         }

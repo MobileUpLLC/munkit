@@ -22,7 +22,7 @@ open class MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     }
 
     public func request<T: Decodable & Sendable>(target: Target) async throws -> T {
-        Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. Request \(target) started"))
+        print("NetworkService. Request \(target) started")
 
         do {
             return try await apiProvider.request(target: target)
@@ -35,19 +35,19 @@ open class MUNKNetworkService<Target: MUNKMobileApiTargetType> {
             {
                 try await refreshToken()
 
-                Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. Request \(target) started"))
+                print("NetworkService. Request \(target) started")
 
                 return try await apiProvider.request(target: target)
             } else {
-                let logText = "NetworkService. Request \(target) failed with error \(error)"
-                Log.refreshTokenFlow.debug(logEntry: .text(logText))
+                print("NetworkService. Request \(target) failed with error \(error)")
+                
                 throw error
             }
         }
     }
 
     public func request(target: Target) async throws {
-        Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. Request \(target) started"))
+        print("NetworkService. Request \(target) started")
 
         do {
             return try await apiProvider.request(target: target)
@@ -60,12 +60,11 @@ open class MUNKNetworkService<Target: MUNKMobileApiTargetType> {
             {
                 try await refreshToken()
 
-                Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. Request \(target) started"))
+                print("NetworkService. Request \(target) started")
 
                 return try await apiProvider.request(target: target)
             } else {
-                let logText = "NetworkService. Request \(target) failed with error \(error)"
-                Log.refreshTokenFlow.debug(logEntry: .text(logText))
+                print("NetworkService. Request \(target) failed with error \(error)")
 
                 throw error
             }
@@ -86,7 +85,7 @@ open class MUNKNetworkService<Target: MUNKMobileApiTargetType> {
                 await onceExecutor?.executeTokenRefreshFailed()
             }
 
-            Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. RefreshToken request failed. \(error)"))
+            print("NetworkService. RefreshToken request failed. \(error)")
             throw error
         }
     }

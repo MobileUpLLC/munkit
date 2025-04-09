@@ -16,6 +16,6 @@ actor OnceExecutor {
         hasRun = true
         onTokenRefreshFailed?()
 
-        Log.refreshTokenFlow.debug(logEntry: .text("NetworkService. Send onTokenRefreshFailed"))
+        print("NetworkService. Send onTokenRefreshFailed")
     }
 }
