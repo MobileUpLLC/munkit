@@ -75,11 +75,7 @@ open class MUNKNetworkService<Target: MUNKMobileApiTargetType> {
         } catch let error {
             try _Concurrency.Task.checkCancellation()
 
-            if let serverError = error as? MoyaError, serverError.errorCode == 403 {
-                await onceExecutor?.executeTokenRefreshFailed()
-            }
-
-            if let serverError = error as? MoyaError, serverError.errorCode == 409 {
+            if let serverError = error as? MoyaError, serverError.errorCode == 403 || serverError.errorCode == 409 {
                 await onceExecutor?.executeTokenRefreshFailed()
             }
 
