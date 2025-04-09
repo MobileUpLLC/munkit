@@ -8,15 +8,19 @@
 import Moya
 
 open class MUNKNetworkService<Target: MUNKMobileApiTargetType> {
-    private var onTokenRefreshFailed: (() -> Void)? { didSet { onceExecutor = NetworkServiceRefreshTokenActionOnceExecutor() } }
+    private var onTokenRefreshFailed: (() -> Void)?
     private let apiProvider: MoyaProvider<Target>
-    private let tokenRefreshProvider: MUNKTokenProvider
-    private var tokenRefresher: NetworkServiceTokenRefresher { NetworkServiceTokenRefresher(tokenRefreshProvider: tokenRefreshProvider) }
+    private let tokenRefresher: NetworkServiceTokenRefresher
     private var onceExecutor: NetworkServiceRefreshTokenActionOnceExecutor?
 
     public init(apiProvider: MoyaProvider<Target>, tokenRefreshProvider: MUNKTokenProvider) {
         self.apiProvider = apiProvider
-        self.tokenRefreshProvider = tokenRefreshProvider
+        self.tokenRefresher = NetworkServiceTokenRefresher(tokenRefreshProvider: tokenRefreshProvider)
+    }
+
+    public func setTokenRefreshFailedAction(_ action: @escaping () -> Void) {
+        onTokenRefreshFailed = action
+        onceExecutor = NetworkServiceRefreshTokenActionOnceExecutor()
     }
 
     public func request<T: Decodable & Sendable>(target: Target) async throws -> T {
@@ -25,22 +29,9 @@ open class MUNKNetworkService<Target: MUNKMobileApiTargetType> {
         do {
             return try await performRequest(target: target)
         } catch {
-            try _Concurrency.Task.checkCancellation()
-
-            if target.isRefreshTokenRequest == false,
-               let serverError = error as? MoyaError,
-               serverError.errorCode == 403
-            {
-                try await refreshToken()
-
-                print("NetworkService. Request \(target) started")
-
-                return try await performRequest(target: target)
-            } else {
-                print("NetworkService. Request \(target) failed with error \(error)")
-
-                throw error
-            }
+            try await checkErrorAndRefreshTokenIfNeeded(error, target: target)
+            print("NetworkService. Request \(target) started after token refresh")
+            return try await performRequest(target: target)
         }
     }
 
@@ -50,22 +41,22 @@ open class MUNKNetworkService<Target: MUNKMobileApiTargetType> {
         do {
             return try await performRequest(target: target)
         } catch {
-            try _Concurrency.Task.checkCancellation()
+            try await checkErrorAndRefreshTokenIfNeeded(error, target: target)
+            print("NetworkService. Request \(target) started after token refresh")
+            return try await performRequest(target: target)
+        }
+    }
 
-            if target.isRefreshTokenRequest == false,
-               let serverError = error as? MoyaError,
-               serverError.errorCode == 403
-            {
-                try await refreshToken()
+    private func checkErrorAndRefreshTokenIfNeeded(_ error: Error, target: Target) async throws {
+        try _Concurrency.Task.checkCancellation()
 
-                print("NetworkService. Request \(target) started")
-
-                return try await performRequest(target: target)
-            } else {
-                print("NetworkService. Request \(target) failed with error \(error)")
-
-                throw error
-            }
+        if target.isRefreshTokenRequest == false,
+           let serverError = error as? MoyaError,
+           serverError.errorCode == 403 {
+            try await refreshToken()
+        } else {
+            print("NetworkService. Request \(target) failed with error \(error)")
+            throw error
         }
     }
 
