@@ -40,13 +40,13 @@ final class Environments {
     }
     
     private static func checkConfiguration() {
-        Log.environments.debug(logEntry: .text("Begin setup environments"))
-        
+        print("Begin setup environments")
+
         ConfigKey.allCases.forEach { key in
             EnvironmentsConfiguration.checkValue(for: key.rawValue)
         }
         
-        Log.environments.debug(logEntry: .text("End setup environments"))
+        print("End setup environments")
     }
 }
 // swiftlint:enable all

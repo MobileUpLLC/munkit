@@ -24,18 +24,15 @@ enum EnvironmentsConfiguration {
     static func checkValue(for key: String) {
         do {
             let stringValue: String = try value(for: key)
-            Log.environments.debug(logEntry: .detailed(
-                text: "Key was found successfully",
-                parameters: [key: stringValue])
-            )
+            print("Key was found successfully: \(key), value: \(stringValue)")
         } catch EnvironmentsConfiguration.Error.missingKey {
-            Log.environments.debug(logEntry: .text("Missing key: \(key). Add missing key to Info.plist file"))
+            print("Missing key: \(key). Add missing key to Info.plist file")
         } catch EnvironmentsConfiguration.Error.missingValue {
-            Log.environments.debug(logEntry: .text("Missing value for key: \(key)"))
+            print("Missing value for key: \(key)")
         } catch EnvironmentsConfiguration.Error.invalidValue {
-            Log.environments.debug(logEntry: .text("Invalid value for key: \(key)"))
+            print("Invalid value for key: \(key)")
         } catch {
-            Log.environments.debug(logEntry: .text("Undefined error for key: \(key)"))
+            print("Undefined error for key: \(key)")
         }
     }
 }

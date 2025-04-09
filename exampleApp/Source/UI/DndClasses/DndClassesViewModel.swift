@@ -36,7 +36,7 @@ final class DndClassesViewModel: ObservableObject {
 
     @MainActor
     func startObserving() {
-        Log.replica.debug(logEntry: .text("\(self): startObserving"))
+        print("\(self): startObserving")
 
         observerTask = Task { [weak self] in
             guard let self else {
@@ -52,7 +52,7 @@ final class DndClassesViewModel: ObservableObject {
                     DndClassesView.ViewItem(id: $0.index, name: $0.name)
                 }
 
-                Log.replica.debug(logEntry:.text("🐉 DndClassesViewModel: \(String(describing: viewItems))"))
+                print("🐉 DndClassesViewModel: \(String(describing: viewItems))")
                 self.classItems = viewItems
             }
         }
