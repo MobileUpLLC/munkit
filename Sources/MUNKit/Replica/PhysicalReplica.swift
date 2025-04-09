@@ -71,7 +71,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     }
 
     private func updateState(_ newState: ReplicaState<T>) {
-        Log.replica.debug(logEntry: .text("💾 Replica \(self) обновила состояние: \(newState)"))
+        print("💾 Replica \(self) обновила состояние: \(newState)")
         currentReplicaState = newState
 
         let allStateStreamPairs = observerStateStreamPairs

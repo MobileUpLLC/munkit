@@ -1,5 +1,5 @@
 import UIKit
-import NetworkService
+import MUNKit
 
 enum DndClassesFactory {
     @MainActor static func createDndClassesController() async -> DndClassesController {

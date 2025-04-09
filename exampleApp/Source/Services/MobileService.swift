@@ -1,8 +1,8 @@
 import Foundation
-import NetworkService
+import MUNKit
 import Moya
 
-final class MobileService: BaseNetworkService<MobileApi> {
+final class MobileService: MUNKNetworkService<MobileApi> {
     nonisolated(unsafe) static let shared = MobileService()
 
     private init() {

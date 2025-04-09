@@ -124,7 +124,7 @@ actor ReplicaLoadingController<T> where T: Sendable {
                 continue
             }
         }
-        throw ServerError.unknown(details: ErrorDetails(message: "Данные не загружены"))
+        throw LoadingError() // "Данные не загружены"
     }
 
     /// Запускает процесс загрузки данных с учетом параметров.

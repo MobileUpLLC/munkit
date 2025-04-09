@@ -1,5 +1,5 @@
 import Foundation
-import NetworkService
+import MUNKit
 
 final class DndClassesViewModel: ObservableObject {
     @Published private(set) var classItems: [DndClassesView.ViewItem]?
@@ -52,7 +52,7 @@ final class DndClassesViewModel: ObservableObject {
                     DndClassesView.ViewItem(id: $0.index, name: $0.name)
                 }
 
-                Log.replica.debug(logEntry:.text("🐉 DndClassesViewModel: \(viewItems)"))
+                Log.replica.debug(logEntry:.text("🐉 DndClassesViewModel: \(String(describing: viewItems))"))
                 self.classItems = viewItems
             }
         }

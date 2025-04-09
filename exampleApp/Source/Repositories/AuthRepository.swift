@@ -1,6 +1,8 @@
-import NetworkService
+import MUNKit
 
-final class AuthRepository: TokenRefreshProvider {
+final class AuthRepository: MUNKTokenProvider {
+    let accessToken: String? = nil
+
     func refreshToken() async throws -> String {
         ""
     }

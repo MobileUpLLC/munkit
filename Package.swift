@@ -4,19 +4,19 @@
 import PackageDescription
 
 let package = Package(
-    name: "NetworkService",
+    name: "MUNKit",
     platforms: [.iOS(.v16)],
     products: [
         .library(
-            name: "NetworkService",
-            targets: ["NetworkService"]),
+            name: "MUNKit",
+            targets: ["MUNKit"]),
     ],
     dependencies: [
            .package(url: "https://github.com/Moya/Moya.git", exact: "15.0.3")
     ],
     targets: [
         .target(
-            name: "NetworkService",
+            name: "MUNKit",
             dependencies: [
                 .product(name: "Moya", package: "Moya")
             ]

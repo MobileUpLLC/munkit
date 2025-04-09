@@ -46,7 +46,7 @@ actor DataLoader<T> where T: Sendable {
     /// - Parameter loadingFromStorageRequired: Указывает, нужно ли сначала пытаться загрузить данные из хранилища.
     ///  Результаты загрузки передаются в поток `outputStream` в виде событий `Output`.
     func load(loadingFromStorageRequired: Bool) async {
-        Log.replica.debug(logEntry: .text("\(self): load(loadingFromStorageRequired: \(loadingFromStorageRequired)"))
+       print("\(self): load(loadingFromStorageRequired: \(loadingFromStorageRequired)")
         await cancel()
 
         loadingTask = Task { [weak self] in

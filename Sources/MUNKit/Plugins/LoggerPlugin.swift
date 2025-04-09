@@ -1,3 +1,10 @@
+//
+//  LoggerPlugin.swift
+//  NetworkService
+//
+//  Created by Natalia Luzyanina on 01.04.2025.
+//
+
 import Moya
 
 public actor LoggerPlugin {
@@ -14,6 +21,6 @@ public actor LoggerPlugin {
 
         logMessage.append(contentsOf: "\n\n---------------------------REQUEST END-----------------------------\n\n")
         
-        Log.networkService.default(logEntry: .text(logMessage))
+        print(logMessage)
     }
 }

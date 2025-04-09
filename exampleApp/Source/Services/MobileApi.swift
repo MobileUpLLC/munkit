@@ -1,5 +1,5 @@
 import Foundation
-import NetworkService
+import MUNKit
 import Moya
 
 enum MobileApi {
@@ -7,7 +7,7 @@ enum MobileApi {
     case classOverview(String)
 }
 
-extension MobileApi: MobileApiTargetType {
+extension MobileApi: MUNKMobileApiTargetType {
     var parameters: [String : Any] { [:] }
     var isAccessTokenRequired: Bool { false }
     var isRefreshTokenRequest: Bool { false }

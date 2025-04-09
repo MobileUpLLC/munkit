@@ -1,3 +1,10 @@
+//
+//  MoyaProvider.swift
+//  NetworkService
+//
+//  Created by Natalia Luzyanina on 01.04.2025.
+//
+
 import Moya
 
 extension MoyaProvider {
@@ -34,9 +41,7 @@ extension MoyaProvider {
             
             continuation.resume(returning: decodedResponse)
         } catch let error {
-            let serverError = ServerError.handleError(error, response: response)
-            
-            continuation.resume(throwing: serverError)
+            continuation.resume(throwing: error)
         }
     }
     
@@ -45,18 +50,15 @@ extension MoyaProvider {
             _ = try response.filterSuccessfulStatusCodes()
             continuation.resume()
         } catch let error {
-            let serverError = ServerError.handleError(error, response: response)
-            continuation.resume(throwing: serverError)
+            continuation.resume(throwing: error)
         }
     }
     
     private func handleRequestFailure<T: Decodable>(error: MoyaError, continuation: CheckedContinuation<T, Error>) {
-        let mappedError = ServerError.mapError(error)
-        continuation.resume(throwing: mappedError)
+        continuation.resume(throwing: error)
     }
     
     private func handleRequestFailure(error: MoyaError, continuation: CheckedContinuation<Void, Error>) {
-        let mappedError = ServerError.mapError(error)
-        continuation.resume(throwing: mappedError)
+        continuation.resume(throwing: error)
     }
 }
