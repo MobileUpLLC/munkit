@@ -55,6 +55,7 @@ final class DndClassesViewModel: ObservableObject {
                 print("🐉 DndClassesViewModel: \(String(describing: viewItems))")
                 self.classItems = viewItems
             }
+            await observer.cancelObserving()
         }
     }
 

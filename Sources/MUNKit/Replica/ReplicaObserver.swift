@@ -32,7 +32,7 @@ public actor ReplicaObserver<T> where T: Sendable {
         await launchObserverControlling()
     }
 
-    func cancelObserving() async {
+    public func cancelObserving() async {
         observerControllingTask?.cancel()
         observerControllingTask = nil
 
