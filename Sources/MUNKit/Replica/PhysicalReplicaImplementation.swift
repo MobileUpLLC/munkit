@@ -117,9 +117,12 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         case .cleared:
             fatalError()
         case .observerCountChanged(let observingState):
-            updateState(currentReplicaState.copy(
-                observingState: observingState
-            ))
+            let previousState = currentReplicaState
+            updateState(currentReplicaState.copy(observingState: observingState))
+
+            if observingState.activeObserverIds.count > previousState.observingState.activeObserverIds.count {
+                Task { await revalidate() }
+            }
         }
     }
 
@@ -146,7 +149,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     private func handleFreshnessEvent(_ freshnessEvent: FreshnessEvent) {
         switch freshnessEvent {
         case .freshened:
-            fatalError()
+            break
         case .becameStale:
             fatalError()
         }
