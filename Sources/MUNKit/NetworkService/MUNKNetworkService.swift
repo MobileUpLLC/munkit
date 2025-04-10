@@ -102,7 +102,8 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     }
 
     private func refreshToken() async throws {
-        print("🕸️ Start token refreshing")
+        print("🕸️ Add token refreshing request")
+
         do {
             try await tokenRefresher.refreshToken()
         } catch {

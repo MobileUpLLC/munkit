@@ -15,7 +15,13 @@ actor NetworkServiceTokenRefresher {
 
     func refreshToken() async throws {
         if let task = refreshTokenTask {
-            return try await task.value
+            print("🕸️ Wait token refreshing results")
+
+            try await task.value
+
+            print("🕸️ Token refreshing results will be used")
+
+            return
         }
 
         refreshTokenTask = Task { [weak self] in
@@ -29,6 +35,8 @@ actor NetworkServiceTokenRefresher {
                 throw error
             }
         }
+
+        print("🕸️ Refresh token task added")
 
         try await refreshTokenTask?.value
         refreshTokenTask = nil
