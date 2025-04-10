@@ -98,7 +98,8 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
         if
             target.isRefreshTokenRequest,
             let serverError = error as? MoyaError,
-            unauthorizedStatusCodes.contains(serverError.errorCode)
+            let statusCode = serverError.response?.statusCode,
+            unauthorizedStatusCodes.contains(statusCode)
         {
             try await refreshToken()
         } else {
@@ -125,7 +126,8 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
 
             if
                 let serverError = error as? MoyaError,
-                unauthorizedStatusCodes.contains(serverError.errorCode)
+                let statusCode = serverError.response?.statusCode,
+                unauthorizedStatusCodes.contains(statusCode)
             {
                 if await onceExecutor?.shouldExecuteTokenRefreshFailed() == true {
                     onTokenRefreshFailed?()
