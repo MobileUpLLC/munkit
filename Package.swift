@@ -5,7 +5,10 @@ import PackageDescription
 
 let package = Package(
     name: "MUNKit",
-    platforms: [.iOS(.v16)],
+    platforms: [
+        .iOS(.v16),
+        .macOS(.v15)
+    ],
     products: [
         .library(
             name: "MUNKit",
