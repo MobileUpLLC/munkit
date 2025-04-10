@@ -96,7 +96,7 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
         try _Concurrency.Task.checkCancellation()
 
         if
-            target.isRefreshTokenRequest == false,
+            target.isRefreshTokenRequest,
             let serverError = error as? MoyaError,
             unauthorizedStatusCodes.contains(serverError.errorCode)
         {
