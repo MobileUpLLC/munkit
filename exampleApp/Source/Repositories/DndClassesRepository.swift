@@ -10,4 +10,8 @@ final class DndClassesRepository: Sendable {
             fetcher: { try await MobileService.shared.request(target: .classes) }
         )
     }
+
+    func clearData() async {
+        await replica.clear(invalidationMode: .dontRefresh, removeFromStorage: false)
+    }
 }

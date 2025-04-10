@@ -9,19 +9,19 @@ import Foundation
 
 public struct ReplicaState<T>: Sendable where T: Sendable {
     /// Указывает, загружаются ли данные в данный момент.
-    public let loading: Bool
+    public var loading: Bool
     /// Содержит загруженные данные, если они доступны.
-    public let data: ReplicaData<T>?
+    public var data: ReplicaData<T>?
     /// Представляет ошибку, произошедшую во время загрузки.
-    public let error: Error?
+    public var error: Error?
     /// Состояние наблюдения.
     var observingState: ObservingState
     /// Указывает, были ли запрошены данные.
-    let dataRequested: Bool
+    var dataRequested: Bool
     /// Указывает, происходит ли в данный момент предварительная загрузка.
-    let preloading: Bool
+    var preloading: Bool
     /// Указывает, требуется ли загрузка из хранилища.
-    let loadingFromStorageRequired: Bool
+    var loadingFromStorageRequired: Bool
     
     var hasFreshData: Bool {
         data?.isFresh ?? false

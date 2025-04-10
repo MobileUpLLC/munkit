@@ -11,14 +11,22 @@ struct DndClassesView: View {
     @ObservedObject var viewModel: DndClassesViewModel
 
     var body: some View {
-        List {
-            if let items = viewModel.classItems {
-                ForEach(items, id: \.id) { item in
-                    Text(item.name)
-                        .onTapGesture {
-                            viewModel.handleTapOnItem(with: item.id)
-                        }
+        VStack {
+            List {
+                if let items = viewModel.classItems {
+                    ForEach(items, id: \.id) { item in
+                        Text(item.name)
+                            .onTapGesture {
+                                viewModel.handleTapOnItem(with: item.id)
+                            }
+                    }
                 }
+            }
+
+            Button {
+                viewModel.clearData()
+            } label: {
+                Text("Clear data")
             }
         }
         .onFirstAppear { viewModel.startObserving() }

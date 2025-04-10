@@ -13,8 +13,10 @@ public enum ReplicaEvent<T>: Sendable where T: Sendable  {
     case loading(LoadingEvent<T>)
     /// События, связанные со свежестью данных.
     case freshness(FreshnessEvent)
-    /// Данные и ошибки очищены.
+    /// Данные очищены.
     case cleared
+    /// Ошибка очищена.
+    case clearedError
     /// Изменение количества наблюдателей.
     case observerCountChanged(ObservingState)
 }

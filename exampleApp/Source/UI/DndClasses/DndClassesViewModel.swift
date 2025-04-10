@@ -5,13 +5,15 @@ final class DndClassesViewModel: ObservableObject {
     @Published private(set) var classItems: [DndClassesView.ViewItem]?
 
     private let coordinator: DndClassesCoordinator
+    private let repository: DndClassesRepository
     private let replica: any Replica<ClassesListModel>
     private let observerStateStream: AsyncStream<Bool>
     private let observerContinuation: AsyncStream<Bool>.Continuation
     private var observerTask: Task<Void, Never>?
 
-    init(coordinator: DndClassesCoordinator, replica: any Replica<ClassesListModel>) {
+    init(coordinator: DndClassesCoordinator, replica: any Replica<ClassesListModel>, repository: DndClassesRepository) {
         self.coordinator = coordinator
+        self.repository = repository
         self.replica = replica
 
         let (observerActive, observerContinuation) = AsyncStream<Bool>.makeStream()
@@ -28,6 +30,11 @@ final class DndClassesViewModel: ObservableObject {
     @MainActor
     func revalidate() async {
         await replica.revalidate()
+    }
+
+    @MainActor
+    func clearData() {
+        Task { await repository.clearData() }
     }
 
     @MainActor

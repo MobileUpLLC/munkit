@@ -6,5 +6,6 @@ final class DndClassesController: HostingController<DndClassesView> {
 
         navigationItem.title = "D&D Classes"
         navigationItem.largeTitleDisplayMode = .always
+        view.backgroundColor = .white
     }
 }
