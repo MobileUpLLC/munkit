@@ -25,7 +25,7 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     }
 
     public func request<T: Decodable & Sendable>(target: Target) async throws -> T {
-        print("🕸️ Request \(target) started. Waiting \(T.self)")
+        print("🕸️ Request \(target) started. Wait \(T.self)")
 
         do {
             return try await performRequest(target: target)
