@@ -25,75 +25,63 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     }
 
     public func request<T: Decodable & Sendable>(target: Target) async throws -> T {
-        print("🕸️ Request \(target) started. Wait \(T.self)")
+        print("🕸️ Request \(target.logDescription). Starting with expected response type: \(T.self).")
 
-        do {
-            return try await performRequest(target: target)
-        } catch {
-            print("🕸️ Request \(target) got error: '\(error.localizedDescription)'. Trying to refresh token")
-            try await handleTokenRefresh(error, target: target)
-            print("🕸️ Request \(target) updated token and will be performed again")
-            return try await performRequest(target: target)
+        switch await performRequest(target: target) {
+        case .success(let response):
+            let filteredResponse = try response.filterSuccessfulStatusCodes()
+            let result = try filteredResponse.map(T.self)
+            print("🕸️ Request \(target.logDescription). Completed successfully.")
+            return result
+        case .failure(let error):
+            print("🕸️ Request \(target.logDescription). Failed with error: \(error.localizedDescription).")
+            try await updateTokenIfNeeded(error, target: target)
+            return try await request(target: target)
         }
     }
 
     public func request(target: Target) async throws {
-        print("🕸️ Request \(target) started")
+        print("🕸️ Request \(target.logDescription). Starting.")
 
-        do {
-            try await performRequest(target: target)
-        } catch {
-            try await handleTokenRefresh(error, target: target)
-            print("🕸️ Request \(target) updated token and will be performed again")
-            try await performRequest(target: target)
+        switch await performRequest(target: target) {
+        case .success(let response):
+            let _ = try response.filterSuccessfulStatusCodes()
+            print("🕸️ Request \(target.logDescription). Completed successfully.")
+            return
+        case .failure(let error):
+            print(
+                """
+                🕸️ Request \(target.logDescription). 
+                Failed with error: \(error.localizedDescription). 
+                Attempting to refresh token.
+                """
+            )
+            try await updateTokenIfNeeded(error, target: target)
+            print("🕸️ Request \(target.logDescription). Token refreshed, retrying.")
+            return try await request(target: target)
         }
     }
 
-    private func performRequest<T: Decodable & Sendable>(target: Target) async throws -> T {
-        let result: T = try await withCheckedThrowingContinuation { continuation in
-            apiProvider.request(target) { result in
-                switch result {
-                case .success(let response):
-                    do {
-                        let filteredResponse = try response.filterSuccessfulStatusCodes()
-                        let decodedResponse = try filteredResponse.map(T.self)
-                        continuation.resume(returning: decodedResponse)
-                    } catch {
-                        continuation.resume(throwing: error)
-                    }
-                case .failure(let error):
-                    continuation.resume(throwing: error)
-                }
-            }
-        }
-        return result
-    }
-
-    private func performRequest(target: Target) async throws {
-        try await withCheckedThrowingContinuation { continuation in
-            apiProvider.request(target) { result in
-                switch result {
-                case .success(let response):
-                    do {
-                        let _ = try response.filterSuccessfulStatusCodes()
-                        continuation.resume()
-                    } catch {
-                        continuation.resume(throwing: error)
-                    }
-                case .failure(let error):
-                    continuation.resume(throwing: error)
-                }
-            }
+    private func performRequest(target: Target) async -> Result<Response, MoyaError> {
+        return await withCheckedContinuation { continuation in
+            apiProvider.request(target) { continuation.resume(returning: $0) }
         }
     }
 
-    private func handleTokenRefresh(_ error: Error, target: Target) async throws {
+    private func updateTokenIfNeeded(_ error: Error, target: Target) async throws {
+        print("🕸️ Request \(target.logDescription). Checking if token refresh is needed.")
+
         guard
             let serverError = error as? MoyaError,
             let statusCode = serverError.response?.statusCode,
             unauthorizedStatusCodes.contains(statusCode)
         else {
-            print("🕸️ Request \(target) failed with error \(error)")
+            print(
+                """
+                🕸️ Request \(target.logDescription). Failed without token refresh. 
+                Error: \(error.localizedDescription).
+                """
+            )
             throw error
         }
 
@@ -103,12 +91,18 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     }
 
     private func refreshToken(target: Target) async throws {
-        print("🕸️ Add token refreshing request for \(target)")
+        print("🕸️ Request \(target.logDescription). Initiating token refresh.")
 
         do {
             try await tokenRefresher.refreshToken()
+            print("🕸️ Request \(target.logDescription). Token refreshed successfully.")
         } catch {
-            print("🕸️ Token refreshed with error: \(error)")
+            print(
+                """
+                🕸️ Request \(target.logDescription).
+                Token refresh failed with error: \(error.localizedDescription).
+                """
+            )
 
             if
                 let serverError = error as? MoyaError,
@@ -117,12 +111,11 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
             {
                 if await onceExecutor?.shouldExecuteTokenRefreshFailed() == true {
                     onTokenRefreshFailed?()
-                    print("🕸️ onTokenRefreshFailed performed")
+                    print("🕸️ Request \(target.logDescription). Executed token refresh failure action.")
                 }
             }
 
             throw error
         }
-        print("🕸️ Token request was performed for \(target)")
     }
 }
