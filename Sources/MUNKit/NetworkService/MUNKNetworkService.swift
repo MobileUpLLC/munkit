@@ -31,7 +31,6 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
             return try await performRequest(target: target)
         } catch {
             try await checkErrorAndRefreshTokenIfNeeded(error, target: target)
-            print("NetworkService. Request \(target) started after token refresh")
             return try await performRequest(target: target)
         }
     }
@@ -43,7 +42,6 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
             return try await performRequest(target: target)
         } catch {
             try await checkErrorAndRefreshTokenIfNeeded(error, target: target)
-            print("NetworkService. Request \(target) started after token refresh")
             return try await performRequest(target: target)
         }
     }
@@ -74,57 +72,47 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     }
 
     private func performRequest<T: Decodable & Sendable>(target: Target) async throws -> T {
-        do {
-            let result: T = try await withCheckedThrowingContinuation { continuation in
-                apiProvider.request(target) { result in
-                    switch result {
-                    case .success(let response):
-                        do {
-                            let filteredResponse = try response.filterSuccessfulStatusCodes()
-                            let decodedResponse = try filteredResponse.map(T.self)
+        let result: T = try await withCheckedThrowingContinuation { continuation in
+            apiProvider.request(target) { result in
+                switch result {
+                case .success(let response):
+                    do {
+                        let filteredResponse = try response.filterSuccessfulStatusCodes()
+                        let decodedResponse = try filteredResponse.map(T.self)
 
-                            continuation.resume(returning: decodedResponse)
-                        } catch {
-                            continuation.resume(throwing: error)
-                        }
-                    case .failure(let error):
+                        continuation.resume(returning: decodedResponse)
+                    } catch {
                         continuation.resume(throwing: error)
                     }
+                case .failure(let error):
+                    continuation.resume(throwing: error)
                 }
             }
-            if target.isAccessTokenRequired {
-                self.isTokenRefreshAttempted = false
-            }
-            return result
-        } catch {
-            try await checkErrorAndRefreshTokenIfNeeded(error, target: target)
-            return try await performRequest(target: target)
         }
+        if target.isAccessTokenRequired {
+            self.isTokenRefreshAttempted = false
+        }
+        return result
     }
 
     private func performRequest(target: Target) async throws {
-        do {
-            try await withCheckedThrowingContinuation { continuation in
-                apiProvider.request(target) { result in
-                    switch result {
-                    case .success(let response):
-                        do {
-                            let _ = try response.filterSuccessfulStatusCodes()
-                            continuation.resume()
-                        } catch {
-                            continuation.resume(throwing: error)
-                        }
-                    case .failure(let error):
+        try await withCheckedThrowingContinuation { continuation in
+            apiProvider.request(target) { result in
+                switch result {
+                case .success(let response):
+                    do {
+                        let _ = try response.filterSuccessfulStatusCodes()
+                        continuation.resume()
+                    } catch {
                         continuation.resume(throwing: error)
                     }
+                case .failure(let error):
+                    continuation.resume(throwing: error)
                 }
             }
-            if target.isAccessTokenRequired {
-                self.isTokenRefreshAttempted = false
-            }
-        } catch {
-            try await checkErrorAndRefreshTokenIfNeeded(error, target: target)
-            try await performRequest(target: target)
+        }
+        if target.isAccessTokenRequired {
+            self.isTokenRefreshAttempted = false
         }
     }
 
