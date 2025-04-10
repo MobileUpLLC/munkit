@@ -32,6 +32,7 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
             return try await performRequest(target: target)
         } catch {
             try await checkErrorAndRefreshTokenIfNeeded(error, target: target)
+            print("🕸️ Request \(target) updated token and will be performed again")
             return try await performRequest(target: target)
         }
     }
@@ -43,6 +44,7 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
             return try await performRequest(target: target)
         } catch {
             try await checkErrorAndRefreshTokenIfNeeded(error, target: target)
+            print("🕸️ Request \(target) updated token and will be performed again")
             return try await performRequest(target: target)
         }
     }
