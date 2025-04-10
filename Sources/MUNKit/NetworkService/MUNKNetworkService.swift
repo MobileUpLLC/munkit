@@ -12,7 +12,6 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     private let apiProvider: MoyaProvider<Target>
     private let tokenRefresher: NetworkServiceTokenRefresher
     private var onceExecutor: NetworkServiceRefreshTokenActionOnceExecutor?
-    private var tokenRefreshTask: _Concurrency.Task<Void, Error>?
     private let unauthorizedStatusCodes: Set<Int> = [401, 403, 409]
 
     public init(apiProvider: MoyaProvider<Target>, tokenRefreshProvider: MUNKTokenProvider) {
@@ -88,49 +87,40 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     }
 
     private func handleTokenRefresh(_ error: Error, target: Target) async throws {
-        try _Concurrency.Task.checkCancellation()
-
-        guard let serverError = error as? MoyaError,
-              let statusCode = serverError.response?.statusCode,
-              unauthorizedStatusCodes.contains(statusCode) else {
+        guard
+            let serverError = error as? MoyaError,
+            let statusCode = serverError.response?.statusCode,
+            unauthorizedStatusCodes.contains(statusCode)
+        else {
             print("🕸️ Request \(target) failed with error \(error)")
             throw error
         }
 
-        if let refreshTask = tokenRefreshTask {
-            print("🕸️ Waiting for token refresh to complete for \(target)")
-            try await refreshTask.value
-            return
-        }
-
         if target.isRefreshTokenRequest {
             try await refreshToken()
-        } else {
-            tokenRefreshTask = _Concurrency.Task {
-                defer { tokenRefreshTask = nil }
-                try await refreshToken()
-            }
-            try await tokenRefreshTask?.value
         }
     }
 
     private func refreshToken() async throws {
+        print("🕸️ Start token refreshing")
         do {
-            print("🕸️ Start token refreshing")
             try await tokenRefresher.refreshToken()
-            print("🕸️ Token refreshed")
         } catch {
             print("🕸️ Token refreshed with error: \(error)")
 
-            if let serverError = error as? MoyaError,
-               let statusCode = serverError.response?.statusCode,
-               unauthorizedStatusCodes.contains(statusCode) {
+            if
+                let serverError = error as? MoyaError,
+                let statusCode = serverError.response?.statusCode,
+                unauthorizedStatusCodes.contains(statusCode)
+            {
                 if await onceExecutor?.shouldExecuteTokenRefreshFailed() == true {
                     onTokenRefreshFailed?()
                     print("🕸️ onTokenRefreshFailed performed")
                 }
             }
+
             throw error
         }
+        print("🕸️ Token refreshed")
     }
 }
