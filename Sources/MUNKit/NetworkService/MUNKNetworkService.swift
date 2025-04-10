@@ -12,7 +12,7 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     private let apiProvider: MoyaProvider<Target>
     private let tokenRefresher: NetworkServiceTokenRefresher
     private var onceExecutor: NetworkServiceRefreshTokenActionOnceExecutor?
-    private var isTokenRefreshAttempted = false
+    private var tokenRefreshTask: _Concurrency.Task<Void, Error>?
     private let unauthorizedStatusCodes: Set<Int> = [401, 403, 409]
 
     public init(apiProvider: MoyaProvider<Target>, tokenRefreshProvider: MUNKTokenProvider) {
@@ -31,7 +31,7 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
         do {
             return try await performRequest(target: target)
         } catch {
-            try await checkErrorAndRefreshTokenIfNeeded(error, target: target)
+            try await handleTokenRefresh(error, target: target)
             print("🕸️ Request \(target) updated token and will be performed again")
             return try await performRequest(target: target)
         }
@@ -41,11 +41,11 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
         print("🕸️ Request \(target) started")
 
         do {
-            return try await performRequest(target: target)
+            try await performRequest(target: target)
         } catch {
-            try await checkErrorAndRefreshTokenIfNeeded(error, target: target)
+            try await handleTokenRefresh(error, target: target)
             print("🕸️ Request \(target) updated token and will be performed again")
-            return try await performRequest(target: target)
+            try await performRequest(target: target)
         }
     }
 
@@ -57,7 +57,6 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
                     do {
                         let filteredResponse = try response.filterSuccessfulStatusCodes()
                         let decodedResponse = try filteredResponse.map(T.self)
-
                         continuation.resume(returning: decodedResponse)
                     } catch {
                         continuation.resume(throwing: error)
@@ -66,9 +65,6 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
                     continuation.resume(throwing: error)
                 }
             }
-        }
-        if target.isAccessTokenRequired {
-            self.isTokenRefreshAttempted = false
         }
         return result
     }
@@ -89,54 +85,52 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
                 }
             }
         }
-        if target.isAccessTokenRequired {
-            self.isTokenRefreshAttempted = false
-        }
     }
 
-    private func checkErrorAndRefreshTokenIfNeeded(_ error: Error, target: Target) async throws {
+    private func handleTokenRefresh(_ error: Error, target: Target) async throws {
         try _Concurrency.Task.checkCancellation()
 
-        if
-            target.isRefreshTokenRequest,
-            let serverError = error as? MoyaError,
-            let statusCode = serverError.response?.statusCode,
-            unauthorizedStatusCodes.contains(statusCode)
-        {
-            try await refreshToken()
-        } else {
+        guard let serverError = error as? MoyaError,
+              let statusCode = serverError.response?.statusCode,
+              unauthorizedStatusCodes.contains(statusCode) else {
             print("🕸️ Request \(target) failed with error \(error)")
             throw error
+        }
+
+        if let refreshTask = tokenRefreshTask {
+            print("🕸️ Waiting for token refresh to complete for \(target)")
+            try await refreshTask.value
+            return
+        }
+
+        if target.isRefreshTokenRequest {
+            try await refreshToken()
+        } else {
+            tokenRefreshTask = _Concurrency.Task {
+                defer { tokenRefreshTask = nil }
+                try await refreshToken()
+            }
+            try await tokenRefreshTask?.value
         }
     }
 
     private func refreshToken() async throws {
-        guard isTokenRefreshAttempted == false else {
-            print("🕸️ Token refresh attempt was already made")
-            throw CancellationError()
-        }
-
         print("🕸️ Start token refreshing")
-
-        isTokenRefreshAttempted = true
 
         do {
             try await tokenRefresher.refreshToken()
             print("🕸️ Token refreshed")
-        } catch let error {
+        } catch {
             print("🕸️ Token refreshed with error: \(error)")
 
-            if
-                let serverError = error as? MoyaError,
-                let statusCode = serverError.response?.statusCode,
-                unauthorizedStatusCodes.contains(statusCode)
-            {
+            if let serverError = error as? MoyaError,
+               let statusCode = serverError.response?.statusCode,
+               unauthorizedStatusCodes.contains(statusCode) {
                 if await onceExecutor?.shouldExecuteTokenRefreshFailed() == true {
                     onTokenRefreshFailed?()
                     print("🕸️ onTokenRefreshFailed performed")
                 }
             }
-
             throw error
         }
     }
