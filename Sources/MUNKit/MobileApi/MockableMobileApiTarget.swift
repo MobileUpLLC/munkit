@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol MockableMobileApiTarget: MUNKMobileApiTargetType {
+public protocol MockableMobileApiTarget: MUNKMobileApiTargetType {
     var isMockEnabled: Bool { get }
     
     func getMockFileName() -> String?
@@ -26,7 +26,7 @@ extension MockableMobileApiTarget {
     }
 }
 
-protocol MockablePaginationMobileApiTarget: MockableMobileApiTarget {
+public protocol MockablePaginationMobileApiTarget: MockableMobileApiTarget {
     var pageIndexParameterName: String { get }
     var pageSizeParameterName: String { get }
 }

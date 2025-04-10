@@ -53,58 +53,6 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         }
     }
 
-    private func processReplicaEvent() async {
-        Task {
-            for await event in loadingControllerEventStreamBundle.stream {
-                processReplicaEvent(event)
-            }
-        }
-
-        Task {
-            for await event in observersControllerEventStreamBundle.stream {
-                processReplicaEvent(event)
-            }
-        }
-    }
-
-    private func updateState(_ newState: ReplicaState<T>) {
-        print("💾 Replica \(self) обновила состояние: \(newState)")
-        currentReplicaState = newState
-
-        let allStateStreamPairs = observerStateStreamBundles
-            + [loadingControllerStateStreamBundle, observersControllerStateStreamBundle]
-
-        allStateStreamPairs.forEach { $0.continuation.yield(currentReplicaState) }
-    }
-
-    private func processReplicaEvent(_ event: ReplicaEvent<T>) {
-        switch event {
-        case .loading(let loadingEvent):
-            switch loadingEvent {
-            case .loadingStarted(let state):
-                updateState(state)
-            case .dataFromStorageLoaded(let state):
-                updateState(state)
-            case .loadingFinished(let state):
-                switch state {
-                case .success(let state), .canceled(let state), .error(let state):
-                    updateState(state)
-                }
-            }
-        case .freshness:
-            break
-        case .cleared:
-            fatalError()
-        case .observerCountChanged(let observingState):
-            let previousState = currentReplicaState
-            updateState(currentReplicaState.copy(observingState: observingState))
-
-            if observingState.activeObserverIds.count > previousState.observingState.activeObserverIds.count {
-                Task { await revalidate() }
-            }
-        }
-    }
-
     public func observe(observerActive: AsyncStream<Bool>) async -> ReplicaObserver<T> {
         let stateStreamPair = AsyncStream<ReplicaState<T>>.makeStream()
         observerStateStreamBundles.append(stateStreamPair)
@@ -134,5 +82,101 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
 
     func cancel() async {
         await replicaLoadingController.cancel()
+    }
+    
+    private func processReplicaEvent() async {
+        Task {
+            for await event in loadingControllerEventStreamBundle.stream {
+                processReplicaEvent(event)
+            }
+        }
+
+        Task {
+            for await event in observersControllerEventStreamBundle.stream {
+                processReplicaEvent(event)
+            }
+        }
+    }
+
+    private func updateState(_ newState: ReplicaState<T>) {
+        print("💾 Replica \(self) обновила состояние: \(newState)")
+        currentReplicaState = newState
+
+        let allStateStreamPairs = observerStateStreamBundles
+            + [loadingControllerStateStreamBundle, observersControllerStateStreamBundle]
+
+        allStateStreamPairs.forEach { $0.continuation.yield(currentReplicaState) }
+    }
+
+    private func processReplicaEvent(_ event: ReplicaEvent<T>) {
+        switch event {
+        case .loading(let loadingEvent):
+            handleLoadingEvent(loadingEvent)
+        case .freshness(let freshnessEvent):
+            handleFreshnessEvent(freshnessEvent)
+        case .cleared:
+            fatalError()
+        case .observerCountChanged(let observingState):
+            updateState(currentReplicaState.copy(
+                observingState: observingState
+            ))
+        }
+    }
+
+    private func handleLoadingEvent(_ loadingEvent: LoadingEvent<T>) {
+        switch loadingEvent {
+        case .loadingStarted:
+            updateState(currentReplicaState.copy(
+                loading: true,
+                error: nil,
+                dataRequested: true
+            ))
+
+        case .dataFromStorageLoaded(let data):
+            updateState(currentReplicaState.copy(
+                data: data,
+                loadingFromStorageRequired: false
+            ))
+
+        case .loadingFinished(let event):
+            handleLoadingFinishedEvent(event)
+        }
+    }
+
+    private func handleFreshnessEvent(_ freshnessEvent: FreshnessEvent) {
+        switch freshnessEvent {
+        case .freshened:
+            fatalError()
+        case .becameStale:
+            fatalError()
+        }
+    }
+
+    private func handleLoadingFinishedEvent(_ event: LoadingFinished<T>) {
+        switch event {
+        case .success(let data):
+            updateState(currentReplicaState.copy(
+                loading: false,
+                data: data,
+                error: nil,
+                dataRequested: false,
+                preloading: false
+            ))
+
+        case .canceled:
+            updateState(currentReplicaState.copy(
+                loading: false,
+                dataRequested: false,
+                preloading: false
+            ))
+
+        case .error(let error):
+            updateState(currentReplicaState.copy(
+                loading: false,
+                error: error,
+                dataRequested: false,
+                preloading: false
+            ))
+        }
     }
 }

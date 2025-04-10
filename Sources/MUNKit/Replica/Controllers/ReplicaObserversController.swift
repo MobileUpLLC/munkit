@@ -117,9 +117,7 @@ actor ReplicaObserversController<T> where T: Sendable {
             previousObservingState.observerIds.count != newObservingState.observerIds.count
             || previousObservingState.activeObserverIds.count != newObservingState.activeObserverIds.count
         {
-            replicaEventStreamContinuation.yield(
-                .observerCountChanged(newObservingState)
-            )
+            replicaEventStreamContinuation.yield(.observerCountChanged(newObservingState))
         }
     }
 }

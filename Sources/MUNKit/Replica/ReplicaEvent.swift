@@ -14,18 +14,18 @@ public enum ReplicaEvent<T>: Sendable where T: Sendable  {
 
 public enum LoadingFinished<T>: Sendable where T: Sendable {
     /// Успешная загрузка с данными.
-    case success(ReplicaState<T>)
+    case success(data: ReplicaData<T>)
     /// Загрузка отменена.
-    case canceled(ReplicaState<T>)
+    case canceled
     /// Ошибка загрузки.
-    case error(ReplicaState<T>)
+    case error(Error)
 }
 
 public enum LoadingEvent<T>: Sendable where T: Sendable {
     /// Начало загрузки.
-    case loadingStarted(ReplicaState<T>)
+    case loadingStarted(dataRequested: Bool, preloading: Bool)
     /// Данные загружены из хранилища.
-    case dataFromStorageLoaded(ReplicaState<T>)
+    case dataFromStorageLoaded(data: ReplicaData<T>)
     /// Результат завершения загрузки.
     case loadingFinished(LoadingFinished<T>)
 }
