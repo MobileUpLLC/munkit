@@ -14,10 +14,6 @@ final class DndClassesViewModel: ObservableObject {
         self.coordinator = coordinator
         self.replica = replica
 
-//        Task { [weak self] in
-//            self?.replica = await DndClassesRepository.shared.getReplica()
-//        }
-
         let (observerActive, observerContinuation) = AsyncStream<Bool>.makeStream()
         
         self.observerStateStream = observerActive

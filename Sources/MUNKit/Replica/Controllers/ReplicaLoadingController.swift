@@ -1,3 +1,10 @@
+//
+//  ReplicaLoadingController.swift
+//  MUNKit
+//
+//  Created by Natalia Luzyanina on 01.04.2025.
+//
+
 import Foundation
 
 /// Контроллер загрузки данных для управления состоянием и событиями реплики.

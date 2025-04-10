@@ -1,3 +1,10 @@
+//
+//  ReplicaEvent.swift
+//  MUNKit
+//
+//  Created by Natalia Luzyanina on 01.04.2025.
+//
+
 import Foundation
 
 /// Событие, произошедшее в реплике.

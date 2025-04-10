@@ -1,3 +1,10 @@
+//
+//  ReplicaData.swift
+//  MUNKit
+//
+//  Created by Natalia Luzyanina on 01.04.2025.
+//
+
 import Foundation
 
 /// Данные, хранимые в реплике.

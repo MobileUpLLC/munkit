@@ -1,6 +1,6 @@
 //
 //  ReplicaClient.swift
-//  NetworkService
+//  MUNKit
 //
 //  Created by Natalia Luzyanina on 03.04.2025.
 //

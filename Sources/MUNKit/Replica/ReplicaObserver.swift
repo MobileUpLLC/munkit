@@ -1,20 +1,20 @@
+//
+//  ReplicaObserver.swift
+//  MUNKit
+//
+//  Created by Natalia Luzyanina on 01.04.2025.
+//
+
 import Foundation
 
 public actor ReplicaObserver<T> where T: Sendable {
-    // MARK: - ReplicaStateStream
     public let replicaStateStream: AsyncStream<ReplicaState<T>>
-    private var replicaStateStreamContinuation: AsyncStream<ReplicaState<T>>.Continuation?
     private var replicaStateObservingTask: Task<Void, Never>?
-
-    // MARK: - ReplicaEventStream
-    var replicaEventStream: AsyncStream<ReplicaEvent<T>>?
-    private var replicaEventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation?
 
     private let observerActive: AsyncStream<Bool>
     private var observerControllingTask: Task<Void, Never>?
     private let observersController: ReplicaObserversController<T>
 
-    // MARK: - Initialization
     init(
         observerActive: AsyncStream<Bool>,
         replicaStateStream: AsyncStream<ReplicaState<T>>,
@@ -24,10 +24,6 @@ public actor ReplicaObserver<T> where T: Sendable {
         self.observerActive = observerActive
         self.observersController = observersController
         self.replicaStateStream = replicaStateStream
-        self.replicaEventStreamContinuation = nil
-        self.replicaEventStream = nil
-
-        self.replicaEventStream = AsyncStream<ReplicaEvent<T>> { self.replicaEventStreamContinuation = $0 }
 
         await launchObserverControlling()
     }

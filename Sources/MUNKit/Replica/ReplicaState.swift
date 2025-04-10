@@ -1,3 +1,10 @@
+//
+//  ReplicaState.swift
+//  MUNKit
+//
+//  Created by Natalia Luzyanina on 01.04.2025.
+//
+
 import Foundation
 
 public struct ReplicaState<T>: Sendable where T: Sendable {

@@ -1,3 +1,10 @@
+//
+//  ReplicaObserversController.swift
+//  MUNKit
+//
+//  Created by Natalia Luzyanina on 01.04.2025.
+//
+
 import Foundation
 
 actor ReplicaObserversController<T> where T: Sendable {

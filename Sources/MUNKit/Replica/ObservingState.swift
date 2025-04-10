@@ -1,3 +1,10 @@
+//
+//  ObservingState.swift
+//  MUNKit
+//
+//  Created by Natalia Luzyanina on 01.04.2025.
+//
+
 import Foundation
 
 /// Содержит информацию о наблюдателях реплики.

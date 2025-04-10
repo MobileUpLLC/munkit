@@ -1,3 +1,10 @@
+//
+//  DataLoader.swift
+//  MUNKit
+//
+//  Created by Natalia Luzyanina on 01.04.2025.
+//
+
 import Foundation
 
 actor DataLoader<T> where T: Sendable {
@@ -49,9 +56,9 @@ actor DataLoader<T> where T: Sendable {
                     try Task.checkCancellation()
 
                     if let data = try await storage?.read() {
-                        await outputStreamBundle.continuation.yield(.storageRead(.data(data)))
+                        outputStreamBundle.continuation.yield(.storageRead(.data(data)))
                     } else {
-                        await outputStreamBundle.continuation.yield(.storageRead(.empty))
+                        outputStreamBundle.continuation.yield(.storageRead(.empty))
                     }
                 }
 
@@ -65,13 +72,13 @@ actor DataLoader<T> where T: Sendable {
 
                 try Task.checkCancellation()
 
-                await outputStreamBundle.continuation.yield(.loadingFinished(.success(data)))
+                outputStreamBundle.continuation.yield(.loadingFinished(.success(data)))
 
             } catch is CancellationError {
                 return
             } catch {
                 if Task.isCancelled == false {
-                    await outputStreamBundle.continuation.yield(.loadingFinished(.error(error)))
+                    outputStreamBundle.continuation.yield(.loadingFinished(.error(error)))
                 }
             }
         }

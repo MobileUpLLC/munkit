@@ -1,3 +1,10 @@
+//
+//  InvalidationMode.swift
+//  MUNKit
+//
+//  Created by Natalia Luzyanina on 01.04.2025.
+//
+
 /// Определяет поведение реплики после инвалидации.
 public enum InvalidationMode {
     /// Не обновлять реплику после инвалидации.

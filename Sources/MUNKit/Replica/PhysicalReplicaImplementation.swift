@@ -1,10 +1,11 @@
+//
+//  PhysicalReplicaImplementation.swift
+//  MUNKit
+//
+//  Created by Natalia Luzyanina on 01.04.2025.
+//
+
 import Foundation
-
-public protocol PhysicalReplica<T>: Replica where T: Sendable {
-    var name: String { get }
-
-    init(id: UUID, storage: (any Storage<T>)?, fetcher: @escaping Fetcher<T>, name: String)
-}
 
 public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     public let name: String
@@ -119,6 +120,8 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         case .observerCountChanged(let observingState):
             let previousState = currentReplicaState
             updateState(currentReplicaState.copy(observingState: observingState))
+
+            print("🔍 \(self) изменилось количество наблюдателей: observerIds \(observingState.observerIds) activeObserverIds: \(observingState.activeObserverIds) observingTime \(observingState.observingTime)")
 
             if observingState.activeObserverIds.count > previousState.observingState.activeObserverIds.count {
                 Task { await revalidate() }
