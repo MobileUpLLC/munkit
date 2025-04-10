@@ -1,0 +1,33 @@
+//
+//  DNDAPITarget.swift
+//  munkit-example-clt
+//
+//  Created by Ilia Chub on 11.04.2025.
+//
+
+import MUNKit
+import Moya
+import Foundation
+
+ enum DNDAPITarget {
+     case classes
+ }
+
+ extension DNDAPITarget: MUNKMobileApiTargetType {
+     var parameters: [String : Any] { [:] }
+     var isAccessTokenRequired: Bool { true }
+     var isRefreshTokenRequest: Bool { false }
+     var baseURL: URL { URL(string: "https://www.dnd5eapi.co")! }
+     var path: String { getPath() }
+     var method: Moya.Method { .get }
+     var task: Moya.Task { .requestPlain }
+     var headers: [String : String]? { [:] }
+     var authorizationType: Moya.AuthorizationType? { .bearer }
+
+     private func getPath() -> String {
+         switch self {
+         case .classes:
+             return "/api/2014/classes"
+         }
+     }
+ }

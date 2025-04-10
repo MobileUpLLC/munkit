@@ -30,6 +30,7 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
         do {
             return try await performRequest(target: target)
         } catch {
+            print("🕸️ Request \(target) got error: '\(error.localizedDescription)'. Trying to refresh token")
             try await handleTokenRefresh(error, target: target)
             print("🕸️ Request \(target) updated token and will be performed again")
             return try await performRequest(target: target)
