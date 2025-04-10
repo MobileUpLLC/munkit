@@ -13,6 +13,7 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     private let tokenRefresher: NetworkServiceTokenRefresher
     private var onceExecutor: NetworkServiceRefreshTokenActionOnceExecutor?
     private var isTokenRefreshAttempted = false
+    private let unauthorizedStatusCodes: Set<Int> = [401, 403, 409]
 
     public init(apiProvider: MoyaProvider<Target>, tokenRefreshProvider: MUNKTokenProvider) {
         self.apiProvider = apiProvider
@@ -97,7 +98,7 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
         if
             target.isRefreshTokenRequest == false,
             let serverError = error as? MoyaError,
-            serverError.errorCode == 403
+            unauthorizedStatusCodes.contains(serverError.errorCode)
         {
             try await refreshToken()
         } else {
@@ -122,7 +123,10 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
         } catch let error {
             print("🕸️ Token refreshed with error: \(error)")
 
-            if let serverError = error as? MoyaError, serverError.errorCode == 403 || serverError.errorCode == 409 {
+            if
+                let serverError = error as? MoyaError,
+                unauthorizedStatusCodes.contains(serverError.errorCode)
+            {
                 if await onceExecutor?.shouldExecuteTokenRefreshFailed() == true {
                     onTokenRefreshFailed?()
                     print("🕸️ onTokenRefreshFailed performed")
