@@ -12,6 +12,7 @@ open class MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     private let apiProvider: MoyaProvider<Target>
     private let tokenRefresher: NetworkServiceTokenRefresher
     private var onceExecutor: NetworkServiceRefreshTokenActionOnceExecutor?
+    private var isTokenRefreshAttempted = false
 
     public init(apiProvider: MoyaProvider<Target>, tokenRefreshProvider: MUNKTokenProvider) {
         self.apiProvider = apiProvider
@@ -61,6 +62,13 @@ open class MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     }
 
     private func refreshToken() async throws {
+        guard isTokenRefreshAttempted == false else {
+            print("NetworkService. Token refresh attempt was already made")
+            throw CancellationError()
+        }
+
+        isTokenRefreshAttempted = true
+
         do {
             try await tokenRefresher.refreshToken()
         } catch let error {
@@ -80,6 +88,9 @@ open class MUNKNetworkService<Target: MUNKMobileApiTargetType> {
             apiProvider.request(target) { [weak self] result in
                 switch result {
                 case .success(let response):
+                    if target.isAccessTokenRequired {
+                        self?.isTokenRefreshAttempted = false
+                    }
                     self?.handleRequestSuccess(response: response, continuation: continuation)
                 case .failure(let error):
                     self?.handleRequestFailure(error: error, continuation: continuation)
@@ -93,6 +104,9 @@ open class MUNKNetworkService<Target: MUNKMobileApiTargetType> {
             apiProvider.request(target) { [weak self] result in
                 switch result {
                 case .success(let response):
+                    if target.isAccessTokenRequired {
+                        self?.isTokenRefreshAttempted = false
+                    }
                     self?.handleRequestSuccess(response: response, continuation: continuation)
                 case .failure(let error):
                     self?.handleRequestFailure(error: error, continuation: continuation)

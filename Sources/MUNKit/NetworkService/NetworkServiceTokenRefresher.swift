@@ -37,5 +37,6 @@ actor NetworkServiceTokenRefresher {
         }
 
         try await refreshTokenTask?.value
+        refreshTokenTask = nil
     }
 }
