@@ -25,7 +25,7 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     }
 
     public func request<T: Decodable & Sendable>(target: Target) async throws -> T {
-        print("NetworkService. Request \(target) started")
+        print("🕸️ Request \(target) started. Waiting \(T.self)")
 
         do {
             return try await performRequest(target: target)
@@ -36,38 +36,13 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     }
 
     public func request(target: Target) async throws {
-        print("NetworkService. Request \(target) started")
+        print("🕸️ Request \(target) started")
 
         do {
             return try await performRequest(target: target)
         } catch {
             try await checkErrorAndRefreshTokenIfNeeded(error, target: target)
             return try await performRequest(target: target)
-        }
-    }
-
-    private func refreshToken() async throws {
-        guard isTokenRefreshAttempted == false else {
-            print("NetworkService. Token refresh attempt was already made")
-            throw CancellationError()
-        }
-
-        isTokenRefreshAttempted = true
-
-        do {
-            try await tokenRefresher.refreshToken()
-        } catch let error {
-            try _Concurrency.Task.checkCancellation()
-
-            if let serverError = error as? MoyaError, serverError.errorCode == 403 || serverError.errorCode == 409 {
-                if await onceExecutor?.shouldExecuteTokenRefreshFailed() == true {
-                    onTokenRefreshFailed?()
-                    print("NetworkService. Send onTokenRefreshFailed")
-                }
-            }
-
-            print("NetworkService. RefreshToken request failed. \(error)")
-            throw error
         }
     }
 
@@ -126,7 +101,34 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
         {
             try await refreshToken()
         } else {
-            print("NetworkService. Request \(target) failed with error \(error)")
+            print("🕸️ Request \(target) failed with error \(error)")
+            throw error
+        }
+    }
+
+    private func refreshToken() async throws {
+        guard isTokenRefreshAttempted == false else {
+            print("🕸️ Token refresh attempt was already made")
+            throw CancellationError()
+        }
+
+        print("🕸️ Start token refreshing")
+
+        isTokenRefreshAttempted = true
+
+        do {
+            try await tokenRefresher.refreshToken()
+            print("🕸️ Token refreshed")
+        } catch let error {
+            print("🕸️ Token refreshed with error: \(error)")
+
+            if let serverError = error as? MoyaError, serverError.errorCode == 403 || serverError.errorCode == 409 {
+                if await onceExecutor?.shouldExecuteTokenRefreshFailed() == true {
+                    onTokenRefreshFailed?()
+                    print("🕸️ onTokenRefreshFailed performed")
+                }
+            }
+
             throw error
         }
     }
