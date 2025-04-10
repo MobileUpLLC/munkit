@@ -7,7 +7,7 @@
 
 import Moya
 
-open class MUNKNetworkService<Target: MUNKMobileApiTargetType> {
+public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     private var onTokenRefreshFailed: (() -> Void)?
     private let apiProvider: MoyaProvider<Target>
     private let tokenRefresher: NetworkServiceTokenRefresher
@@ -48,19 +48,6 @@ open class MUNKNetworkService<Target: MUNKMobileApiTargetType> {
         }
     }
 
-    private func checkErrorAndRefreshTokenIfNeeded(_ error: Error, target: Target) async throws {
-        try _Concurrency.Task.checkCancellation()
-
-        if target.isRefreshTokenRequest == false,
-           let serverError = error as? MoyaError,
-           serverError.errorCode == 403 {
-            try await refreshToken()
-        } else {
-            print("NetworkService. Request \(target) failed with error \(error)")
-            throw error
-        }
-    }
-
     private func refreshToken() async throws {
         guard isTokenRefreshAttempted == false else {
             print("NetworkService. Token refresh attempt was already made")
@@ -87,62 +74,72 @@ open class MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     }
 
     private func performRequest<T: Decodable & Sendable>(target: Target) async throws -> T {
-        return try await withCheckedThrowingContinuation { continuation in
-            apiProvider.request(target) { [weak self] result in
-                switch result {
-                case .success(let response):
-                    if target.isAccessTokenRequired {
-                        self?.isTokenRefreshAttempted = false
+        do {
+            let result: T = try await withCheckedThrowingContinuation { continuation in
+                apiProvider.request(target) { result in
+                    switch result {
+                    case .success(let response):
+                        do {
+                            let filteredResponse = try response.filterSuccessfulStatusCodes()
+                            let decodedResponse = try filteredResponse.map(T.self)
+
+                            continuation.resume(returning: decodedResponse)
+                        } catch {
+                            continuation.resume(throwing: error)
+                        }
+                    case .failure(let error):
+                        continuation.resume(throwing: error)
                     }
-                    self?.handleRequestSuccess(response: response, continuation: continuation)
-                case .failure(let error):
-                    self?.handleRequestFailure(error: error, continuation: continuation)
                 }
             }
+            if target.isAccessTokenRequired {
+                self.isTokenRefreshAttempted = false
+            }
+            return result
+        } catch {
+            try await checkErrorAndRefreshTokenIfNeeded(error, target: target)
+            return try await performRequest(target: target)
         }
     }
 
     private func performRequest(target: Target) async throws {
-        return try await withCheckedThrowingContinuation { continuation in
-            apiProvider.request(target) { [weak self] result in
-                switch result {
-                case .success(let response):
-                    if target.isAccessTokenRequired {
-                        self?.isTokenRefreshAttempted = false
+        do {
+            try await withCheckedThrowingContinuation { continuation in
+                apiProvider.request(target) { result in
+                    switch result {
+                    case .success(let response):
+                        do {
+                            let _ = try response.filterSuccessfulStatusCodes()
+                            continuation.resume()
+                        } catch {
+                            continuation.resume(throwing: error)
+                        }
+                    case .failure(let error):
+                        continuation.resume(throwing: error)
                     }
-                    self?.handleRequestSuccess(response: response, continuation: continuation)
-                case .failure(let error):
-                    self?.handleRequestFailure(error: error, continuation: continuation)
                 }
             }
+            if target.isAccessTokenRequired {
+                self.isTokenRefreshAttempted = false
+            }
+        } catch {
+            try await checkErrorAndRefreshTokenIfNeeded(error, target: target)
+            try await performRequest(target: target)
         }
     }
 
-    private func handleRequestSuccess<T: Decodable & Sendable>(response: Response, continuation: CheckedContinuation<T, Error>) {
-        do {
-            let filteredResponse = try response.filterSuccessfulStatusCodes()
-            let decodedResponse = try filteredResponse.map(T.self)
+    private func checkErrorAndRefreshTokenIfNeeded(_ error: Error, target: Target) async throws {
+        try _Concurrency.Task.checkCancellation()
 
-            continuation.resume(returning: decodedResponse)
-        } catch let error {
-            continuation.resume(throwing: error)
+        if
+            target.isRefreshTokenRequest == false,
+            let serverError = error as? MoyaError,
+            serverError.errorCode == 403
+        {
+            try await refreshToken()
+        } else {
+            print("NetworkService. Request \(target) failed with error \(error)")
+            throw error
         }
-    }
-
-    private func handleRequestSuccess(response: Response, continuation: CheckedContinuation<Void, Error>) {
-        do {
-            _ = try response.filterSuccessfulStatusCodes()
-            continuation.resume()
-        } catch let error {
-            continuation.resume(throwing: error)
-        }
-    }
-
-    private func handleRequestFailure<T: Decodable>(error: MoyaError, continuation: CheckedContinuation<T, Error>) {
-        continuation.resume(throwing: error)
-    }
-
-    private func handleRequestFailure(error: MoyaError, continuation: CheckedContinuation<Void, Error>) {
-        continuation.resume(throwing: error)
     }
 }

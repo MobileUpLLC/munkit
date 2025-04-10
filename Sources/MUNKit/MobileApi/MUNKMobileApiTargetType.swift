@@ -7,7 +7,7 @@
 
 import Moya
 
-public protocol MUNKMobileApiTargetType: TargetType, AccessTokenAuthorizable {
+public protocol MUNKMobileApiTargetType: TargetType, AccessTokenAuthorizable, Sendable {
     var parameters: [String: Any] { get }
     var isAccessTokenRequired: Bool { get }
     var isRefreshTokenRequest: Bool { get }
