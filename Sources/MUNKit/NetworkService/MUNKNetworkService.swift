@@ -84,9 +84,8 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
             try await refreshTokenTask?.value
             refreshTokenTask = nil
         } catch {
-            let previousOnTokenRefreshFailed = onTokenRefreshFailed
+            onTokenRefreshFailed?()
             onTokenRefreshFailed = nil
-            previousOnTokenRefreshFailed?()
             throw error
         }
     }
