@@ -9,7 +9,7 @@ import Moya
 import Foundation
 
 public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
-    private var onTokenRefreshFailed: (() -> Void)?
+    private var onTokenRefreshFailed: (() async -> Void)?
     private let apiProvider: MoyaProvider<Target>
     private let tokenRefreshProvider: MUNKTokenProvider
     private var refreshTokenTask: _Concurrency.Task<Void, Error>?
@@ -20,7 +20,7 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
         self.tokenRefreshProvider = tokenRefreshProvider
     }
 
-    public func setTokenRefreshFailedAction(_ action: @escaping () -> Void) {
+    public func setTokenRefreshFailedAction(_ action: @escaping () async -> Void) {
         onTokenRefreshFailed = action
     }
 
@@ -84,7 +84,7 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
             try await refreshTokenTask?.value
             refreshTokenTask = nil
         } catch {
-            onTokenRefreshFailed?()
+            await onTokenRefreshFailed?()
             onTokenRefreshFailed = nil
             throw error
         }
