@@ -2,21 +2,22 @@ import Foundation
 import MUNKit
 import Moya
 
-final class MobileService: MUNKNetworkService<MobileApi> {
-    nonisolated(unsafe) static let shared = MobileService()
+actor MobileService {
+    static let shared = MobileService()
+
+    let networkService: MUNKNetworkService<MobileApi>
 
     private init() {
         let tokenProvider = TokenProvider()
-
         let configuration = URLSessionConfiguration.default
         configuration.headers = .default
         configuration.urlCache = nil
 
         let apiProvider = MoyaProvider<MobileApi>(
             session: Session(configuration: configuration, startRequestsImmediately: true),
-            plugins: [LoggerPlugin.instance]
+            plugins: [MUNKLoggerPlugin.instance]
         )
 
-        super.init(apiProvider: apiProvider, tokenRefreshProvider: tokenProvider)
+        self.networkService = MUNKNetworkService(apiProvider: apiProvider, tokenRefreshProvider: tokenProvider)
     }
 }

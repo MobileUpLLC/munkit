@@ -7,7 +7,7 @@ final class DndClassesRepository: Sendable {
         self.replica = await ReplicaClient.shared.createReplica(
             name: "DndReplica",
             storage: nil,
-            fetcher: { try await MobileService.shared.request(target: .classes) }
+            fetcher: { try await MobileService.shared.networkService.request(target: .classes) }
         )
     }
 

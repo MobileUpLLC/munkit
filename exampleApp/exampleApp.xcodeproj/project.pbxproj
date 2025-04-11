@@ -21,8 +21,8 @@
 		6D2A84AD2D9AC09100E345CD /* ClassesListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2A84AC2D9AC09100E345CD /* ClassesListModel.swift */; };
 		6D2A84AF2D9AC0DC00E345CD /* MobileService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2A84AE2D9AC0DC00E345CD /* MobileService.swift */; };
 		6D2A84B12D9AC1A700E345CD /* MobileApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2A84B02D9AC1A700E345CD /* MobileApi.swift */; };
-		6DBD47FB2DA68B0200021895 /* MUNKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6DBD47FA2DA68B0200021895 /* MUNKit */; };
 		6DBD480C2DA6A6D900021895 /* DndClassOverviewRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DBD480B2DA6A6D900021895 /* DndClassOverviewRepository.swift */; };
+		6DC1379B2DA92BC200372871 /* MUNKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6DC1379A2DA92BC200372871 /* MUNKit */; };
 		6DFE1ED52D9A8880006B827D /* DndClassesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1ED32D9A8880006B827D /* DndClassesViewModel.swift */; };
 		6DFE1ED62D9A8880006B827D /* DndClassesCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1ED02D9A8880006B827D /* DndClassesCoordinator.swift */; };
 		6DFE1ED72D9A8880006B827D /* DndClassesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1ED22D9A8880006B827D /* DndClassesView.swift */; };
@@ -89,7 +89,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6DBD47FB2DA68B0200021895 /* MUNKit in Frameworks */,
+				6DC1379B2DA92BC200372871 /* MUNKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -317,7 +317,7 @@
 			);
 			name = exampleApp;
 			packageProductDependencies = (
-				6DBD47FA2DA68B0200021895 /* MUNKit */,
+				6DC1379A2DA92BC200372871 /* MUNKit */,
 			);
 			productName = exampleApp;
 			productReference = F79D02FECCD574BEB3CCBF74 /* exampleApp.app */;
@@ -342,7 +342,7 @@
 			);
 			mainGroup = 4E74B99E795A73CCB09D2D99;
 			packageReferences = (
-				4AD7AEB02DA3F88B00AAC747 /* XCLocalSwiftPackageReference "../../MobileUp-2" */,
+				6DC137992DA92BC200372871 /* XCLocalSwiftPackageReference "../../MUNKit" */,
 			);
 			projectDirPath = "";
 			projectRoot = "";
@@ -678,16 +678,15 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		4AD7AEB02DA3F88B00AAC747 /* XCLocalSwiftPackageReference "../../MobileUp-2" */ = {
+		6DC137992DA92BC200372871 /* XCLocalSwiftPackageReference "../../MUNKit" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../MobileUp-2";
+			relativePath = ../../MUNKit;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		6DBD47FA2DA68B0200021895 /* MUNKit */ = {
+		6DC1379A2DA92BC200372871 /* MUNKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 4AD7AEB02DA3F88B00AAC747 /* XCLocalSwiftPackageReference "../../MobileUp-2" */;
 			productName = MUNKit;
 		};
 /* End XCSwiftPackageProductDependency section */
