@@ -29,6 +29,8 @@ final class TokenProvider: MUNKTokenProvider, @unchecked Sendable {
     func refreshToken() async throws {
         print("✍️", #function)
 
+        // For Natasha: MoyaError.statusCode(.init(statusCode: 400, data: Data()))
+
         guard let previousToken = accessToken else {
             throw MoyaError.statusCode(.init(statusCode: 400, data: Data()))
         }

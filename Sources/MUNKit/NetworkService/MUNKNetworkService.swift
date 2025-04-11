@@ -25,6 +25,8 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     }
 
     public func request<T: Decodable & Sendable>(target: Target, afterTockenRefreshed: Bool = false) async throws -> T {
+        // For Natasha: MoyaError.statusCode(.init(statusCode: 400, data: Data())) try await _Concurrency.Task.sleep(for: .seconds(Int.random(in: 1...5)))
+
         switch await performRequest(target: target) {
         case .success(let response):
             let filteredResponse = try response.filterSuccessfulStatusCodes()
