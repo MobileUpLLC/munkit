@@ -28,6 +28,11 @@ struct DndClassesView: View {
             } label: {
                 Text("Clear data")
             }
+            Button {
+                viewModel.invalidateData()
+            } label: {
+                Text("Invalidate data")
+            }
         }
         .onFirstAppear { viewModel.startObserving() }
         .onDisappear { viewModel.deinitObserver() }

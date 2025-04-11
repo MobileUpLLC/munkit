@@ -27,9 +27,13 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     private let сlearingControllerStateStreamBundle: AsyncStreamBundle<ReplicaState<T>>
     private let сlearingControllerEventStreamBundle: AsyncStreamBundle<ReplicaEvent<T>>
 
+    private let freshnessControllerStateStreamBundle: AsyncStreamBundle<ReplicaState<T>>
+    private let freshnessControllerEventStreamBundle: AsyncStreamBundle<ReplicaEvent<T>>
+
     private let replicaObserversController: ReplicaObserversController<T>
     private let replicaLoadingController: ReplicaLoadingController<T>
     private let replicaClearingController: ReplicaClearingController<T>
+    private let replicaFreshnessController: ReplicaFreshnessController<T>
 
     public init(id: UUID = UUID(), storage: (any Storage<T>)?, fetcher: @escaping Fetcher<T>, name: String) {
         self.identifier = id
@@ -43,6 +47,8 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         self.loadingControllerEventStreamBundle = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
         self.сlearingControllerStateStreamBundle = AsyncStream.makeStream(of: ReplicaState<T>.self)
         self.сlearingControllerEventStreamBundle = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
+        self.freshnessControllerStateStreamBundle = AsyncStream.makeStream(of: ReplicaState<T>.self)
+        self.freshnessControllerEventStreamBundle = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
 
         self.replicaObserversController = ReplicaObserversController(
             replicaState: currentReplicaState,
@@ -60,6 +66,11 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
             replicaStateStream: loadingControllerStateStreamBundle.stream,
             replicaEventStreamContinuation: loadingControllerEventStreamBundle.continuation,
             storage: storage
+        )
+        self.replicaFreshnessController = ReplicaFreshnessController(
+            replicaState: currentReplicaState,
+            replicaStateStream: loadingControllerStateStreamBundle.stream,
+            replicaEventStreamContinuation: loadingControllerEventStreamBundle.continuation
         )
 
         Task {
@@ -106,6 +117,17 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         await replicaClearingController.clearError()
     }
 
+    public func invalidate(mode: InvalidationMode) async {
+        Task {
+            await replicaFreshnessController.invalidate()
+            await replicaLoadingController.refreshAfterInvalidation(invalidationMode: mode)
+        }
+    }
+
+    public func makeFresh() async {
+        await replicaFreshnessController.makeFresh()
+    }
+
     func cancel() async {
         await replicaLoadingController.cancel()
     }
@@ -135,6 +157,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     }
 
     private func processReplicaEvent(_ event: ReplicaEvent<T>) {
+        print("\n⚡️ \(self) получено событие: \(event)")
         switch event {
         case .loading(let loadingEvent):
             handleLoadingEvent(loadingEvent)
@@ -189,9 +212,15 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     private func handleFreshnessEvent(_ freshnessEvent: FreshnessEvent) {
         switch freshnessEvent {
         case .freshened:
-            break
+            var replica = currentReplicaState
+            replica.data?.isFresh = true
+
+            updateState(replica)
         case .becameStale:
-            fatalError()
+            var replica = currentReplicaState
+            replica.data?.isFresh = false
+
+            updateState(replica)
         }
     }
 

@@ -12,6 +12,10 @@ final class DndClassesRepository: Sendable {
     }
 
     func clearData() async {
-        await replica.clear(invalidationMode: .dontRefresh, removeFromStorage: false)
+        await replica.clear()
+    }
+
+    func invalidateData() async {
+        await replica.invalidate()
     }
 }

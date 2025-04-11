@@ -38,6 +38,11 @@ final class DndClassesViewModel: ObservableObject {
     }
 
     @MainActor
+    func invalidateData() {
+        Task { await repository.invalidateData() }
+    }
+
+    @MainActor
     func startObserving() {
         print("\(self): startObserving")
 

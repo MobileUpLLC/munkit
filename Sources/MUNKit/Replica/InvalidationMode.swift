@@ -6,7 +6,7 @@
 //
 
 /// Определяет поведение реплики после инвалидации.
-public enum InvalidationMode {
+public enum InvalidationMode: Sendable {
     /// Не обновлять реплику после инвалидации.
     case dontRefresh
 
