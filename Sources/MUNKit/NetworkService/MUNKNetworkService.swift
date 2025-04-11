@@ -6,12 +6,12 @@
 //
 
 import Moya
+import Foundation
 
 public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     private var onTokenRefreshFailed: (() -> Void)?
     private let apiProvider: MoyaProvider<Target>
     private let tokenRefresher: NetworkServiceTokenRefresher
-    private var onceExecutor: NetworkServiceRefreshTokenActionOnceExecutor?
     private let unauthorizedStatusCodes: Set<Int> = [401, 403, 409]
 
     public init(apiProvider: MoyaProvider<Target>, tokenRefreshProvider: MUNKTokenProvider) {
@@ -21,7 +21,6 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
 
     public func setTokenRefreshFailedAction(_ action: @escaping () -> Void) {
         onTokenRefreshFailed = action
-        onceExecutor = NetworkServiceRefreshTokenActionOnceExecutor()
     }
 
     public func request<T: Decodable & Sendable>(target: Target, afterTockenRefreshed: Bool = false) async throws -> T {
@@ -101,16 +100,8 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
         } catch {
             print("🕸️ Request \(target). Token refresh failed with error: \(error.localizedDescription).")
 
-            if
-                let serverError = error as? MoyaError,
-                let statusCode = serverError.response?.statusCode,
-                unauthorizedStatusCodes.contains(statusCode)
-            {
-                if await onceExecutor?.shouldExecuteTokenRefreshFailed() == true {
-                    onTokenRefreshFailed?()
-                    print("🕸️ Request \(target). Executed token refresh failure action.")
-                }
-            }
+            onTokenRefreshFailed?()
+            onTokenRefreshFailed = nil
 
             throw error
         }
