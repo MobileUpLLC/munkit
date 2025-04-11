@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct DNDClassModel: Decodable {
+struct DNDClassModel: Decodable, Sendable {
     let index: String
     let name: String
     let url: URL

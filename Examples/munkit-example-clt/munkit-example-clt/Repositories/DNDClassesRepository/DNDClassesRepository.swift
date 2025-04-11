@@ -7,7 +7,7 @@
 
 import MUNKit
 
-actor DNDClassesRepository: Sendable {
+actor DNDClassesRepository {
     private let networkService: MUNKNetworkService<DNDAPITarget>
 
     init(networkService: MUNKNetworkService<DNDAPITarget>) async {

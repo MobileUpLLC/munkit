@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct DNDClassesListModel: Decodable {
+struct DNDClassesListModel: Decodable, Sendable {
     let count: Int
     let results: [DNDClassModel]
 }

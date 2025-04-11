@@ -25,17 +25,17 @@ await networkService.setTokenRefreshFailedAction { print("🧨 Token refresh fai
 let dndClassesRepository = await DNDClassesRepository(networkService: networkService)
 
 func performRequest(id: Int) async {
-    print(#function, "started for \(id)")
+    print("👁️", #function, "\(id)")
     do {
         let _ = try await dndClassesRepository.getClassesList()
-        print("🍀", "completed for \(id)")
+        print("🥳", #function, "\(id)")
     } catch {
-        print("🚨", "failed for \(id): \(error)")
+        print("☠️", #function, "\(id)")
     }
 }
 
 await withTaskGroup(of: Void.self) { group in
-    for id in 1...5 {
+    for id in 1...30 {
         group.addTask {
             _ = await performRequest(id: id)
         }
