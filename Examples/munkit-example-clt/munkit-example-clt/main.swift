@@ -12,10 +12,8 @@ import Foundation
 private let tokenProvider = TokenProvider()
 
 private let provider = MoyaProvider<DNDAPITarget>(
-    stubClosure: MoyaProvider.delayedStub(TimeInterval.random(in: 0...3)),
     plugins: [
         MUNKAccessTokenPlugin(accessTokenProvider: tokenProvider),
-        MUNKLoggerPlugin.instance,
         MockAuthPlugin()
     ]
 )
@@ -37,7 +35,7 @@ func performRequest(id: Int) async {
 }
 
 await withTaskGroup(of: Void.self) { group in
-    for id in 1...1 {
+    for id in 1...5 {
         group.addTask {
             _ = await performRequest(id: id)
         }

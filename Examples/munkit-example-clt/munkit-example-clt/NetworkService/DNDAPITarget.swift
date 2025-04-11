@@ -15,12 +15,12 @@ import Foundation
 
  extension DNDAPITarget: MUNKMobileApiTargetType {
      var parameters: [String : Any] { [:] }
-     var isAccessTokenRequired: Bool { false }
+     var isAccessTokenRequired: Bool { true }
      var isRefreshTokenRequest: Bool { false }
      var baseURL: URL { URL(string: "https://www.dnd5eapi.co")! }
      var path: String { "/api/2014/classes" }
      var method: Moya.Method { .get }
      var task: Moya.Task { .requestPlain }
      var headers: [String : String]? { [:] }
-     var authorizationType: Moya.AuthorizationType? { nil }
+     var authorizationType: Moya.AuthorizationType? { .bearer }
  }

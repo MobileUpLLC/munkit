@@ -19,7 +19,7 @@ final class TokenProvider: MUNKTokenProvider, @unchecked Sendable {
     private let accessTokenQueue: DispatchQueue
 
     init() {
-        self._accessToken = "00"
+        self._accessToken = "0"
         self.accessTokenQueue = DispatchQueue(
             label: "com.mobileup.munkit-example-clt.access-token-queue",
             qos: .userInitiated
@@ -27,6 +27,8 @@ final class TokenProvider: MUNKTokenProvider, @unchecked Sendable {
     }
 
     func refreshToken() async throws -> String {
+        print("‼️", #function)
+
         guard let previousToken = accessToken else {
             throw MoyaError.statusCode(.init(statusCode: 400, data: Data()))
         }
