@@ -26,7 +26,7 @@ final class TokenProvider: MUNKTokenProvider, @unchecked Sendable {
         )
     }
 
-    func refreshToken() async throws -> String {
+    func refreshToken() async throws {
         print("‼️", #function)
 
         guard let previousToken = accessToken else {
@@ -36,7 +36,5 @@ final class TokenProvider: MUNKTokenProvider, @unchecked Sendable {
         try await _Concurrency.Task.sleep(for: .seconds(2))
         let newToken = previousToken + "0"
         accessToken = newToken
-
-        return newToken
     }
 }

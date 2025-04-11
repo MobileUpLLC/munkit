@@ -11,12 +11,13 @@ import Foundation
 public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     private var onTokenRefreshFailed: (() -> Void)?
     private let apiProvider: MoyaProvider<Target>
-    private let tokenRefresher: NetworkServiceTokenRefresher
+    private let tokenRefreshProvider: MUNKTokenProvider
+    private var refreshTokenTask: _Concurrency.Task<Void, Error>?
     private let unauthorizedStatusCodes: Set<Int> = [401, 403, 409]
 
     public init(apiProvider: MoyaProvider<Target>, tokenRefreshProvider: MUNKTokenProvider) {
         self.apiProvider = apiProvider
-        self.tokenRefresher = NetworkServiceTokenRefresher(tokenRefreshProvider: tokenRefreshProvider)
+        self.tokenRefreshProvider = tokenRefreshProvider
     }
 
     public func setTokenRefreshFailedAction(_ action: @escaping () -> Void) {
@@ -26,13 +27,16 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     public func request<T: Decodable & Sendable>(target: Target, afterTockenRefreshed: Bool = false) async throws -> T {
         print("🕸️ Request \(target). Starting with expected response type: \(T.self).")
 
+        try await _Concurrency.Task.sleep(for: .seconds(Int.random(in: 0...3)))
         switch await performRequest(target: target) {
         case .success(let response):
+            try await _Concurrency.Task.sleep(for: .seconds(Int.random(in: 0...3)))
             let filteredResponse = try response.filterSuccessfulStatusCodes()
             let result = try filteredResponse.map(T.self)
             print("🕸️ Request \(target). Completed successfully.")
             return result
         case .failure(let error):
+            try await _Concurrency.Task.sleep(for: .seconds(Int.random(in: 0...3)))
             try await handleRequestError(error, target: target, afterTockenRefreshed: afterTockenRefreshed)
             return try await request(target: target, afterTockenRefreshed: true)
         }
@@ -95,14 +99,25 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
         print("🕸️ Request \(target). Initiating token refresh.")
 
         do {
-            try await tokenRefresher.refreshToken()
-            print("🕸️ Request \(target). Token refreshed successfully.")
+            if let task = refreshTokenTask {
+                print("🕸️ Request \(target). Waiting for previous token refresh to complete.")
+                return try await task.value
+            }
+
+            print("🕸️ Request \(target). Token refresh started.")
+
+            refreshTokenTask = _Concurrency.Task { [weak self] in
+                try await self?.tokenRefreshProvider.refreshToken()
+            }
+
+            try await refreshTokenTask?.value
+            refreshTokenTask = nil
         } catch {
             print("🕸️ Request \(target). Token refresh failed with error: \(error.localizedDescription).")
 
-            onTokenRefreshFailed?()
+            let previousOnTokenRefreshFailed = onTokenRefreshFailed
             onTokenRefreshFailed = nil
-
+            previousOnTokenRefreshFailed?()
             throw error
         }
     }
