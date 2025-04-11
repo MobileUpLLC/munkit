@@ -19,12 +19,9 @@ struct MockAuthPlugin: PluginType {
         guard
             let target = target as? MUNKMobileApiTargetType,
             case .success(let success) = result,
-            let request = success.request
+            let request = success.request,
+            target.isAccessTokenRequired
         else {
-            return result
-        }
-
-        guard target.isAccessTokenRequired else {
             return result
         }
 

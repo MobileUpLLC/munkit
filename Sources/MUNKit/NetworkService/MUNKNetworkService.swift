@@ -24,42 +24,47 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
         onceExecutor = NetworkServiceRefreshTokenActionOnceExecutor()
     }
 
-    public func request<T: Decodable & Sendable>(target: Target) async throws -> T {
-        print("🕸️ Request \(target.logDescription). Starting with expected response type: \(T.self).")
+    public func request<T: Decodable & Sendable>(target: Target, afterTockenRefreshed: Bool = false) async throws -> T {
+        print("🕸️ Request \(target). Starting with expected response type: \(T.self).")
 
         switch await performRequest(target: target) {
         case .success(let response):
             let filteredResponse = try response.filterSuccessfulStatusCodes()
             let result = try filteredResponse.map(T.self)
-            print("🕸️ Request \(target.logDescription). Completed successfully.")
+            print("🕸️ Request \(target). Completed successfully.")
             return result
         case .failure(let error):
-            print("🕸️ Request \(target.logDescription). Failed with error: \(error.localizedDescription).")
-            try await updateTokenIfNeeded(error, target: target)
-            return try await request(target: target)
+            try await handleRequestError(error, target: target, afterTockenRefreshed: afterTockenRefreshed)
+            return try await request(target: target, afterTockenRefreshed: true)
         }
     }
 
-    public func request(target: Target) async throws {
-        print("🕸️ Request \(target.logDescription). Starting.")
+    public func request(target: Target, afterTockenRefreshed: Bool = false) async throws {
+        print("🕸️ Request \(target). Starting.")
 
         switch await performRequest(target: target) {
         case .success(let response):
             let _ = try response.filterSuccessfulStatusCodes()
-            print("🕸️ Request \(target.logDescription). Completed successfully.")
-            return
+            print("🕸️ Request \(target). Completed successfully.")
         case .failure(let error):
-            print(
-                """
-                🕸️ Request \(target.logDescription). 
-                Failed with error: \(error.localizedDescription). 
-                Attempting to refresh token.
-                """
-            )
-            try await updateTokenIfNeeded(error, target: target)
-            print("🕸️ Request \(target.logDescription). Token refreshed, retrying.")
-            return try await request(target: target)
+            try await handleRequestError(error, target: target, afterTockenRefreshed: afterTockenRefreshed)
+            try await request(target: target, afterTockenRefreshed: true)
         }
+    }
+
+    private func handleRequestError(
+        _ error: MoyaError,
+        target: Target,
+        afterTockenRefreshed: Bool
+    ) async throws {
+        print("🕸️ Request \(target). Failed with error: \(error.localizedDescription)")
+
+        guard afterTockenRefreshed == false else {
+            print("🕸️ Request \(target). Too many attempts to refresh token.")
+            throw error
+        }
+
+        try await updateTokenIfNeeded(error, target: target)
     }
 
     private func performRequest(target: Target) async -> Result<Response, MoyaError> {
@@ -69,40 +74,32 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
     }
 
     private func updateTokenIfNeeded(_ error: Error, target: Target) async throws {
-        print("🕸️ Request \(target.logDescription). Checking if token refresh is needed.")
+        print("🕸️ Request \(target). Checking if token refresh is needed.")
 
         guard
             let serverError = error as? MoyaError,
             let statusCode = serverError.response?.statusCode,
             unauthorizedStatusCodes.contains(statusCode)
         else {
-            print(
-                """
-                🕸️ Request \(target.logDescription). Failed without token refresh. 
-                Error: \(error.localizedDescription).
-                """
-            )
+            print("🕸️ Request \(target). Failed without token refresh. Error: \(error.localizedDescription).")
             throw error
         }
 
-        if target.isRefreshTokenRequest {
+        if target.isAccessTokenRequired {
             try await refreshToken(target: target)
+        } else {
+            throw error
         }
     }
 
     private func refreshToken(target: Target) async throws {
-        print("🕸️ Request \(target.logDescription). Initiating token refresh.")
+        print("🕸️ Request \(target). Initiating token refresh.")
 
         do {
             try await tokenRefresher.refreshToken()
-            print("🕸️ Request \(target.logDescription). Token refreshed successfully.")
+            print("🕸️ Request \(target). Token refreshed successfully.")
         } catch {
-            print(
-                """
-                🕸️ Request \(target.logDescription).
-                Token refresh failed with error: \(error.localizedDescription).
-                """
-            )
+            print("🕸️ Request \(target). Token refresh failed with error: \(error.localizedDescription).")
 
             if
                 let serverError = error as? MoyaError,
@@ -111,7 +108,7 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
             {
                 if await onceExecutor?.shouldExecuteTokenRefreshFailed() == true {
                     onTokenRefreshFailed?()
-                    print("🕸️ Request \(target.logDescription). Executed token refresh failure action.")
+                    print("🕸️ Request \(target). Executed token refresh failure action.")
                 }
             }
 
