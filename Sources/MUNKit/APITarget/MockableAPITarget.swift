@@ -7,13 +7,13 @@
 
 import Foundation
 
-public protocol MockableAPITarget: MUNAPITarget {
+public protocol MUNMockableAPITarget: MUNAPITarget {
     var isMockEnabled: Bool { get }
     
     func getMockFileName() -> String?
 }
 
-extension MockableAPITarget {
+extension MUNMockableAPITarget {
     var sampleData: Data { getSampleData() }
 
     private func getSampleData() -> Data {
@@ -26,7 +26,7 @@ extension MockableAPITarget {
     }
 }
 
-public protocol MockablePaginationMobileApiTarget: MockableAPITarget {
+public protocol MockablePaginationMobileApiTarget: MUNMockableAPITarget {
     var pageIndexParameterName: String { get }
     var pageSizeParameterName: String { get }
 }
@@ -51,7 +51,7 @@ extension MockablePaginationMobileApiTarget {
     }
 }
 
-extension MockableAPITarget {
+extension MUNMockableAPITarget {
     func getSampleDataFromFileWithName(_ mockFileName: String) -> Data {
         let logStart = "For the request \(path), mock data"
         let mockExtension = "json"
