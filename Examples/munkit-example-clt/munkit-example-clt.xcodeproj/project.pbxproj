@@ -7,7 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4AFFC1132DA86EFA005D6A81 /* MUNKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4AFFC1122DA86EFA005D6A81 /* MUNKit */; };
+		4A03A3B62DAC5AFF00E1F7B5 /* munkit in Frameworks */ = {isa = PBXBuildFile; productRef = 4A03A3B52DAC5AFF00E1F7B5 /* munkit */; };
+		4A03A3B92DAC5B3700E1F7B5 /* munkit-example-core in Frameworks */ = {isa = PBXBuildFile; productRef = 4A03A3B82DAC5B3700E1F7B5 /* munkit-example-core */; };
+		4A12BEDB2DAC5ECB00A5438C /* munkit-example-core in Frameworks */ = {isa = PBXBuildFile; productRef = 4A12BEDA2DAC5ECB00A5438C /* munkit-example-core */; };
+		4A12BEDE2DAC5ED400A5438C /* munkit in Frameworks */ = {isa = PBXBuildFile; productRef = 4A12BEDD2DAC5ED400A5438C /* munkit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -39,17 +42,28 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4AFFC1132DA86EFA005D6A81 /* MUNKit in Frameworks */,
+				4A12BEDE2DAC5ED400A5438C /* munkit in Frameworks */,
+				4A03A3B92DAC5B3700E1F7B5 /* munkit-example-core in Frameworks */,
+				4A03A3B62DAC5AFF00E1F7B5 /* munkit in Frameworks */,
+				4A12BEDB2DAC5ECB00A5438C /* munkit-example-core in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4A12BEDF2DAC5EF000A5438C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		4AFFC0FA2DA86E65005D6A81 = {
 			isa = PBXGroup;
 			children = (
 				4AFFC1052DA86E65005D6A81 /* munkit-example-clt */,
+				4A12BEDF2DAC5EF000A5438C /* Frameworks */,
 				4AFFC1042DA86E65005D6A81 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -82,7 +96,10 @@
 			);
 			name = "munkit-example-clt";
 			packageProductDependencies = (
-				4AFFC1122DA86EFA005D6A81 /* MUNKit */,
+				4A03A3B52DAC5AFF00E1F7B5 /* munkit */,
+				4A03A3B82DAC5B3700E1F7B5 /* munkit-example-core */,
+				4A12BEDA2DAC5ECB00A5438C /* munkit-example-core */,
+				4A12BEDD2DAC5ED400A5438C /* munkit */,
 			);
 			productName = "munkit-example-clt";
 			productReference = 4AFFC1032DA86E65005D6A81 /* munkit-example-clt */;
@@ -113,7 +130,8 @@
 			mainGroup = 4AFFC0FA2DA86E65005D6A81;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				4AFFC1112DA86EFA005D6A81 /* XCLocalSwiftPackageReference "../../../MUNKit" */,
+				4A12BED92DAC5ECB00A5438C /* XCLocalSwiftPackageReference "../munkit-example-core" */,
+				4A12BEDC2DAC5ED400A5438C /* XCLocalSwiftPackageReference "../../munkit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4AFFC1042DA86E65005D6A81 /* Products */;
@@ -304,16 +322,32 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		4AFFC1112DA86EFA005D6A81 /* XCLocalSwiftPackageReference "../../../MUNKit" */ = {
+		4A12BED92DAC5ECB00A5438C /* XCLocalSwiftPackageReference "../munkit-example-core" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../../MUNKit;
+			relativePath = "../munkit-example-core";
+		};
+		4A12BEDC2DAC5ED400A5438C /* XCLocalSwiftPackageReference "../../munkit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../munkit;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		4AFFC1122DA86EFA005D6A81 /* MUNKit */ = {
+		4A03A3B52DAC5AFF00E1F7B5 /* munkit */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = MUNKit;
+			productName = munkit;
+		};
+		4A03A3B82DAC5B3700E1F7B5 /* munkit-example-core */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "munkit-example-core";
+		};
+		4A12BEDA2DAC5ECB00A5438C /* munkit-example-core */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "munkit-example-core";
+		};
+		4A12BEDD2DAC5ED400A5438C /* munkit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = munkit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
