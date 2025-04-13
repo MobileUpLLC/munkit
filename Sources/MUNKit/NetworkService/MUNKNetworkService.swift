@@ -24,32 +24,30 @@ public actor MUNKNetworkService<Target: MUNKMobileApiTargetType> {
         onTokenRefreshFailed = action
     }
 
-    public func request<T: Decodable & Sendable>(target: Target, afterTockenRefreshed: Bool = false) async throws -> T {
-        // For Natasha: MoyaError.statusCode(.init(statusCode: 400, data: Data())) try await _Concurrency.Task.sleep(for: .seconds(Int.random(in: 1...5)))
-
+    public func request<T: Decodable & Sendable>(target: Target, afterTokenRefreshed: Bool = false) async throws -> T {
         switch await performRequest(target: target) {
         case .success(let response):
             let filteredResponse = try response.filterSuccessfulStatusCodes()
             let result = try filteredResponse.map(T.self)
             return result
         case .failure(let error):
-            try await handleRequestError(error, target: target, afterTockenRefreshed: afterTockenRefreshed)
-            return try await request(target: target, afterTockenRefreshed: true)
+            try await handleRequestError(error, target: target, afterTokenRefreshed: afterTokenRefreshed)
+            return try await request(target: target, afterTokenRefreshed: true)
         }
     }
 
-    public func request(target: Target, afterTockenRefreshed: Bool = false) async throws {
+    public func request(target: Target, afterTokenRefreshed: Bool = false) async throws {
         switch await performRequest(target: target) {
         case .success(let response):
             let _ = try response.filterSuccessfulStatusCodes()
         case .failure(let error):
-            try await handleRequestError(error, target: target, afterTockenRefreshed: afterTockenRefreshed)
-            try await request(target: target, afterTockenRefreshed: true)
+            try await handleRequestError(error, target: target, afterTokenRefreshed: afterTokenRefreshed)
+            try await request(target: target, afterTokenRefreshed: true)
         }
     }
 
-    private func handleRequestError(_ error: MoyaError, target: Target, afterTockenRefreshed: Bool) async throws {
-        guard afterTockenRefreshed == false else {
+    private func handleRequestError(_ error: MoyaError, target: Target, afterTokenRefreshed: Bool) async throws {
+        guard afterTokenRefreshed == false else {
             throw error
         }
         try await refreshTokenIfNeeded(error, target: target)

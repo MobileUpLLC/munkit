@@ -8,6 +8,5 @@
 public protocol MUNKTokenProvider: Sendable {
     var accessToken: String? { get }
 
-    @discardableResult
     func refreshToken() async throws
 }
