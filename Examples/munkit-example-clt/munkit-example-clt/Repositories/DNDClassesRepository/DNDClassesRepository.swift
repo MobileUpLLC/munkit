@@ -15,6 +15,6 @@ actor DNDClassesRepository {
     }
 
     func getClassesList() async throws -> DNDClassesListModel {
-        return try await networkService.request(target: .classes)
+        return try await networkService.executeRequest(target: .classes)
     }
 }

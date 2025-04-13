@@ -20,7 +20,7 @@ private let provider = MoyaProvider<DNDAPITarget>(
 
 private let networkService = MUNKNetworkService(apiProvider: provider, tokenRefreshProvider: tokenProvider)
 
-await networkService.setTokenRefreshFailedAction { print("🧨 Token refresh failed handler called") }
+await networkService.setTokenRefreshFailureHandler { print("🧨 Token refresh failed handler called") }
 
 let dndClassesRepository = await DNDClassesRepository(networkService: networkService)
 
