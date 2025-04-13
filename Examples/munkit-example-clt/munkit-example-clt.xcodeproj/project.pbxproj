@@ -52,18 +52,10 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		4A12BEDF2DAC5EF000A5438C /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		4AFFC0FA2DA86E65005D6A81 = {
 			isa = PBXGroup;
 			children = (
 				4AFFC1052DA86E65005D6A81 /* munkit-example-clt */,
-				4A12BEDF2DAC5EF000A5438C /* Frameworks */,
 				4AFFC1042DA86E65005D6A81 /* Products */,
 			);
 			sourceTree = "<group>";

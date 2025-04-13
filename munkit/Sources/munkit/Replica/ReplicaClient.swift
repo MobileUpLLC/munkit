@@ -17,15 +17,13 @@ public actor ReplicaClient {
     public func createReplica<T: Sendable>(
         name: String,
         storage: (any Storage<T>)?,
-        fetcher: @escaping Fetcher<T>
+        fetcher: @Sendable @escaping () async throws -> T
     ) async -> any PhysicalReplica<T> {
-
         if let replica = await findReplica(by: name) as? any PhysicalReplica<T> {
             return replica
         }
 
         let replica = PhysicalReplicaImplementation(
-            id: UUID(),
             storage: storage,
             fetcher: fetcher,
             name: name

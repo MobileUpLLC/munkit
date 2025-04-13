@@ -10,9 +10,8 @@ import Foundation
 public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     public let name: String
 
-    private let identifier: UUID
     private let storage: (any Storage<T>)?
-    private let fetcher: Fetcher<T>
+    private let fetcher: @Sendable () async throws -> T
     private var currentReplicaState: ReplicaState<T>
 
     private var observerStateStreamBundles: [AsyncStreamBundle<ReplicaState<T>>] = []
@@ -35,8 +34,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     private let replicaClearingController: ReplicaClearingController<T>
     private let replicaFreshnessController: ReplicaFreshnessController<T>
 
-    public init(id: UUID = UUID(), storage: (any Storage<T>)?, fetcher: @escaping Fetcher<T>, name: String) {
-        self.identifier = id
+    public init(storage: (any Storage<T>)?, fetcher: @Sendable @escaping () async throws -> T, name: String) {
         self.name = name
         self.storage = storage
         self.fetcher = fetcher

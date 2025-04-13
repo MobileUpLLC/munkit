@@ -23,6 +23,12 @@ private let networkService = MUNNetworkService(apiProvider: provider, tokenRefre
 
 await networkService.setTokenRefreshFailureHandler { print("🧨 Token refresh failed handler called") }
 
+ReplicaClient.shared.createReplica(name: "DNDClassesReplica", storage: nil, fetcher: <#T##Fetcher<Sendable>##Fetcher<Sendable>##() async throws -> Sendable#>)
+
+
+
+
+
 let dndClassesRepository = await DNDClassesRepository(networkService: networkService)
 
 func performRequest(id: Int) async {

@@ -39,7 +39,7 @@ actor ReplicaFreshnessController<T> where T: Sendable {
     }
 
     func makeFresh() async {
-        if let data = replicaState.data {
+        if replicaState.data != nil {
             replicaEventStreamContinuation.yield(.freshness(.freshened))
         }
     }

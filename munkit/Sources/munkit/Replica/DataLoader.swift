@@ -30,12 +30,12 @@ actor DataLoader<T> where T: Sendable {
     private let storage: (any Storage<T>)?
 
     /// Интерфейс для получения данных из внешнего источника.
-    private let fetcher: Fetcher<T>
+    private let fetcher: @Sendable () async throws -> T
 
     /// Асинхронная задача, выполняющая текущую операцию загрузки.
     private var loadingTask: Task<Void, Never>?
 
-    init(storage: (any Storage<T>)?, fetcher: @escaping Fetcher<T>) {
+    init(storage: (any Storage<T>)?, fetcher: @Sendable @escaping () async throws -> T) {
         self.storage = storage
         self.fetcher = fetcher
         self.outputStreamBundle = AsyncStream.makeStream(of: Output.self)
