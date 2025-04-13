@@ -7,45 +7,12 @@
 
 import munkit
 import munkit_example_core
-import Moya
 import Foundation
 
-private let tokenProvider = TokenProvider()
+await setupNetworkService()
+let dndClassesReplica = await getDndClassesReplica()
 
-private let provider = MoyaProvider<DNDAPITarget>(
-    plugins: [
-        MUNAccessTokenPlugin(accessTokenProvider: tokenProvider),
-        MockAuthPlugin()
-    ]
-)
+let observerActiveStream: AsyncStreamBundle = AsyncStream<Bool>.makeStream()
+let observer = await dndClassesReplica.observe(observerActive: observerActiveStream.stream)
 
-private let networkService = MUNNetworkService(apiProvider: provider, tokenRefreshProvider: tokenProvider)
-
-await networkService.setTokenRefreshFailureHandler { print("🧨 Token refresh failed handler called") }
-
-ReplicaClient.shared.createReplica(name: "DNDClassesReplica", storage: nil, fetcher: <#T##Fetcher<Sendable>##Fetcher<Sendable>##() async throws -> Sendable#>)
-
-
-
-
-
-let dndClassesRepository = await DNDClassesRepository(networkService: networkService)
-
-func performRequest(id: Int) async {
-    print("👁️", #function, "\(id)")
-    do {
-        let _ = try await dndClassesRepository.getClassesList()
-        print("🥳", #function, "\(id)")
-    } catch {
-        print("☠️", #function, "\(id)")
-    }
-}
-
-await withTaskGroup(of: Void.self) { group in
-    for id in 1...30 {
-        group.addTask {
-            _ = await performRequest(id: id)
-        }
-    }
-    await group.waitForAll()
-}
+try await Task.sleep(for: .seconds(10))

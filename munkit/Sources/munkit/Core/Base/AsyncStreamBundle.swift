@@ -5,4 +5,4 @@
 //  Created by Ilia Chub on 07.04.2025.
 //
 
-typealias AsyncStreamBundle<T> = (stream: AsyncStream<T>, continuation: AsyncStream<T>.Continuation)
+public typealias AsyncStreamBundle<T> = (stream: AsyncStream<T>, continuation: AsyncStream<T>.Continuation)
