@@ -17,7 +17,7 @@ struct MockAuthPlugin: PluginType {
         target: TargetType
     ) -> Result<Moya.Response, MoyaError> {
         guard
-            let target = target as? MUNKMobileApiTargetType,
+            let target = target as? MUNAPITarget,
             case .success(let success) = result,
             let request = success.request,
             target.isAccessTokenRequired

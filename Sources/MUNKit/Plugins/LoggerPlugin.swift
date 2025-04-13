@@ -1,5 +1,5 @@
 //
-//  MUNKLoggerPlugin.swift
+//  LoggerPlugin.swift
 //  MUNKit
 //
 //  Created by Natalia Luzyanina on 01.04.2025.
@@ -7,7 +7,7 @@
 
 import Moya
 
-public actor MUNKLoggerPlugin {
+public actor MUNLoggerPlugin {
     public static let instance = NetworkLoggerPlugin(configuration: configuration)
 
     private static let configuration = NetworkLoggerPlugin.Configuration(output: defaultOutput, logOptions: .verbose)

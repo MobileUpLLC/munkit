@@ -8,13 +8,13 @@
 import MUNKit
 
 actor DNDClassesRepository {
-    private let networkService: MUNKNetworkService<DNDAPITarget>
+    private let networkService: MUNNetworkService<DNDAPITarget>
 
-    init(networkService: MUNKNetworkService<DNDAPITarget>) async {
+    init(networkService: MUNNetworkService<DNDAPITarget>) async {
         self.networkService = networkService
     }
 
     func getClassesList() async throws -> DNDClassesListModel {
-        return try await networkService.request(target: .classes)
+        return try await networkService.executeRequest(target: .classes)
     }
 }

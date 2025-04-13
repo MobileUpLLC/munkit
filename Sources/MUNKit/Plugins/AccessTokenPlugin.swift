@@ -1,5 +1,5 @@
 //
-//  MUNKAccessTokenPlugin.swift
+//  AccessTokenPlugin.swift
 //  MUNKit
 //
 //  Created by Natalia Luzyanina on 01.04.2025.
@@ -8,28 +8,24 @@
 import Foundation
 import Moya
 
-public struct MUNKAccessTokenPlugin: PluginType {
-    private let accessTokenProvider: MUNKTokenProvider
+public struct MUNAccessTokenPlugin: PluginType {
+    private let accessTokenProvider: MUNAccessTokenProvider
 
-    public init(accessTokenProvider: MUNKTokenProvider) {
+    public init(accessTokenProvider: MUNAccessTokenProvider) {
         self.accessTokenProvider = accessTokenProvider
     }
     
     public func prepare(_ request: URLRequest, target: TargetType) -> URLRequest {
-        guard let mobileApiTarget = target as? MUNKMobileApiTargetType else {
+        guard let target = target as? MUNAPITarget else {
             return request
         }
         
-        return prepare(request, target: mobileApiTarget)
-    }
-
-    private func prepare(_ request: URLRequest, target: MUNKMobileApiTargetType) -> URLRequest {
         var request = request
-        
+
         if target.isAccessTokenRequired, let accessToken = accessTokenProvider.accessToken {
             request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         }
-        
+
         return request
     }
 }

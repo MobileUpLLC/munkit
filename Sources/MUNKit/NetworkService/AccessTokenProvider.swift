@@ -1,13 +1,12 @@
 //
-//  MUNKTokenProvider.swift
+//  AccessTokenProvider.swift
 //  MUNKit
 //
 //  Created by Natalia Luzyanina on 01.04.2025.
 //
 
-public protocol MUNKTokenProvider: Sendable {
+public protocol MUNAccessTokenProvider: Sendable {
     var accessToken: String? { get }
 
-    @discardableResult
     func refreshToken() async throws
 }

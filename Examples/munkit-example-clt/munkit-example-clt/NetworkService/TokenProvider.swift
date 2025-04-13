@@ -9,7 +9,7 @@ import MUNKit
 import Moya
 import Foundation
 
-final class TokenProvider: MUNKTokenProvider, @unchecked Sendable {
+final class TokenProvider: MUNAccessTokenProvider, @unchecked Sendable {
     var accessToken: String? {
         get { accessTokenQueue.sync { _accessToken } }
         set { accessTokenQueue.sync { _accessToken = newValue } }
@@ -28,8 +28,6 @@ final class TokenProvider: MUNKTokenProvider, @unchecked Sendable {
 
     func refreshToken() async throws {
         print("✍️", #function)
-
-        throw MoyaError.statusCode(.init(statusCode: 400, data: Data()))
 
         guard let previousToken = accessToken else {
             throw MoyaError.statusCode(.init(statusCode: 400, data: Data()))
