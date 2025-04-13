@@ -9,9 +9,9 @@ import Foundation
 import Moya
 
 public struct MUNAccessTokenPlugin: PluginType {
-    private let accessTokenProvider: MUNTokenProvider
+    private let accessTokenProvider: MUNAccessTokenProvider
 
-    public init(accessTokenProvider: MUNTokenProvider) {
+    public init(accessTokenProvider: MUNAccessTokenProvider) {
         self.accessTokenProvider = accessTokenProvider
     }
     

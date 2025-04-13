@@ -11,12 +11,12 @@ import Foundation
 public actor MUNNetworkService<Target: MUNMobileApiTargetType> {
     private let moyaProvider: MoyaProvider<Target>
 
-    private let tokenProvider: MUNTokenProvider
+    private let tokenProvider: MUNAccessTokenProvider
     private var tokenRefreshFailureHandler: (() async -> Void)?
     private var tokenRefreshTask: _Concurrency.Task<Void, Error>?
     private let authErrorStatusCodes: Set<Int> = [401, 403, 409]
 
-    public init(apiProvider: MoyaProvider<Target>, tokenRefreshProvider: MUNTokenProvider) {
+    public init(apiProvider: MoyaProvider<Target>, tokenRefreshProvider: MUNAccessTokenProvider) {
         self.moyaProvider = apiProvider
         self.tokenProvider = tokenRefreshProvider
     }
