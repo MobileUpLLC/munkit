@@ -1,5 +1,5 @@
 //
-//  MUNMockableMobileApiTarget.swift
+//  MockableAPITarget.swift
 //  MUNKit
 //
 //  Created by Natalia Luzyanina on 01.04.2025.
@@ -7,13 +7,13 @@
 
 import Foundation
 
-public protocol MUNMockableMobileApiTarget: MUNMobileApiTargetType {
+public protocol MockableAPITarget: MUNAPITarget {
     var isMockEnabled: Bool { get }
     
     func getMockFileName() -> String?
 }
 
-extension MUNMockableMobileApiTarget {
+extension MockableAPITarget {
     var sampleData: Data { getSampleData() }
 
     private func getSampleData() -> Data {
@@ -26,7 +26,7 @@ extension MUNMockableMobileApiTarget {
     }
 }
 
-public protocol MockablePaginationMobileApiTarget: MUNMockableMobileApiTarget {
+public protocol MockablePaginationMobileApiTarget: MockableAPITarget {
     var pageIndexParameterName: String { get }
     var pageSizeParameterName: String { get }
 }
@@ -51,7 +51,7 @@ extension MockablePaginationMobileApiTarget {
     }
 }
 
-extension MUNMockableMobileApiTarget {
+extension MockableAPITarget {
     func getSampleDataFromFileWithName(_ mockFileName: String) -> Data {
         let logStart = "For the request \(path), mock data"
         let mockExtension = "json"

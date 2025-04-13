@@ -1,5 +1,5 @@
 //
-//  MUNAccessTokenPlugin.swift
+//  AccessTokenPlugin.swift
 //  MUNKit
 //
 //  Created by Natalia Luzyanina on 01.04.2025.
@@ -16,20 +16,16 @@ public struct MUNAccessTokenPlugin: PluginType {
     }
     
     public func prepare(_ request: URLRequest, target: TargetType) -> URLRequest {
-        guard let mobileApiTarget = target as? MUNMobileApiTargetType else {
+        guard let target = target as? MUNAPITarget else {
             return request
         }
         
-        return prepare(request, target: mobileApiTarget)
-    }
-
-    private func prepare(_ request: URLRequest, target: MUNMobileApiTargetType) -> URLRequest {
         var request = request
-        
+
         if target.isAccessTokenRequired, let accessToken = accessTokenProvider.accessToken {
             request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         }
-        
+
         return request
     }
 }

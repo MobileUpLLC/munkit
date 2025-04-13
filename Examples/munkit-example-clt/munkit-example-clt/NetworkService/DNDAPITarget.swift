@@ -13,7 +13,7 @@ import Foundation
      case classes
  }
 
- extension DNDAPITarget: MUNMobileApiTargetType {
+ extension DNDAPITarget: MUNAPITarget {
      var parameters: [String : Any] { [:] }
      var isAccessTokenRequired: Bool { true }
      var isRefreshTokenRequest: Bool { false }

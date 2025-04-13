@@ -1,5 +1,5 @@
 //
-//  MUNNetworkService.swift
+//  NetworkService.swift
 //  MUNKit
 //
 //  Created by Natalia Luzyanina on 01.04.2025.
@@ -8,7 +8,7 @@
 import Moya
 import Foundation
 
-public actor MUNNetworkService<Target: MUNMobileApiTargetType> {
+public actor MUNNetworkService<Target: MUNAPITarget> {
     private let moyaProvider: MoyaProvider<Target>
 
     private let tokenProvider: MUNAccessTokenProvider
