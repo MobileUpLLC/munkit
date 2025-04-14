@@ -16,6 +16,8 @@ public protocol PhysicalReplica<T>: Replica where T: Sendable {
     func clearError() async
     func invalidate(mode: InvalidationMode) async
     func makeFresh() async
+    func setData(data: T) async
+    func mutataData(transform: @escaping (T) -> T)
 }
 
 public extension PhysicalReplica {

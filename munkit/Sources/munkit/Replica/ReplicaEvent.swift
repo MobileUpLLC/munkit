@@ -8,7 +8,7 @@
 import Foundation
 
 /// Событие, произошедшее в реплике.
-public enum ReplicaEvent<T>: Sendable where T: Sendable  {
+enum ReplicaEvent<T>: Sendable where T: Sendable  {
     /// События, связанные с загрузкой.
     case loading(LoadingEvent<T>)
     /// События, связанные со свежестью данных.
@@ -19,9 +19,18 @@ public enum ReplicaEvent<T>: Sendable where T: Sendable  {
     case clearedError
     /// Изменение количества наблюдателей.
     case observerCountChanged(ObservingState)
+    /// События изменения данных
+    case changing(ChangingDataEvent<T>)
 }
 
-public enum LoadingFinished<T>: Sendable where T: Sendable {
+enum ChangingDataEvent<T>: Sendable where T: Sendable {
+    /// Замена текущих данных на новые
+    case dataSetting(data: ReplicaData<T>)
+    /// Модификация текущих данных
+    case dataMutating(data: ReplicaData<T>)
+}
+
+enum LoadingFinished<T>: Sendable where T: Sendable {
     /// Успешная загрузка с данными.
     case success(data: ReplicaData<T>)
     /// Загрузка отменена.
@@ -30,7 +39,7 @@ public enum LoadingFinished<T>: Sendable where T: Sendable {
     case error(Error)
 }
 
-public enum LoadingEvent<T>: Sendable where T: Sendable {
+enum LoadingEvent<T>: Sendable where T: Sendable {
     /// Начало загрузки.
     case loadingStarted(dataRequested: Bool, preloading: Bool)
     /// Данные загружены из хранилища.
@@ -39,14 +48,14 @@ public enum LoadingEvent<T>: Sendable where T: Sendable {
     case loadingFinished(LoadingFinished<T>)
 }
 
-public enum FreshnessEvent: Sendable {
+enum FreshnessEvent: Sendable {
     /// Данные стали свежими.
     case freshened
     /// Данные устарели.
     case becameStale
 }
 
-public struct ObserversCountInfo: Sendable {
+struct ObserversCountInfo: Sendable {
     let count: Int
     let activeCount: Int
     let previousCount: Int

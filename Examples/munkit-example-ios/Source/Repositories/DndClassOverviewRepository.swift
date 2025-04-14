@@ -11,6 +11,6 @@ final class DndClassOverviewRepository {
     private let mobileService = MobileService.shared.networkService
 
     func getClassOverview(index: String) async throws -> ClassOverviewModel {
-        return try await mobileService.request(target: .classOverview(index))
+        return try await mobileService.executeRequest(target: .classOverview(index))
     }
 }

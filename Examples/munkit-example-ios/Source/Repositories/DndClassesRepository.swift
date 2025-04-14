@@ -1,13 +1,14 @@
-import MUNKit
+import munkit
+import Foundation
 
-final class DndClassesRepository: Sendable {
+actor DndClassesRepository {
     let replica: any PhysicalReplica<ClassesListModel>
 
     init() async {
         self.replica = await ReplicaClient.shared.createReplica(
             name: "DndReplica",
             storage: nil,
-            fetcher: { try await MobileService.shared.networkService.request(target: .classes) }
+            fetcher: { try await MobileService.shared.networkService.executeRequest(target: .classes) }
         )
     }
 
@@ -17,5 +18,15 @@ final class DndClassesRepository: Sendable {
 
     func invalidateData() async {
         await replica.invalidate()
+    }
+
+    func setData(data: ClassesListModel) async {
+        await replica.setData(data: data)
+    }
+
+    func mutateData(transform: @escaping (ClassesListModel) -> ClassesListModel) async {
+        Task {
+            await replica.mutataData(transform: transform)
+        }
     }
 }

@@ -22,7 +22,7 @@
 		6D2A84AF2D9AC0DC00E345CD /* MobileService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2A84AE2D9AC0DC00E345CD /* MobileService.swift */; };
 		6D2A84B12D9AC1A700E345CD /* MobileApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2A84B02D9AC1A700E345CD /* MobileApi.swift */; };
 		6DBD480C2DA6A6D900021895 /* DndClassOverviewRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DBD480B2DA6A6D900021895 /* DndClassOverviewRepository.swift */; };
-		6DC1379B2DA92BC200372871 /* MUNKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6DC1379A2DA92BC200372871 /* MUNKit */; };
+		6DD1833A2DACFA91008B38D6 /* munkit in Frameworks */ = {isa = PBXBuildFile; productRef = 6DD183392DACFA91008B38D6 /* munkit */; };
 		6DFE1ED52D9A8880006B827D /* DndClassesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1ED32D9A8880006B827D /* DndClassesViewModel.swift */; };
 		6DFE1ED62D9A8880006B827D /* DndClassesCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1ED02D9A8880006B827D /* DndClassesCoordinator.swift */; };
 		6DFE1ED72D9A8880006B827D /* DndClassesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1ED22D9A8880006B827D /* DndClassesView.swift */; };
@@ -89,7 +89,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6DC1379B2DA92BC200372871 /* MUNKit in Frameworks */,
+				6DD1833A2DACFA91008B38D6 /* munkit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -317,7 +317,7 @@
 			);
 			name = exampleApp;
 			packageProductDependencies = (
-				6DC1379A2DA92BC200372871 /* MUNKit */,
+				6DD183392DACFA91008B38D6 /* munkit */,
 			);
 			productName = exampleApp;
 			productReference = F79D02FECCD574BEB3CCBF74 /* exampleApp.app */;
@@ -685,9 +685,10 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		6DC1379A2DA92BC200372871 /* MUNKit */ = {
+		6DD183392DACFA91008B38D6 /* munkit */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = MUNKit;
+			package = 6DC137992DA92BC200372871 /* XCLocalSwiftPackageReference "../../MUNKit" */;
+			productName = munkit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

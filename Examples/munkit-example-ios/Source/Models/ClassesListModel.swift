@@ -1,11 +1,11 @@
 import Foundation
 
-struct ClassesListModel: Decodable {
+struct ClassesListModel: Decodable, Sendable {
     let count: Int
-    let results: [ClassModel]
+    var results: [ClassModel]
 }
 
-struct ClassModel: Decodable {
+struct ClassModel: Decodable, Sendable {
     let index: String
     let name: String
     let url: URL

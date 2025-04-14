@@ -33,6 +33,16 @@ struct DndClassesView: View {
             } label: {
                 Text("Invalidate data")
             }
+            Button {
+                viewModel.setData()
+            } label: {
+                Text("Set data")
+            }
+            Button {
+                viewModel.mutateData()
+            } label: {
+                Text("Mutate data")
+            }
         }
         .onFirstAppear { viewModel.startObserving() }
         .onDisappear { viewModel.deinitObserver() }

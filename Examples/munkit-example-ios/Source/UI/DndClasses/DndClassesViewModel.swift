@@ -1,5 +1,5 @@
 import Foundation
-import MUNKit
+import munkit
 
 final class DndClassesViewModel: ObservableObject {
     @Published private(set) var classItems: [DndClassesView.ViewItem]?
@@ -42,6 +42,41 @@ final class DndClassesViewModel: ObservableObject {
         Task { await repository.invalidateData() }
     }
 
+    @MainActor
+    func setData() {
+        Task {
+            let mockClassesList = ClassesListModel(
+                count: 2,
+                results: [
+                    ClassModel(
+                        index: "barbarian",
+                        name: "Barbarian",
+                        // swiftlint:disable:next force_unwrapping
+                        url: URL(string: "https://www.dnd5eapi.co/api/classes/barbarian")!
+                    ),
+                    ClassModel(
+                        index: "bard",
+                        name: "Bard",
+                        // swiftlint:disable:next force_unwrapping
+                        url: URL(string: "https://www.dnd5eapi.co/api/classes/bard")!
+                    )
+                ]
+            )
+            await repository.setData(data: mockClassesList)
+        }
+    }
+
+    @MainActor
+    func mutateData() {
+        Task {
+            await repository.mutateData { @Sendable data in
+                var mutatedData = data
+                mutatedData.results.removeLast()
+                return mutatedData
+            }
+        }
+    }
+    
     @MainActor
     func startObserving() {
         print("\(self): startObserving")

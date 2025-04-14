@@ -1,5 +1,5 @@
 import Foundation
-import MUNKit
+import munkit
 import Moya
 
 enum MobileApi {
@@ -7,7 +7,7 @@ enum MobileApi {
     case classOverview(String)
 }
 
-extension MobileApi: MUNKMobileApiTargetType {
+extension MobileApi: MUNAPITarget {
     var parameters: [String : Any] { [:] }
     var isAccessTokenRequired: Bool { false }
     var isRefreshTokenRequest: Bool { false }

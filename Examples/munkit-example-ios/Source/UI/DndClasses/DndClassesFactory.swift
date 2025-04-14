@@ -1,5 +1,5 @@
 import UIKit
-import MUNKit
+import munkit
 
 enum DndClassesFactory {
     @MainActor static func createDndClassesController() async -> DndClassesController {

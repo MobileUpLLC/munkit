@@ -1,11 +1,11 @@
 import Foundation
-import MUNKit
+import munkit
 import Moya
 
 actor MobileService {
     static let shared = MobileService()
 
-    let networkService: MUNKNetworkService<MobileApi>
+    let networkService: MUNNetworkService<MobileApi>
 
     private init() {
         let tokenProvider = TokenProvider()
@@ -15,9 +15,9 @@ actor MobileService {
 
         let apiProvider = MoyaProvider<MobileApi>(
             session: Session(configuration: configuration, startRequestsImmediately: true),
-            plugins: [MUNKLoggerPlugin.instance]
+            plugins: [MUNLoggerPlugin.instance]
         )
 
-        self.networkService = MUNKNetworkService(apiProvider: apiProvider, tokenRefreshProvider: tokenProvider)
+        self.networkService = MUNNetworkService(apiProvider: apiProvider, tokenRefreshProvider: tokenProvider)
     }
 }
