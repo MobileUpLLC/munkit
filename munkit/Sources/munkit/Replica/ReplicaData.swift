@@ -7,18 +7,19 @@
 
 import Foundation
 
-/// Данные, хранимые в реплике.
 public struct ReplicaData<T>: Sendable where T: Sendable {
-    public let value: T
+    public var value: T
     var isFresh: Bool
-    let changingDate: Date
-    let optimisticUpdates: [OptimisticUpdate<T>]
+    var changingDate: Date
+    var optimisticUpdates: [any OptimisticUpdate<T>]
 
     var valueWithOptimisticUpdates: T {
-        optimisticUpdates.applyAll(to: value)
+        optimisticUpdates.reduce(value) { currentData, update in
+            update.apply(to: currentData)
+        }
     }
 
-    init(value: T, isFresh: Bool, changingDate: Date, optimisticUpdates: [OptimisticUpdate<T>] = []) {
+    init(value: T, isFresh: Bool, changingDate: Date, optimisticUpdates: [any OptimisticUpdate<T>] = []) {
         self.value = value
         self.isFresh = isFresh
         self.changingDate = changingDate
@@ -26,13 +27,8 @@ public struct ReplicaData<T>: Sendable where T: Sendable {
     }
 }
 
-// TO DO: Implement OptimisticUpdate
-struct OptimisticUpdate<T> {
-    func apply(to value: T) -> T { value }
-}
+public protocol OptimisticUpdate<T>: Sendable, AnyObject {
+    associatedtype T
 
-extension Array {
-    func applyAll<T>(to value: T) -> T where Element == OptimisticUpdate<T> {
-        reduce(value) { $1.apply(to: $0) }
-    }
+    func apply(to data: T) -> T
 }

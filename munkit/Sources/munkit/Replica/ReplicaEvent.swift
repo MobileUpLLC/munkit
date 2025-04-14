@@ -21,6 +21,17 @@ enum ReplicaEvent<T>: Sendable where T: Sendable  {
     case observerCountChanged(ObservingState)
     /// События изменения данных
     case changing(ChangingDataEvent<T>)
+    /// События оптимистичных обновлений
+    case optimisticUpdates(OptimisticUpdatesEvent<T>)
+}
+
+enum OptimisticUpdatesEvent<T>: Sendable where T: Sendable {
+    /// Добавляет обновление в список ожидающих обновлений
+    case begin(data: ReplicaData<T>)
+    /// Подтверждает оптимистичное обновление, применяя его к данным и сохраняя в хранилище.
+    case commit(data: ReplicaData<T>)
+    /// Откатывает оптимистичное обновление, удаляя его из списка ожидающих обновлений.
+    case rollback(data: ReplicaData<T>)
 }
 
 enum ChangingDataEvent<T>: Sendable where T: Sendable {

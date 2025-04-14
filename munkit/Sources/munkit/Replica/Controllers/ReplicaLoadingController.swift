@@ -117,8 +117,7 @@ actor ReplicaLoadingController<T> where T: Sendable {
         for await output in outputStream {
             switch output {
             case .loadingFinished(.success(let data)):
-                let optimisticUpdates = replicaState.data?.optimisticUpdates
-                return optimisticUpdates?.applyAll(to: data) ?? data
+                return replicaState.data?.valueWithOptimisticUpdates ?? data
             case .loadingFinished(.error(let exception)):
                 throw exception
             default:
