@@ -1,11 +1,12 @@
 import UIKit
 import munkit
+import munkit_example_core
 
 enum DndClassesFactory {
     @MainActor static func createDndClassesController() async -> DndClassesController {
-        let repository = await DndClassesRepository()
+        let repository = await DNDClassesRepository(networkService: MobileService.shared.networkService)
         let coordinator = DndClassesCoordinator()
-        let viewModel = DndClassesViewModel(
+        let viewModel = await DndClassesViewModel(
             coordinator: coordinator,
             replica: repository.replica,
             repository: repository

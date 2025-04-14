@@ -1,4 +1,5 @@
 import SwiftUI
+import munkit_example_core
 
 extension ClassOverviewView {
     struct ViewItem {
@@ -51,7 +52,7 @@ struct ClassOverviewView: View {
 #Preview {
     ClassOverviewView(
         viewModel: ClassOverviewViewModel(
-            id: "", coordinator: ClassOverviewCoordinator(), repository: DndClassOverviewRepository()
+            id: "", coordinator: ClassOverviewCoordinator(), repository: DNDClassOverviewRepository()
         )
     )
 }

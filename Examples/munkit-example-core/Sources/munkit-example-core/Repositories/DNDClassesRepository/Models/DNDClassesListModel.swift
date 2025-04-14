@@ -8,6 +8,9 @@
 import Foundation
 
 public struct DNDClassesListModel: Decodable, Sendable {
-    let count: Int
-    let results: [DNDClassModel]
+    public var results: [DNDClassModel]
+
+    public init(results: [DNDClassModel]) {
+        self.results = results
+    }
 }

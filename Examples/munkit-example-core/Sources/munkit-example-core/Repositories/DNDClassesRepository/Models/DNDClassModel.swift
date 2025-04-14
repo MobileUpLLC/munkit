@@ -8,7 +8,13 @@
 import Foundation
 
 public struct DNDClassModel: Decodable, Sendable {
-    let index: String
-    let name: String
-    let url: URL
+    public let index: String
+    public let name: String
+    public let url: URL
+
+    public init(index: String, name: String, url: URL) {
+        self.index = index
+        self.name = name
+        self.url = url
+    }
 }

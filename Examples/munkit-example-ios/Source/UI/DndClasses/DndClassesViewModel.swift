@@ -1,17 +1,22 @@
 import Foundation
 import munkit
+import munkit_example_core
 
 final class DndClassesViewModel: ObservableObject {
     @Published private(set) var classItems: [DndClassesView.ViewItem]?
 
     private let coordinator: DndClassesCoordinator
-    private let repository: DndClassesRepository
-    private let replica: any Replica<ClassesListModel>
+    private let repository: DNDClassesRepository
+    private let replica: any Replica<DNDClassesListModel>
     private let observerStateStream: AsyncStream<Bool>
     private let observerContinuation: AsyncStream<Bool>.Continuation
     private var observerTask: Task<Void, Never>?
 
-    init(coordinator: DndClassesCoordinator, replica: any Replica<ClassesListModel>, repository: DndClassesRepository) {
+    init(
+        coordinator: DndClassesCoordinator,
+        replica: any Replica<DNDClassesListModel>,
+        repository: DNDClassesRepository
+    ) {
         self.coordinator = coordinator
         self.repository = repository
         self.replica = replica
@@ -45,16 +50,15 @@ final class DndClassesViewModel: ObservableObject {
     @MainActor
     func setData() {
         Task {
-            let mockClassesList = ClassesListModel(
-                count: 2,
+            let mockClassesList = DNDClassesListModel(
                 results: [
-                    ClassModel(
+                    DNDClassModel(
                         index: "barbarian",
                         name: "Barbarian",
                         // swiftlint:disable:next force_unwrapping
                         url: URL(string: "https://www.dnd5eapi.co/api/classes/barbarian")!
                     ),
-                    ClassModel(
+                    DNDClassModel(
                         index: "bard",
                         name: "Bard",
                         // swiftlint:disable:next force_unwrapping

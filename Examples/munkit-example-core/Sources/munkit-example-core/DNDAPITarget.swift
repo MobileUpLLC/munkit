@@ -11,6 +11,7 @@ import Foundation
 
 public enum DNDAPITarget {
     case classes
+    case classOverview(String)
 }
 
 extension DNDAPITarget: MUNAPITarget {

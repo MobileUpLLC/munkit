@@ -1,11 +1,18 @@
-import Foundation
+//
+//  MockAuthPlugin.swift
+//  munkit-example-clt
+//
+//  Created by Ilia Chub on 11.04.2025.
+//
+
 import munkit
 import Moya
+import Foundation
 
-actor MobileService {
-    static let shared = MobileService()
+public actor MobileService {
+    public static let shared = MobileService()
 
-    let networkService: MUNNetworkService<MobileApi>
+    public let networkService: MUNNetworkService<DNDAPITarget>
 
     private init() {
         let tokenProvider = TokenProvider()
@@ -13,7 +20,7 @@ actor MobileService {
         configuration.headers = .default
         configuration.urlCache = nil
 
-        let apiProvider = MoyaProvider<MobileApi>(
+        let apiProvider = MoyaProvider<DNDAPITarget>(
             session: Session(configuration: configuration, startRequestsImmediately: true),
             plugins: [MUNLoggerPlugin.instance]
         )

@@ -12,7 +12,7 @@ let package = Package(
         .library(
             name: "munkit-example-core",
             targets: ["munkit-example-core"]
-        ),
+        )
     ],
     dependencies: [
         .package(path: "../../munkit")
@@ -24,5 +24,5 @@ let package = Package(
                 .product(name: "munkit", package: "munkit")
             ]
         )
-    ],
+    ]
 )

@@ -1,13 +1,15 @@
 import Foundation
+import munkit
+import munkit_example_core
 
 final class ClassOverviewViewModel: ObservableObject {
     @Published private(set) var viewItem: ClassOverviewView.ViewItem?
 
     private let coordinator: ClassOverviewCoordinator
-    private let repository: DndClassOverviewRepository
+    private let repository: DNDClassOverviewRepository
     private let dndClassId: String
 
-    init(id: String, coordinator: ClassOverviewCoordinator, repository: DndClassOverviewRepository) {
+    init(id: String, coordinator: ClassOverviewCoordinator, repository: DNDClassOverviewRepository) {
         self.dndClassId = id
         self.coordinator = coordinator
         self.repository = repository
