@@ -29,8 +29,8 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     private let freshnessControllerStateStreamBundle: AsyncStreamBundle<ReplicaState<T>>
     private let freshnessControllerEventStreamBundle: AsyncStreamBundle<ReplicaEvent<T>>
 
-    private let replicaDataChangingControllerStateStreamBundle: AsyncStreamBundle<ReplicaState<T>>
-    private let replicaDataChangingControllerEventStreamBundle: AsyncStreamBundle<ReplicaEvent<T>>
+    private let dataChangingControllerStateStreamBundle: AsyncStreamBundle<ReplicaState<T>>
+    private let dataChangingControllerEventStreamBundle: AsyncStreamBundle<ReplicaEvent<T>>
 
     private let replicaObserversController: ReplicaObserversController<T>
     private let replicaLoadingController: ReplicaLoadingController<T>
@@ -51,8 +51,8 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         self.сlearingControllerEventStreamBundle = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
         self.freshnessControllerStateStreamBundle = AsyncStream.makeStream(of: ReplicaState<T>.self)
         self.freshnessControllerEventStreamBundle = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
-        self.replicaDataChangingControllerStateStreamBundle = AsyncStream.makeStream(of: ReplicaState<T>.self)
-        self.replicaDataChangingControllerEventStreamBundle = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
+        self.dataChangingControllerStateStreamBundle = AsyncStream.makeStream(of: ReplicaState<T>.self)
+        self.dataChangingControllerEventStreamBundle = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
 
         self.replicaObserversController = ReplicaObserversController(
             replicaState: currentReplicaState,
@@ -67,19 +67,19 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
             dataLoader: dataLoader
         )
         self.replicaClearingController = ReplicaClearingController(
-            replicaStateStream: loadingControllerStateStreamBundle.stream,
-            replicaEventStreamContinuation: loadingControllerEventStreamBundle.continuation,
+            replicaStateStream: сlearingControllerStateStreamBundle.stream,
+            replicaEventStreamContinuation: сlearingControllerEventStreamBundle.continuation,
             storage: storage
         )
         self.replicaFreshnessController = ReplicaFreshnessController(
             replicaState: currentReplicaState,
-            replicaStateStream: loadingControllerStateStreamBundle.stream,
-            replicaEventStreamContinuation: loadingControllerEventStreamBundle.continuation
+            replicaStateStream: freshnessControllerStateStreamBundle.stream,
+            replicaEventStreamContinuation: freshnessControllerEventStreamBundle.continuation
         )
         self.replicaDataChangingController = ReplicaDataChangingController(
             replicaState: currentReplicaState,
-            replicaStateStream: loadingControllerStateStreamBundle.stream,
-            replicaEventStreamContinuation: loadingControllerEventStreamBundle.continuation,
+            replicaStateStream: dataChangingControllerStateStreamBundle.stream,
+            replicaEventStreamContinuation: dataChangingControllerEventStreamBundle.continuation,
             storage: storage
         )
 
@@ -164,6 +164,24 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
                 processReplicaEvent(event)
             }
         }
+
+        Task {
+            for await event in сlearingControllerEventStreamBundle.stream {
+                processReplicaEvent(event)
+            }
+        }
+
+        Task {
+            for await event in freshnessControllerEventStreamBundle.stream {
+                processReplicaEvent(event)
+            }
+        }
+
+        Task {
+            for await event in dataChangingControllerEventStreamBundle.stream {
+                processReplicaEvent(event)
+            }
+        }
     }
 
     private func updateState(_ newState: ReplicaState<T>) {
@@ -171,7 +189,13 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         currentReplicaState = newState
 
         let allStateStreamPairs = observerStateStreamBundles
-            + [loadingControllerStateStreamBundle, observersControllerStateStreamBundle]
+        + [
+            loadingControllerStateStreamBundle,
+            observersControllerStateStreamBundle,
+            freshnessControllerStateStreamBundle,
+            сlearingControllerStateStreamBundle,
+            dataChangingControllerStateStreamBundle
+        ]
 
         allStateStreamPairs.forEach { $0.continuation.yield(currentReplicaState) }
     }
@@ -198,7 +222,8 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
             updateState(replica)
         case .observerCountChanged(let observingState):
             let previousState = currentReplicaState
-            updateState(currentReplicaState.copy(observingState: observingState))
+            let replica = currentReplicaState.copy(observingState: observingState)
+            updateState(replica)
 
             print("🔍 \(self) изменилось количество наблюдателей: observerIds \(observingState.observerIds) activeObserverIds: \(observingState.activeObserverIds) observingTime \(observingState.observingTime)")
 
@@ -213,15 +238,17 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     private func handleChangingEvent(_ changingEvent: ChangingDataEvent<T>) {
         switch changingEvent {
         case .dataSetting(data: let data):
-            updateState(currentReplicaState.copy(
+            let replica = currentReplicaState.copy(
                 data: data,
                 loadingFromStorageRequired: false
-            ))
+            )
+            updateState(replica)
         case .dataMutating(data: let data):
-            updateState(currentReplicaState.copy(
+            let replica = currentReplicaState.copy(
                 data: data,
                 loadingFromStorageRequired: false
-            ))
+            )
+            updateState(replica)
         }
     }
 
@@ -236,10 +263,11 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
             updateState(replica)
 
         case .dataFromStorageLoaded(let data):
-            updateState(currentReplicaState.copy(
+            let replica = currentReplicaState.copy(
                 data: data,
                 loadingFromStorageRequired: false
-            ))
+            )
+            updateState(replica)
 
         case .loadingFinished(let event):
             handleLoadingFinishedEvent(event)
@@ -274,19 +302,21 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
             updateState(replica)
 
         case .canceled:
-            updateState(currentReplicaState.copy(
+            let replica = currentReplicaState.copy(
                 loading: false,
                 dataRequested: false,
                 preloading: false
-            ))
+            )
+            updateState(replica)
 
         case .error(let error):
-            updateState(currentReplicaState.copy(
+            let replica = currentReplicaState.copy(
                 loading: false,
                 error: error,
                 dataRequested: false,
                 preloading: false
-            ))
+            )
+            updateState(replica)
         }
     }
 }
