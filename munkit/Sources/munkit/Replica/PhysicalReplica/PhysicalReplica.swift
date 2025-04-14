@@ -20,13 +20,13 @@ public protocol PhysicalReplica<T>: Replica where T: Sendable {
     func mutataData(transform: @escaping (T) -> T)
 
     func withOptimisticUpdate(
-           update: any OptimisticUpdate<T>,
-           onSuccess: (@Sendable () async -> Void)?,
-           onError: (@Sendable (Error) async -> Void)?,
-           onCanceled: (@Sendable () async -> Void)?,
-           onFinished: (@Sendable () async -> Void)?,
-           block: @escaping @Sendable () async throws -> T
-       ) async throws -> T
+       update: any OptimisticUpdate<T>,
+       onSuccess: (@Sendable () async -> Void)?,
+       onError: (@Sendable (Error) async -> Void)?,
+       onCanceled: (@Sendable () async -> Void)?,
+       onFinished: (@Sendable () async -> Void)?,
+       block: @escaping @Sendable () async throws -> T
+   ) async throws -> T
 }
 
 public extension PhysicalReplica {
