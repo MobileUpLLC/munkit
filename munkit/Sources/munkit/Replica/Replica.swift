@@ -7,25 +7,25 @@
 
 import Foundation
 
-/// Протокол базовой реплики с минимальным API.
-public protocol Replica<T>: Actor {
+/// Protocol for a base replica with minimal API.
+public protocol Replica<T>: Actor where T: Sendable {
     associatedtype T: Sendable
 
-    /// Начинает наблюдение за репликой.
-    func observe(observerActive: AsyncStream<Bool>) async -> ReplicaObserver<T>
+    /// Starts observing the replica's state.
+    func observe(activityStream: AsyncStream<Bool>) async -> ReplicaObserver<T>
 
-    /// Загружает свежие данные из сети.
-    /// - Note: Не вызывает новый запрос, если другой уже выполняется.
+    /// Fetches fresh data from the network.
+    /// - Note: Does not trigger a new request if one is already in progress.
     func refresh() async
 
-    /// Загружает свежие данные из сети, если текущие данные устарели.
-    /// - Note: Не вызывает новый запрос, если другой уже выполняется.
+    /// Fetches fresh data from the network if the current data is stale.
+    /// - Note: Does not trigger a new request if one is already in progress.
     func revalidate() async
 
-    /// Загружает и возвращает данные.
-    /// - Parameter forceRefresh: Принудительно выполняет запрос, даже если данные свежие.
-    /// - Returns: Свежие данные.
-    /// - Throws: Ошибка, если загрузка не удалась.
-    /// - Note: Всегда возвращает свежие данные, выполняя запрос при необходимости.
-    func getData(forceRefresh: Bool) async throws -> T
+    /// Fetches and returns the data.
+    /// - Parameter forceRefresh: Forces a network request even if data is fresh.
+    /// - Returns: Fresh data.
+    /// - Throws: An error if the fetch fails.
+    /// - Note: Always returns fresh data, fetching if necessary.
+    func fetchData(forceRefresh: Bool) async throws -> T
 }

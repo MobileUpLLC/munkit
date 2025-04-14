@@ -11,246 +11,242 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     public let name: String
 
     private let storage: (any Storage<T>)?
-    private let fetcher: @Sendable () async throws -> T
-    private var currentReplicaState: ReplicaState<T>
+    private let dataFetcher: @Sendable () async throws -> T
+    private var replicaState: ReplicaState<T>
 
-    private var observerStateStreamBundles: [AsyncStreamBundle<ReplicaState<T>>] = []
-    private var observerEventStreamBundles: [AsyncStreamBundle<ReplicaEvent<T>>] = []
+    private var observerStateStreams: [AsyncStreamBundle<ReplicaState<T>>] = []
+    private var observerEventStreams: [AsyncStreamBundle<ReplicaEvent<T>>] = []
 
-    private let observersControllerStateStreamBundle: AsyncStreamBundle<ReplicaState<T>>
-    private let observersControllerEventStreamBundle: AsyncStreamBundle<ReplicaEvent<T>>
+    private let observersControllerStateStream: AsyncStreamBundle<ReplicaState<T>>
+    private let observersControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
 
-    private let loadingControllerStateStreamBundle: AsyncStreamBundle<ReplicaState<T>>
-    private let loadingControllerEventStreamBundle: AsyncStreamBundle<ReplicaEvent<T>>
+    private let loadingControllerStateStream: AsyncStreamBundle<ReplicaState<T>>
+    private let loadingControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
 
-    private let сlearingControllerStateStreamBundle: AsyncStreamBundle<ReplicaState<T>>
-    private let сlearingControllerEventStreamBundle: AsyncStreamBundle<ReplicaEvent<T>>
+    private let clearingControllerStateStream: AsyncStreamBundle<ReplicaState<T>>
+    private let clearingControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
 
-    private let freshnessControllerStateStreamBundle: AsyncStreamBundle<ReplicaState<T>>
-    private let freshnessControllerEventStreamBundle: AsyncStreamBundle<ReplicaEvent<T>>
+    private let freshnessControllerStateStream: AsyncStreamBundle<ReplicaState<T>>
+    private let freshnessControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
 
-    private let dataChangingControllerStateStreamBundle: AsyncStreamBundle<ReplicaState<T>>
-    private let dataChangingControllerEventStreamBundle: AsyncStreamBundle<ReplicaEvent<T>>
+    private let dataMutationControllerStateStream: AsyncStreamBundle<ReplicaState<T>>
+    private let dataMutationControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
 
-    private let optimisticUpdatesControllerStateStreamBundle: AsyncStreamBundle<ReplicaState<T>>
-    private let optimisticUpdatesControllerEventStreamBundle: AsyncStreamBundle<ReplicaEvent<T>>
+    private let optimisticUpdatesControllerStateStream: AsyncStreamBundle<ReplicaState<T>>
+    private let optimisticUpdatesControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
 
-    private let replicaObserversController: ReplicaObserversController<T>
-    private let replicaLoadingController: ReplicaLoadingController<T>
-    private let replicaClearingController: ReplicaClearingController<T>
-    private let replicaFreshnessController: ReplicaFreshnessController<T>
-    private let replicaDataChangingController: ReplicaDataChangingController<T>
-    private let replicaOptimisticUpdatesController: ReplicaOptimisticUpdatesController<T>
+    private let observersController: ReplicaObserversController<T>
+    private let loadingController: ReplicaLoadingController<T>
+    private let clearingController: ReplicaClearingController<T>
+    private let freshnessController: ReplicaFreshnessController<T>
+    private let dataMutationController: ReplicaDataChangingController<T>
+    private let optimisticUpdatesController: ReplicaOptimisticUpdatesController<T>
 
     public init(storage: (any Storage<T>)?, fetcher: @Sendable @escaping () async throws -> T, name: String) {
         self.name = name
         self.storage = storage
-        self.fetcher = fetcher
-        self.currentReplicaState = ReplicaState<T>.createEmpty(hasStorage: storage != nil)
-        self.observersControllerStateStreamBundle = AsyncStream.makeStream(of: ReplicaState<T>.self)
-        self.observersControllerEventStreamBundle = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
-        self.loadingControllerStateStreamBundle = AsyncStream.makeStream(of: ReplicaState<T>.self)
-        self.loadingControllerEventStreamBundle = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
-        self.сlearingControllerStateStreamBundle = AsyncStream.makeStream(of: ReplicaState<T>.self)
-        self.сlearingControllerEventStreamBundle = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
-        self.freshnessControllerStateStreamBundle = AsyncStream.makeStream(of: ReplicaState<T>.self)
-        self.freshnessControllerEventStreamBundle = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
-        self.dataChangingControllerStateStreamBundle = AsyncStream.makeStream(of: ReplicaState<T>.self)
-        self.dataChangingControllerEventStreamBundle = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
-        self.optimisticUpdatesControllerStateStreamBundle = AsyncStream.makeStream(of: ReplicaState<T>.self)
-        self.optimisticUpdatesControllerEventStreamBundle = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
+        self.dataFetcher = fetcher
+        self.replicaState = ReplicaState<T>.createEmpty(hasStorage: storage != nil)
+        self.observersControllerStateStream = AsyncStream.makeStream(of: ReplicaState<T>.self)
+        self.observersControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
+        self.loadingControllerStateStream = AsyncStream.makeStream(of: ReplicaState<T>.self)
+        self.loadingControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
+        self.clearingControllerStateStream = AsyncStream.makeStream(of: ReplicaState<T>.self)
+        self.clearingControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
+        self.freshnessControllerStateStream = AsyncStream.makeStream(of: ReplicaState<T>.self)
+        self.freshnessControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
+        self.dataMutationControllerStateStream = AsyncStream.makeStream(of: ReplicaState<T>.self)
+        self.dataMutationControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
+        self.optimisticUpdatesControllerStateStream = AsyncStream.makeStream(of: ReplicaState<T>.self)
+        self.optimisticUpdatesControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
 
-        self.replicaObserversController = ReplicaObserversController(
-            replicaState: currentReplicaState,
-            replicaStateStream: observersControllerStateStreamBundle.stream,
-            replicaEventStreamContinuation: observersControllerEventStreamBundle.continuation
+        self.observersController = ReplicaObserversController(
+            initialState: replicaState,
+            stateStream: observersControllerStateStream.stream,
+            eventStreamContinuation: observersControllerEventStream.continuation
         )
         let dataLoader = DataLoader(storage: storage, fetcher: fetcher)
-        self.replicaLoadingController = ReplicaLoadingController(
-            replicaState: currentReplicaState,
-            replicaStateStream: loadingControllerStateStreamBundle.stream,
-            replicaEventStreamContinuation: loadingControllerEventStreamBundle.continuation,
+        self.loadingController = ReplicaLoadingController(
+            replicaState: replicaState,
+            replicaStateStream: loadingControllerStateStream.stream,
+            replicaEventStreamContinuation: loadingControllerEventStream.continuation,
             dataLoader: dataLoader
         )
-        self.replicaClearingController = ReplicaClearingController(
-            replicaStateStream: сlearingControllerStateStreamBundle.stream,
-            replicaEventStreamContinuation: сlearingControllerEventStreamBundle.continuation,
+        self.clearingController = ReplicaClearingController(
+            replicaStateStream: clearingControllerStateStream.stream,
+            replicaEventStreamContinuation: clearingControllerEventStream.continuation,
             storage: storage
         )
-        self.replicaFreshnessController = ReplicaFreshnessController(
-            replicaState: currentReplicaState,
-            replicaStateStream: freshnessControllerStateStreamBundle.stream,
-            replicaEventStreamContinuation: freshnessControllerEventStreamBundle.continuation
+        self.freshnessController = ReplicaFreshnessController(
+            replicaState: replicaState,
+            replicaStateStream: freshnessControllerStateStream.stream,
+            replicaEventStreamContinuation: freshnessControllerEventStream.continuation
         )
-        self.replicaDataChangingController = ReplicaDataChangingController(
-            replicaState: currentReplicaState,
-            replicaStateStream: dataChangingControllerStateStreamBundle.stream,
-            replicaEventStreamContinuation: dataChangingControllerEventStreamBundle.continuation,
+        self.dataMutationController = ReplicaDataChangingController(
+            replicaState: replicaState,
+            replicaStateStream: dataMutationControllerStateStream.stream,
+            replicaEventStreamContinuation: dataMutationControllerEventStream.continuation,
             storage: storage
         )
-        self.replicaOptimisticUpdatesController = ReplicaOptimisticUpdatesController(
-            replicaState: currentReplicaState,
-            replicaStateStream: optimisticUpdatesControllerStateStreamBundle.stream,
-            replicaEventStreamContinuation: optimisticUpdatesControllerEventStreamBundle.continuation,
+        self.optimisticUpdatesController = ReplicaOptimisticUpdatesController(
+            replicaState: replicaState,
+            replicaStateStream: optimisticUpdatesControllerStateStream.stream,
+            replicaEventStreamContinuation: optimisticUpdatesControllerEventStream.continuation,
             storage: storage
-            )
+        )
 
         Task {
-            await processReplicaEvent()
+            await processEvents()
         }
     }
 
-    public func observe(observerActive: AsyncStream<Bool>) async -> ReplicaObserver<T> {
-        let stateStreamPair = AsyncStream<ReplicaState<T>>.makeStream()
-        observerStateStreamBundles.append(stateStreamPair)
+    public func observe(activityStream: AsyncStream<Bool>) async -> ReplicaObserver<T> {
+        let stateStreamBundle = AsyncStream<ReplicaState<T>>.makeStream()
+        observerStateStreams.append(stateStreamBundle)
 
-        let eventStreamPair = AsyncStream<ReplicaEvent<T>>.makeStream()
-        observerEventStreamBundles.append(eventStreamPair)
+        let eventStreamBundle = AsyncStream<ReplicaEvent<T>>.makeStream()
+        observerEventStreams.append(eventStreamBundle)
 
         return await ReplicaObserver<T>(
-            observerActive: observerActive,
-            replicaStateStream: stateStreamPair.stream,
-            externalEventStream: eventStreamPair.stream,
-            observersController: replicaObserversController
+            activityStream: activityStream,
+            stateStream: stateStreamBundle.stream,
+            eventStream: eventStreamBundle.stream,
+            observersController: observersController
         )
     }
 
     public func refresh() async {
-        await replicaLoadingController.refresh()
+        await loadingController.refresh()
     }
 
     public func revalidate() async {
-        await replicaLoadingController.revalidate()
+        await loadingController.revalidate()
     }
 
-    public func getData(forceRefresh: Bool) async throws -> T {
-        try await replicaLoadingController.getData(forceRefresh: forceRefresh)
+    public func fetchData(forceRefresh: Bool) async throws -> T {
+        try await loadingController.getData(forceRefresh: forceRefresh)
     }
 
     public func clear(invalidationMode: InvalidationMode, removeFromStorage: Bool) async {
-        await replicaLoadingController.cancel()
-        try? await replicaClearingController.clear(removeFromStorage: removeFromStorage)
+        await loadingController.cancel()
+        try? await clearingController.clear(removeFromStorage: removeFromStorage)
         Task {
-            await replicaLoadingController.refreshAfterInvalidation(invalidationMode: invalidationMode)
+            await loadingController.refreshAfterInvalidation(invalidationMode: invalidationMode)
         }
     }
 
     public func clearError() async {
-        await replicaClearingController.clearError()
+        await clearingController.clearError()
     }
 
     public func invalidate(mode: InvalidationMode) {
         Task {
-            await replicaFreshnessController.invalidate()
-            await replicaLoadingController.refreshAfterInvalidation(invalidationMode: mode)
+            await freshnessController.invalidate()
+            await loadingController.refreshAfterInvalidation(invalidationMode: mode)
         }
     }
 
-    public func makeFresh() async {
-        await replicaFreshnessController.makeFresh()
+    public func markAsFresh() async {
+        await freshnessController.makeFresh()
     }
 
-    public func setData(data: T) async {
-        try? await replicaDataChangingController.setData(data: data)
+    public func setData(_ data: T) async {
+        try? await dataMutationController.setData(data: data)
     }
 
-    public func mutataData(transform: @escaping (T) -> T) {
+    public func mutateData(transform: @escaping (T) -> T) {
         Task {
-            try? await replicaDataChangingController.mutateData(transform: transform)
+            try? await dataMutationController.mutateData(transform: transform)
         }
     }
 
     func cancel() async {
-        await replicaLoadingController.cancel()
+        await loadingController.cancel()
     }
-    
-    private func processReplicaEvent() {
+
+    private func processEvents() {
         Task {
-            for await event in loadingControllerEventStreamBundle.stream {
-                processReplicaEvent(event)
+            for await event in loadingControllerEventStream.stream {
+                handleEvent(event)
             }
         }
 
         Task {
-            for await event in observersControllerEventStreamBundle.stream {
-                processReplicaEvent(event)
+            for await event in observersControllerEventStream.stream {
+                handleEvent(event)
             }
         }
 
         Task {
-            for await event in сlearingControllerEventStreamBundle.stream {
-                processReplicaEvent(event)
+            for await event in clearingControllerEventStream.stream {
+                handleEvent(event)
             }
         }
 
         Task {
-            for await event in freshnessControllerEventStreamBundle.stream {
-                processReplicaEvent(event)
+            for await event in freshnessControllerEventStream.stream {
+                handleEvent(event)
             }
         }
 
         Task {
-            for await event in dataChangingControllerEventStreamBundle.stream {
-                processReplicaEvent(event)
+            for await event in dataMutationControllerEventStream.stream {
+                handleEvent(event)
             }
         }
 
         Task {
-            for await event in optimisticUpdatesControllerEventStreamBundle.stream {
-                processReplicaEvent(event)
+            for await event in optimisticUpdatesControllerEventStream.stream {
+                handleEvent(event)
             }
         }
     }
 
     private func updateState(_ newState: ReplicaState<T>) {
-        print("💾 Replica \(self) обновила состояние: \(newState)")
-        currentReplicaState = newState
+        print("💾 Replica \(self) updated state: \(newState)")
+        replicaState = newState
 
-        let allStateStreamPairs = observerStateStreamBundles
-        + [
-            loadingControllerStateStreamBundle,
-            observersControllerStateStreamBundle,
-            freshnessControllerStateStreamBundle,
-            сlearingControllerStateStreamBundle,
-            dataChangingControllerStateStreamBundle,
-            optimisticUpdatesControllerStateStreamBundle
+        let allStateStreams = observerStateStreams + [
+            loadingControllerStateStream,
+            observersControllerStateStream,
+            freshnessControllerStateStream,
+            clearingControllerStateStream,
+            dataMutationControllerStateStream,
+            optimisticUpdatesControllerStateStream
         ]
 
-        allStateStreamPairs.forEach { $0.continuation.yield(currentReplicaState) }
+        allStateStreams.forEach { $0.continuation.yield(replicaState) }
     }
 
-    private func processReplicaEvent(_ event: ReplicaEvent<T>) {
-        print("\n⚡️ \(self) получено событие: \(event)")
+    private func handleEvent(_ event: ReplicaEvent<T>) {
+        print("\n⚡️ \(self) received event: \(event)")
         switch event {
         case .loading(let loadingEvent):
             handleLoadingEvent(loadingEvent)
         case .freshness(let freshnessEvent):
             handleFreshnessEvent(freshnessEvent)
         case .cleared:
-            var replica = currentReplicaState
-            replica.data = nil
-            replica.error = nil
-            replica.loadingFromStorageRequired = false
-
-            updateState(replica)
-
+            var state = replicaState
+            state.data = nil
+            state.error = nil
+            state.loadingFromStorageRequired = false
+            updateState(state)
         case .clearedError:
-            var replica = currentReplicaState
-            replica.error = nil
-
-            updateState(replica)
+            var state = replicaState
+            state.error = nil
+            updateState(state)
         case .observerCountChanged(let observingState):
-            let previousState = currentReplicaState
-            let replica = currentReplicaState.copy(observingState: observingState)
-            updateState(replica)
+            let previousState = replicaState
+            let updatedState = replicaState.copy(observingState: observingState)
+            updateState(updatedState)
 
-            print("🔍 \(self) изменилось количество наблюдателей: observerIds \(observingState.observerIds) activeObserverIds: \(observingState.activeObserverIds) observingTime \(observingState.observingTime)")
+            print("🔍 \(self) observer count changed: observerIds \(observingState.observerIds) activeObserverIds: \(observingState.activeObserverIds) observingTime \(observingState.observingTime)")
 
             if observingState.activeObserverIds.count > previousState.observingState.activeObserverIds.count {
                 Task { await revalidate() }
             }
         case .changing(let changingEvent):
-            handleChangingEvent(changingEvent)
+            handleDataMutationEvent(changingEvent)
         case .optimisticUpdates(let optimisticUpdateEvent):
             handleOptimisticUpdateEvent(optimisticUpdateEvent)
         }
@@ -259,150 +255,141 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     private func handleOptimisticUpdateEvent(_ event: OptimisticUpdatesEvent<T>) {
         switch event {
         case .begin(data: let data):
-            let replica = currentReplicaState.copy(data: data)
-            updateState(replica)
+            let updatedState = replicaState.copy(data: data)
+            updateState(updatedState)
         case .commit(data: let data):
-            let replica = currentReplicaState.copy(data: data)
-            updateState(replica)
+            let updatedState = replicaState.copy(data: data)
+            updateState(updatedState)
         case .rollback(data: let data):
-            let replica = currentReplicaState.copy(data: data)
-            updateState(replica)
+            let updatedState = replicaState.copy(data: data)
+            updateState(updatedState)
         }
     }
 
-    private func handleChangingEvent(_ changingEvent: ChangingDataEvent<T>) {
-        switch changingEvent {
+    private func handleDataMutationEvent(_ event: ChangingDataEvent<T>) {
+        switch event {
         case .dataSetting(data: let data):
-            let replica = currentReplicaState.copy(
+            let updatedState = replicaState.copy(
                 data: data,
                 loadingFromStorageRequired: false
             )
-            updateState(replica)
+            updateState(updatedState)
         case .dataMutating(data: let data):
-            let replica = currentReplicaState.copy(
+            let updatedState = replicaState.copy(
                 data: data,
                 loadingFromStorageRequired: false
             )
-            updateState(replica)
+            updateState(updatedState)
         }
     }
 
-    private func handleLoadingEvent(_ loadingEvent: LoadingEvent<T>) {
-        switch loadingEvent {
+    private func handleLoadingEvent(_ event: LoadingEvent<T>) {
+        switch event {
         case .loadingStarted:
-            var replica = currentReplicaState
-            replica.loading = true
-            replica.error = nil
-            replica.dataRequested = true
-
-            updateState(replica)
-
+            var state = replicaState
+            state.loading = true
+            state.error = nil
+            state.dataRequested = true
+            updateState(state)
         case .dataFromStorageLoaded(let data):
-            let replica = currentReplicaState.copy(
+            let updatedState = replicaState.copy(
                 data: data,
                 loadingFromStorageRequired: false
             )
-            updateState(replica)
-
+            updateState(updatedState)
         case .loadingFinished(let event):
             handleLoadingFinishedEvent(event)
         }
     }
 
-    private func handleFreshnessEvent(_ freshnessEvent: FreshnessEvent) {
-        switch freshnessEvent {
+    private func handleFreshnessEvent(_ event: FreshnessEvent) {
+        switch event {
         case .freshened:
-            var replica = currentReplicaState
-            replica.data?.isFresh = true
-
-            updateState(replica)
+            var state = replicaState
+            state.data?.isFresh = true
+            updateState(state)
         case .becameStale:
-            var replica = currentReplicaState
-            replica.data?.isFresh = false
-
-            updateState(replica)
+            var state = replicaState
+            state.data?.isFresh = false
+            updateState(state)
         }
     }
 
     private func handleLoadingFinishedEvent(_ event: LoadingFinished<T>) {
         switch event {
         case .success(let data):
-            var replica = currentReplicaState
-            replica.loading = false
-            replica.data = data
-            replica.error = nil
-            replica.dataRequested = false
-            replica.preloading = false
-
-            updateState(replica)
-
+            var state = replicaState
+            state.loading = false
+            state.data = data
+            state.error = nil
+            state.dataRequested = false
+            state.preloading = false
+            updateState(state)
         case .canceled:
-            let replica = currentReplicaState.copy(
+            let updatedState = replicaState.copy(
                 loading: false,
                 dataRequested: false,
                 preloading: false
             )
-            updateState(replica)
-
+            updateState(updatedState)
         case .error(let error):
-            let replica = currentReplicaState.copy(
+            let updatedState = replicaState.copy(
                 loading: false,
                 error: error,
                 dataRequested: false,
                 preloading: false
             )
-            updateState(replica)
+            updateState(updatedState)
         }
     }
 
-    func beginOptimisticUpdate(_ update: any OptimisticUpdate<T>) async {
-        await replicaOptimisticUpdatesController.beginOptimisticUpdate(update: update)
+    func startOptimisticUpdate(_ update: any OptimisticUpdate<T>) async {
+        await optimisticUpdatesController.beginOptimisticUpdate(update: update)
     }
 
     func commitOptimisticUpdate(_ update: any OptimisticUpdate<T>) async {
-        await replicaOptimisticUpdatesController.commitOptimisticUpdate(update: update)
+        await optimisticUpdatesController.commitOptimisticUpdate(update: update)
     }
 
     func rollbackOptimisticUpdate(_ update: any OptimisticUpdate<T>) async {
-        await replicaOptimisticUpdatesController.rollbackOptimisticUpdate(update: update)
+        await optimisticUpdatesController.rollbackOptimisticUpdate(update: update)
     }
 
     public func withOptimisticUpdate(
-            update: any OptimisticUpdate<T>,
-            onSuccess: (@Sendable () async -> Void)? = nil,
-            onError: (@Sendable (Error) async -> Void)? = nil,
-            onCanceled: (@Sendable () async -> Void)? = nil,
-            onFinished: (@Sendable () async -> Void)? = nil,
-            block: @escaping @Sendable () async throws -> T
-        ) async throws -> T {
-            await beginOptimisticUpdate(update)
+        update: any OptimisticUpdate<T>,
+        onSuccess: (@Sendable () async -> Void)? = nil,
+        onError: (@Sendable (Error) async -> Void)? = nil,
+        onCanceled: (@Sendable () async -> Void)? = nil,
+        onFinished: (@Sendable () async -> Void)? = nil,
+        block: @escaping @Sendable () async throws -> T
+    ) async throws -> T {
+        await startOptimisticUpdate(update)
 
-            do {
-                let result = try await block()
+        do {
+            let result = try await block()
+            await commitOptimisticUpdate(update)
 
-                await commitOptimisticUpdate(update)
-
-                if let onSuccess {
-                    await onSuccess()
-                }
-
-                if let onFinished {
-                    await onFinished()
-                }
-
-                return result
-            } catch {
-                await rollbackOptimisticUpdate(update)
-
-                if let onError {
-                    await onError(error)
-                }
-
-                if let onFinished {
-                    await onFinished()
-                }
-
-                throw error
+            if let onSuccess {
+                await onSuccess()
             }
+
+            if let onFinished {
+                await onFinished()
+            }
+
+            return result
+        } catch {
+            await rollbackOptimisticUpdate(update)
+
+            if let onError {
+                await onError(error)
+            }
+
+            if let onFinished {
+                await onFinished()
+            }
+
+            throw error
         }
+    }
 }

@@ -8,50 +8,50 @@
 import Foundation
 
 public actor ReplicaObserver<T> where T: Sendable {
-    public let replicaStateStream: AsyncStream<ReplicaState<T>>
-    private var replicaStateObservingTask: Task<Void, Never>?
+    public let stateStream: AsyncStream<ReplicaState<T>>
+    private var stateObservingTask: Task<Void, Never>?
 
-    private let observerActive: AsyncStream<Bool>
-    private var observerControllingTask: Task<Void, Never>?
+    private let activityStream: AsyncStream<Bool>
+    private var controlTask: Task<Void, Never>?
     private let observersController: ReplicaObserversController<T>
 
     init(
-        observerActive: AsyncStream<Bool>,
-        replicaStateStream: AsyncStream<ReplicaState<T>>,
-        externalEventStream: AsyncStream<ReplicaEvent<T>>,
+        activityStream: AsyncStream<Bool>,
+        stateStream: AsyncStream<ReplicaState<T>>,
+        eventStream: AsyncStream<ReplicaEvent<T>>,
         observersController: ReplicaObserversController<T>
     ) async {
-        self.observerActive = observerActive
+        self.activityStream = activityStream
         self.observersController = observersController
-        self.replicaStateStream = replicaStateStream
+        self.stateStream = stateStream
 
-        await launchObserverControlling()
+        await startObserverControl()
     }
 
-    public func cancelObserving() async {
-        observerControllingTask?.cancel()
-        observerControllingTask = nil
+    public func stopObserving() async {
+        controlTask?.cancel()
+        controlTask = nil
 
-        replicaStateObservingTask?.cancel()
-        replicaStateObservingTask = nil
+        stateObservingTask?.cancel()
+        stateObservingTask = nil
     }
 
-    /// отслеживает активность наблюдателя
-    private func launchObserverControlling() async {
+    /// Monitors the observer's activity state.
+    private func startObserverControl() async {
         let observerId = UUID()
 
-        await observersController.onObserverAdded(observerId: observerId, isObserverActive: true)
+        await observersController.handleObserverAdded(observerId: observerId, isActive: true)
 
-        observerControllingTask = Task {
-            for await active in observerActive {
-                if active {
-                    await observersController.onObserverActive(observerId: observerId)
+        controlTask = Task {
+            for await isActive in activityStream {
+                if isActive {
+                    await observersController.handleObserverActivated(observerId: observerId)
                 } else {
-                    await observersController.onObserverInactive(observerId: observerId)
+                    await observersController.handleObserverDeactivated(observerId: observerId)
                 }
             }
 
-            await observersController.onObserverRemoved(observerId: observerId)
+            await observersController.handleObserverRemoved(observerId: observerId)
         }
     }
 }

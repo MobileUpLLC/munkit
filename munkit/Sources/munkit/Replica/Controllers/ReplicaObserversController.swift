@@ -9,122 +9,122 @@ import Foundation
 
 actor ReplicaObserversController<T> where T: Sendable {
     private var replicaState: ReplicaState<T>
-    private let replicaEventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation
+    private let eventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation
 
     init(
-        replicaState: ReplicaState<T>,
-        replicaStateStream: AsyncStream<ReplicaState<T>>,
-        replicaEventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation
+        initialState: ReplicaState<T>,
+        stateStream: AsyncStream<ReplicaState<T>>,
+        eventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation
     ) {
-        self.replicaState = replicaState
-        self.replicaEventStreamContinuation = replicaEventStreamContinuation
+        self.replicaState = initialState
+        self.eventStreamContinuation = eventStreamContinuation
 
         Task {
-            await subscribeForReplicaStreams(replicaStateStream: replicaStateStream)
+            await subscribeToStateStream(stateStream: stateStream)
         }
     }
 
-    private func subscribeForReplicaStreams(replicaStateStream: AsyncStream<ReplicaState<T>>) async {
+    private func subscribeToStateStream(stateStream: AsyncStream<ReplicaState<T>>) async {
         Task {
-            for await newReplicaState in replicaStateStream {
-                replicaState = newReplicaState
+            for await updatedState in stateStream {
+                replicaState = updatedState
             }
         }
     }
 
-    /// Обрабатывает добавление нового наблюдателя.
-    func onObserverAdded(observerId: UUID, isObserverActive: Bool) {
-        let previousObservingState = replicaState.observingState
-        
-        let newActiveObserverIds = isObserverActive
-        ? previousObservingState.activeObserverIds.union([observerId])
-        : previousObservingState.activeObserverIds
+    /// Handles the addition of a new observer.
+    func handleObserverAdded(observerId: UUID, isActive: Bool) {
+        let currentObservingState = replicaState.observingState
 
-        let newObservingTime = isObserverActive ? .now : previousObservingState.observingTime
+        let updatedActiveObserverIds = isActive
+            ? currentObservingState.activeObserverIds.union([observerId])
+            : currentObservingState.activeObserverIds
+
+        let updatedObservingTime = isActive ? .now : currentObservingState.observingTime
 
         let newObservingState = ObservingState(
-            observerIds: previousObservingState.observerIds.union([observerId]),
-            activeObserverIds: newActiveObserverIds,
-            observingTime: newObservingTime
+            observerIds: currentObservingState.observerIds.union([observerId]),
+            activeObserverIds: updatedActiveObserverIds,
+            observingTime: updatedObservingTime
         )
 
-        yieldObservingStateIfNeeded(
-            previousObservingState: previousObservingState,
-            newObservingState: newObservingState
+        emitStateChangeIfNeeded(
+            from: currentObservingState,
+            to: newObservingState
         )
     }
 
-    /// Обрабатывает удаление наблюдателя.
-    func onObserverRemoved(observerId: UUID) {
-        let previousObservingState = replicaState.observingState
-        
-        let isLastActiveObserver = previousObservingState.activeObserverIds.count == 1
-        && previousObservingState.activeObserverIds.contains(observerId)
+    /// Handles the removal of an observer.
+    func handleObserverRemoved(observerId: UUID) {
+        let currentObservingState = replicaState.observingState
 
-        let newObservingTime = isLastActiveObserver ? .timeInPast(.now) : previousObservingState.observingTime
+        let isLastActive = currentObservingState.activeObserverIds.count == 1
+            && currentObservingState.activeObserverIds.contains(observerId)
+
+        let updatedObservingTime = isLastActive ? .timeInPast(.now) : currentObservingState.observingTime
 
         let newObservingState = ObservingState(
-            observerIds: previousObservingState.observerIds.subtracting([observerId]),
-            activeObserverIds: previousObservingState.activeObserverIds.subtracting([observerId]),
-            observingTime: newObservingTime
+            observerIds: currentObservingState.observerIds.subtracting([observerId]),
+            activeObserverIds: currentObservingState.activeObserverIds.subtracting([observerId]),
+            observingTime: updatedObservingTime
         )
 
-        yieldObservingStateIfNeeded(
-            previousObservingState: previousObservingState,
-            newObservingState: newObservingState
+        emitStateChangeIfNeeded(
+            from: currentObservingState,
+            to: newObservingState
         )
     }
 
-    /// Обрабатывает активацию существующего наблюдателя.
-    func onObserverActive(observerId: UUID) {
-        let previousObservingState = replicaState.observingState
+    /// Handles the activation of an existing observer.
+    func handleObserverActivated(observerId: UUID) {
+        let currentObservingState = replicaState.observingState
 
-        var newActiveObserverIds = previousObservingState.activeObserverIds
-        newActiveObserverIds.insert(observerId)
+        var updatedActiveObserverIds = currentObservingState.activeObserverIds
+        updatedActiveObserverIds.insert(observerId)
 
         let newObservingState = ObservingState(
-            observerIds: previousObservingState.observerIds,
-            activeObserverIds: newActiveObserverIds,
+            observerIds: currentObservingState.observerIds,
+            activeObserverIds: updatedActiveObserverIds,
             observingTime: .now
         )
 
-        yieldObservingStateIfNeeded(
-            previousObservingState: previousObservingState,
-            newObservingState: newObservingState
+        emitStateChangeIfNeeded(
+            from: currentObservingState,
+            to: newObservingState
         )
     }
 
-    /// Обрабатывает деактивацию наблюдателя.
-    func onObserverInactive(observerId: UUID) {
-        let previousObservingState = replicaState.observingState
-        
-        let lastActiveObserver = previousObservingState.activeObserverIds.count == 1
-        && previousObservingState.activeObserverIds.contains(observerId)
+    /// Handles the deactivation of an observer.
+    func handleObserverDeactivated(observerId: UUID) {
+        let currentObservingState = replicaState.observingState
 
-        let newObservingTime = lastActiveObserver ? .timeInPast(.now) : previousObservingState.observingTime
+        let isLastActive = currentObservingState.activeObserverIds.count == 1
+            && currentObservingState.activeObserverIds.contains(observerId)
+
+        let updatedObservingTime = isLastActive ? .timeInPast(.now) : currentObservingState.observingTime
 
         let newObservingState = ObservingState(
-            observerIds: previousObservingState.observerIds,
-            activeObserverIds: previousObservingState.activeObserverIds.subtracting([observerId]),
-            observingTime: newObservingTime
+            observerIds: currentObservingState.observerIds,
+            activeObserverIds: currentObservingState.activeObserverIds.subtracting([observerId]),
+            observingTime: updatedObservingTime
         )
-        
-        yieldObservingStateIfNeeded(
-            previousObservingState: previousObservingState,
-            newObservingState: newObservingState
+
+        emitStateChangeIfNeeded(
+            from: currentObservingState,
+            to: newObservingState
         )
     }
 
-    /// Генерирует событие об изменении количества наблюдателей, если оно изменилось.
-    private func yieldObservingStateIfNeeded(
-        previousObservingState: ObservingState,
-        newObservingState: ObservingState
+    /// Emits an event if the observer state has changed.
+    private func emitStateChangeIfNeeded(
+        from previousState: ObservingState,
+        to newState: ObservingState
     ) {
         if
-            previousObservingState.observerIds.count != newObservingState.observerIds.count
-            || previousObservingState.activeObserverIds.count != newObservingState.activeObserverIds.count
+            previousState.observerIds.count != newState.observerIds.count
+            || previousState.activeObserverIds.count != newState.activeObserverIds.count
         {
-            replicaEventStreamContinuation.yield(.observerCountChanged(newObservingState))
+            eventStreamContinuation.yield(.observerCountChanged(newState))
         }
     }
 }

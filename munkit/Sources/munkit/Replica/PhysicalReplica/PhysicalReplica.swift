@@ -14,19 +14,19 @@ public protocol PhysicalReplica<T>: Replica where T: Sendable {
 
     func clear(invalidationMode: InvalidationMode, removeFromStorage: Bool) async
     func clearError() async
-    func invalidate(mode: InvalidationMode) async
-    func makeFresh() async
-    func setData(data: T) async
-    func mutataData(transform: @escaping (T) -> T)
+    func invalidate(mode: InvalidationMode)
+    func markAsFresh() async
+    func setData(_ data: T) async
+    func mutateData(transform: @escaping (T) -> T)
 
     func withOptimisticUpdate(
-       update: any OptimisticUpdate<T>,
-       onSuccess: (@Sendable () async -> Void)?,
-       onError: (@Sendable (Error) async -> Void)?,
-       onCanceled: (@Sendable () async -> Void)?,
-       onFinished: (@Sendable () async -> Void)?,
-       block: @escaping @Sendable () async throws -> T
-   ) async throws -> T
+        update: any OptimisticUpdate<T>,
+        onSuccess: (@Sendable () async -> Void)?,
+        onError: (@Sendable (Error) async -> Void)?,
+        onCanceled: (@Sendable () async -> Void)?,
+        onFinished: (@Sendable () async -> Void)?,
+        block: @escaping @Sendable () async throws -> T
+    ) async throws -> T
 }
 
 public extension PhysicalReplica {
@@ -34,17 +34,17 @@ public extension PhysicalReplica {
         await clear(invalidationMode: invalidationMode, removeFromStorage: removeFromStorage)
     }
 
-    func invalidate(mode: InvalidationMode = .refreshIfHasObservers) async {
-        await invalidate(mode: mode)
+    func invalidate(mode: InvalidationMode = .refreshIfHasObservers) {
+        invalidate(mode: mode)
     }
 
     func withOptimisticUpdate(
-           update: any OptimisticUpdate<T>,
-           onSuccess: (@Sendable () async -> Void)? = nil,
-           onError: (@Sendable (Error) async -> Void)? = nil,
-           onCanceled: (@Sendable () async -> Void)? = nil,
-           onFinished: (@Sendable () async -> Void)? = nil,
-           block: @escaping @Sendable () async throws -> T
+        update: any OptimisticUpdate<T>,
+        onSuccess: (@Sendable () async -> Void)? = nil,
+        onError: (@Sendable (Error) async -> Void)? = nil,
+        onCanceled: (@Sendable () async -> Void)? = nil,
+        onFinished: (@Sendable () async -> Void)? = nil,
+        block: @escaping @Sendable () async throws -> T
     ) async throws -> T {
         try await withOptimisticUpdate(
             update: update,
@@ -56,4 +56,3 @@ public extension PhysicalReplica {
         )
     }
 }
-
