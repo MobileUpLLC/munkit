@@ -35,12 +35,12 @@ public actor DNDClassesRepository {
     }
 
     public func setData(data: DNDClassesListModel) async {
-        await replica.setData(data: data)
+        await replica.setData(data)
     }
 
     public func mutateData(transform: @escaping (DNDClassesListModel) -> DNDClassesListModel) async {
         Task {
-            await replica.mutataData(transform: transform)
+            await replica.mutateData(transform: transform)
         }
     }
 }

@@ -220,6 +220,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
 
     private func handleEvent(_ event: ReplicaEvent<T>) {
         print("\n⚡️ \(self) received event: \(event)")
+
         switch event {
         case .loading(let loadingEvent):
             handleLoadingEvent(loadingEvent)
@@ -239,8 +240,6 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
             let previousState = replicaState
             let updatedState = replicaState.copy(observingState: observingState)
             updateState(updatedState)
-
-            print("🔍 \(self) observer count changed: observerIds \(observingState.observerIds) activeObserverIds: \(observingState.activeObserverIds) observingTime \(observingState.observingTime)")
 
             if observingState.activeObserverIds.count > previousState.observingState.activeObserverIds.count {
                 Task { await revalidate() }

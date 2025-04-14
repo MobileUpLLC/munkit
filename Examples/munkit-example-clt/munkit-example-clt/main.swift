@@ -12,7 +12,7 @@ import Foundation
 await setupNetworkService()
 let dndClassesReplica = await getDndClassesReplica()
 
-let observerActiveStream: AsyncStreamBundle = AsyncStream<Bool>.makeStream()
-let observer = await dndClassesReplica.observe(observerActive: observerActiveStream.stream)
+let observerActivityStream: AsyncStreamBundle = AsyncStream<Bool>.makeStream()
+let observer = await dndClassesReplica.observe(activityStream: observerActivityStream.stream)
 
 try await Task.sleep(for: .seconds(10))
