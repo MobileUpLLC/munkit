@@ -18,6 +18,7 @@ public final class TokenProvider: MUNAccessTokenProvider, @unchecked Sendable {
     private var _accessToken: String?
     private let accessTokenQueue: DispatchQueue
 
+    // TODO: изначальное значение _accessToken
     public init() {
         self._accessToken = "0"
         self.accessTokenQueue = DispatchQueue(

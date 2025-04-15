@@ -38,6 +38,7 @@ extension DNDAPITarget: MUNAPITarget {
     }
 }
 
+// TODO: Убрать
 // extension DNDAPITarget: MUNMockableAPITarget {
 //    public var isMockEnabled: Bool {
 //        switch self {

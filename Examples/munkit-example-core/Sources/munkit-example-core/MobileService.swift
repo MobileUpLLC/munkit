@@ -9,6 +9,7 @@ import munkit
 import Moya
 import Foundation
 
+// TODO: Удалить
 public actor MobileService {
     public static let shared = MobileService()
 

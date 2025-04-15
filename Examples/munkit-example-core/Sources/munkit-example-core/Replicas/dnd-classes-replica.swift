@@ -7,6 +7,8 @@
 
 import munkit
 
+// TODO: Убрать
+
 public func getDndClassesReplica() async -> any Replica<DNDClassesListModel> {
     let dndClassesRepository = await DNDClassesRepository(networkService: networkService)
     return await ReplicaClient.shared.createReplica(

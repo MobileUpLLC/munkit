@@ -8,6 +8,8 @@
 import munkit
 @preconcurrency import Moya
 
+// TODO: Код ниже заменить на функцию getNetworkService( плагины, tokenProvider ) -> MUNNetworkService<...>
+
 private let tokenProvider = TokenProvider()
 
 @MainActor private let provider = MoyaProvider<DNDAPITarget>(
