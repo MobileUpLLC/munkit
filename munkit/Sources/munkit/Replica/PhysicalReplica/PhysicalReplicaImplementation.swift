@@ -142,39 +142,24 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     }
 
     private func processEvents() {
-        Task {
-            for await event in loadingControllerEventStream.stream {
-                await handleEvent(event)
-            }
-        }
+        let eventStreams = [
+            loadingControllerEventStream.stream,
+            observersControllerEventStream.stream,
+            clearingControllerEventStream.stream,
+            freshnessControllerEventStream.stream,
+            dataMutationControllerEventStream.stream,
+            optimisticUpdatesControllerEventStream.stream
+        ]
 
         Task {
-            for await event in observersControllerEventStream.stream {
-                await handleEvent(event)
-            }
-        }
-
-        Task {
-            for await event in clearingControllerEventStream.stream {
-                await handleEvent(event)
-            }
-        }
-
-        Task {
-            for await event in freshnessControllerEventStream.stream {
-                await handleEvent(event)
-            }
-        }
-
-        Task {
-            for await event in dataMutationControllerEventStream.stream {
-                await handleEvent(event)
-            }
-        }
-
-        Task {
-            for await event in optimisticUpdatesControllerEventStream.stream {
-                await handleEvent(event)
+            await withTaskGroup { group in
+                for stream in eventStreams {
+                    group.addTask { [weak self] in
+                        for await event in stream {
+                            await self?.handleEvent(event)
+                        }
+                    }
+                }
             }
         }
     }
