@@ -8,19 +8,17 @@
 import munkit
 @preconcurrency import Moya
 
-// TODO: Код ниже заменить на функцию getNetworkService( плагины, tokenProvider ) -> MUNNetworkService<...>
+public func getNetworkService(
+    apiProvider: MoyaProvider<DNDAPITarget>,
+    tokenRefreshProvider: TokenProvider,
+    setTokenRefreshFailureHandler: @escaping @Sendable () -> Void
+) async -> MUNNetworkService<DNDAPITarget> {
 
-private let tokenProvider = TokenProvider()
+    let networkService = await MUNNetworkService(apiProvider: apiProvider, tokenRefreshProvider: tokenRefreshProvider)
 
-@MainActor private let provider = MoyaProvider<DNDAPITarget>(
-    plugins: [
-        MUNAccessTokenPlugin(accessTokenProvider: tokenProvider),
-        MockAuthPlugin()
-    ]
-)
+    await networkService.setTokenRefreshFailureHandler {
+        setTokenRefreshFailureHandler()
+    }
 
-@MainActor public let networkService = MUNNetworkService(apiProvider: provider, tokenRefreshProvider: tokenProvider)
-
-public func setupNetworkService() async {
-    await networkService.setTokenRefreshFailureHandler { print("🧨 Token refresh failed handler called") }
+    return networkService
 }

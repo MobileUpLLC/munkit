@@ -60,32 +60,4 @@ public struct ReplicaState<T>: Sendable where T: Sendable {
             loadingFromStorageRequired: hasStorage
         )
     }
-
-    func toLoadable() -> Loadable<T> {
-        return Loadable(
-            loading: loading,
-            data: data?.valueWithOptimisticUpdates
-        )
-    }
 }
-
-class Loadable<T> {
-    var loading: Bool
-    var data: T?
-    // TO DO - добавить ошибку
-
-    init(loading: Bool = false, data: T? = nil) {
-        self.loading = loading
-        self.data = data
-    }
-}
-
-//extension Loadable {
-//    func mapData<R>(transform: (T) -> R) -> Loadable<R> {
-//        return Loadable<R>(
-//            loading: loading,
-//            data: data.map(transform),
-//            error: error
-//        )
-//    }
-//}

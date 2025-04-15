@@ -37,22 +37,3 @@ extension DNDAPITarget: MUNAPITarget {
         }
     }
 }
-
-// TODO: Убрать
-// extension DNDAPITarget: MUNMockableAPITarget {
-//    public var isMockEnabled: Bool {
-//        switch self {
-//        case .classes, .classOverview:
-//            false
-//        case .like:
-//            true
-//        }
-//    }
-//    
-//    public func getMockFileName() -> String? {
-//        switch self {
-//        case .classes, .classOverview, .like:
-//            return nil
-//        }
-//    }
-// }

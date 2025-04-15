@@ -24,11 +24,6 @@
 		6DFE1ED72D9A8880006B827D /* DndClassesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1ED22D9A8880006B827D /* DndClassesView.swift */; };
 		6DFE1ED82D9A8880006B827D /* DndClassesFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1ED12D9A8880006B827D /* DndClassesFactory.swift */; };
 		6DFE1ED92D9A8880006B827D /* DndClassesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1ECF2D9A8880006B827D /* DndClassesController.swift */; };
-		6DFE1EE02D9A8884006B827D /* ClassOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1EDD2D9A8884006B827D /* ClassOverviewView.swift */; };
-		6DFE1EE12D9A8884006B827D /* ClassOverviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1EDA2D9A8884006B827D /* ClassOverviewController.swift */; };
-		6DFE1EE22D9A8884006B827D /* ClassOverviewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1EDE2D9A8884006B827D /* ClassOverviewViewModel.swift */; };
-		6DFE1EE32D9A8884006B827D /* ClassOverviewCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1EDB2D9A8884006B827D /* ClassOverviewCoordinator.swift */; };
-		6DFE1EE42D9A8884006B827D /* ClassOverviewFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1EDC2D9A8884006B827D /* ClassOverviewFactory.swift */; };
 		7C7FBD4D758CEB3530D93C94 /* Environments.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E1D0CA37E1D6CEC23647CE /* Environments.swift */; };
 		B10919797CF8338A12D5C39F /* URL+LosslessStringConvertible.swift in Sources */ = {isa = PBXBuildFile; fileRef = F47CAB235E5B708F53FC6D00 /* URL+LosslessStringConvertible.swift */; };
 		B753864FFBB80554CADDACBA /* Icons.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 64B46E389BC39E902412A758 /* Icons.xcassets */; };
@@ -56,11 +51,6 @@
 		6DFE1ED12D9A8880006B827D /* DndClassesFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DndClassesFactory.swift; sourceTree = "<group>"; };
 		6DFE1ED22D9A8880006B827D /* DndClassesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DndClassesView.swift; sourceTree = "<group>"; };
 		6DFE1ED32D9A8880006B827D /* DndClassesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DndClassesViewModel.swift; sourceTree = "<group>"; };
-		6DFE1EDA2D9A8884006B827D /* ClassOverviewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassOverviewController.swift; sourceTree = "<group>"; };
-		6DFE1EDB2D9A8884006B827D /* ClassOverviewCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassOverviewCoordinator.swift; sourceTree = "<group>"; };
-		6DFE1EDC2D9A8884006B827D /* ClassOverviewFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassOverviewFactory.swift; sourceTree = "<group>"; };
-		6DFE1EDD2D9A8884006B827D /* ClassOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassOverviewView.swift; sourceTree = "<group>"; };
-		6DFE1EDE2D9A8884006B827D /* ClassOverviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassOverviewViewModel.swift; sourceTree = "<group>"; };
 		A0D8DF10B4B13AC391B38614 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A1976FBA4DD4FF1BE4F9BD9B /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		B49562804BCE267110FEBABC /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = debug.xcconfig; sourceTree = "<group>"; };
@@ -184,18 +174,6 @@
 			path = DndClasses;
 			sourceTree = "<group>";
 		};
-		6DFE1EDF2D9A8884006B827D /* DndClassOverview */ = {
-			isa = PBXGroup;
-			children = (
-				6DFE1EDA2D9A8884006B827D /* ClassOverviewController.swift */,
-				6DFE1EDB2D9A8884006B827D /* ClassOverviewCoordinator.swift */,
-				6DFE1EDC2D9A8884006B827D /* ClassOverviewFactory.swift */,
-				6DFE1EDD2D9A8884006B827D /* ClassOverviewView.swift */,
-				6DFE1EDE2D9A8884006B827D /* ClassOverviewViewModel.swift */,
-			);
-			path = DndClassOverview;
-			sourceTree = "<group>";
-		};
 		7EFC9B17385C835161B9D13C /* ViewModifier */ = {
 			isa = PBXGroup;
 			children = (
@@ -216,7 +194,6 @@
 			isa = PBXGroup;
 			children = (
 				6DFE1ED42D9A8880006B827D /* DndClasses */,
-				6DFE1EDF2D9A8884006B827D /* DndClassOverview */,
 				6D1FD8D12D9EBAD400EBD46D /* Root */,
 			);
 			path = UI;
@@ -369,11 +346,6 @@
 				6D1FD8CF2D9EBACB00EBD46D /* RootCoordinator.swift in Sources */,
 				6D1FD8D02D9EBACB00EBD46D /* RootView.swift in Sources */,
 				D6779AFBB07985CB3634FDBF /* SceneDelegate.swift in Sources */,
-				6DFE1EE02D9A8884006B827D /* ClassOverviewView.swift in Sources */,
-				6DFE1EE12D9A8884006B827D /* ClassOverviewController.swift in Sources */,
-				6DFE1EE22D9A8884006B827D /* ClassOverviewViewModel.swift in Sources */,
-				6DFE1EE32D9A8884006B827D /* ClassOverviewCoordinator.swift in Sources */,
-				6DFE1EE42D9A8884006B827D /* ClassOverviewFactory.swift in Sources */,
 				B10919797CF8338A12D5C39F /* URL+LosslessStringConvertible.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

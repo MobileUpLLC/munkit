@@ -18,7 +18,7 @@ public actor DNDClassesRepository {
         self.replica = await ReplicaClient.shared.createReplica(
             name: "DndReplica",
             storage: nil,
-            fetcher: { try await MobileService.shared.networkService.executeRequest(target: .classes) }
+            fetcher: { try await networkService.executeRequest(target: .classes) }
         )
     }
 
@@ -27,13 +27,6 @@ public actor DNDClassesRepository {
     }
 
     public func setLike(index: String, liked: Bool) {
-//        guard
-//            let itemIndex = classItems?.firstIndex(where: { $0.id == index }),
-//            let isLiked = classItems?[itemIndex].isLiked
-//        else {
-//            return
-//        }
-
         toggleLikeTasks[index]?.cancel()
 
         toggleLikeTasks[index] = Task {

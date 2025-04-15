@@ -18,9 +18,8 @@ public final class TokenProvider: MUNAccessTokenProvider, @unchecked Sendable {
     private var _accessToken: String?
     private let accessTokenQueue: DispatchQueue
 
-    // TODO: изначальное значение _accessToken
-    public init() {
-        self._accessToken = "0"
+    public init(accessToken: String) {
+        self._accessToken = accessToken
         self.accessTokenQueue = DispatchQueue(
             label: "com.mobileup.munkit-example-clt.access-token-queue",
             qos: .userInitiated
