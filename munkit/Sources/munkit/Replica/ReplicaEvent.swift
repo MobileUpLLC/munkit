@@ -5,8 +5,6 @@
 //  Created by Natalia Luzyanina on 01.04.2025.
 //
 
-import Foundation
-
 /// Событие, произошедшее в реплике.
 enum ReplicaEvent<T>: Sendable where T: Sendable  {
     /// События, связанные с загрузкой.
@@ -76,13 +74,13 @@ struct ObserversCountInfo: Sendable {
 extension ReplicaEvent: CustomStringConvertible {
     var description: String {
         switch self {
-        case .loading(let event): return "Loading: \(event)"
-        case .freshness(let event): return "Freshness: \(event)"
-        case .cleared: return "Data cleared"
-        case .clearedError: return "Error cleared"
-        case .observerCountChanged(let state): return "Observers changed: \(state)"
-        case .changing(let event): return "Data change: \(event)"
-        case .optimisticUpdates(let event): return "Optimistic update: \(event)"
+        case .loading(let event): "Loading: \(event)"
+        case .freshness(let event): "Freshness: \(event)"
+        case .cleared: "Data cleared"
+        case .clearedError: "Error cleared"
+        case .observerCountChanged(let state): "Observers changed: \(state)"
+        case .changing(let event): "Data change: \(event)"
+        case .optimisticUpdates(let event): "Optimistic update: \(event)"
         }
     }
 }
@@ -90,9 +88,9 @@ extension ReplicaEvent: CustomStringConvertible {
 extension OptimisticUpdatesEvent: CustomStringConvertible {
     var description: String {
         switch self {
-        case .begin: return "Began update"
-        case .commit: return "Committed update"
-        case .rollback: return "Rolled back update"
+        case .begin: "Began update"
+        case .commit: "Committed update"
+        case .rollback: "Rolled back update"
         }
     }
 }
@@ -100,8 +98,8 @@ extension OptimisticUpdatesEvent: CustomStringConvertible {
 extension ChangingDataEvent: CustomStringConvertible {
     var description: String {
         switch self {
-        case .dataSetting: return "Data set"
-        case .dataMutating: return "Data mutated"
+        case .dataSetting: "Data set"
+        case .dataMutating: "Data mutated"
         }
     }
 }
@@ -109,9 +107,9 @@ extension ChangingDataEvent: CustomStringConvertible {
 extension LoadingFinished: CustomStringConvertible {
     var description: String {
         switch self {
-        case .success: return "Loaded successfully"
-        case .canceled: return "Loading canceled"
-        case .error(let error): return "Loading failed: \(error)"
+        case .success: "Loaded successfully"
+        case .canceled: "Loading canceled"
+        case .error(let error): "Loading failed: \(error)"
         }
     }
 }
@@ -120,9 +118,9 @@ extension LoadingEvent: CustomStringConvertible {
     var description: String {
         switch self {
         case .loadingStarted(let dataRequested, let preloading):
-            return "Started loading (dataRequested: \(dataRequested), preloading: \(preloading))"
-        case .dataFromStorageLoaded: return "Loaded from storage"
-        case .loadingFinished(let result): return "Finished: \(result)"
+            "Started loading (dataRequested: \(dataRequested), preloading: \(preloading))"
+        case .dataFromStorageLoaded: "Loaded from storage"
+        case .loadingFinished(let result): "Finished: \(result)"
         }
     }
 }
@@ -130,8 +128,8 @@ extension LoadingEvent: CustomStringConvertible {
 extension FreshnessEvent: CustomStringConvertible {
     var description: String {
         switch self {
-        case .freshened: return "Data freshened"
-        case .becameStale: return "Data stale"
+        case .freshened: "Data freshened"
+        case .becameStale: "Data stale"
         }
     }
 }
