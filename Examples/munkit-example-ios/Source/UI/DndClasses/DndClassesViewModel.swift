@@ -90,11 +90,11 @@ final class DndClassesViewModel: ObservableObject {
                 return
             }
 
-            let observer = await replica.observe(observerActive: observerStateStream)
+            let observer = await replica.observe(activityStream: observerStateStream)
 
             self.observerContinuation.yield(true)
             
-            for await state in await observer.replicaStateStream {
+            for await state in await observer.stateStream {
                 let viewItems = state.data?.valueWithOptimisticUpdates.results.map {
                     DndClassesView.ViewItem(id: $0.index, name: $0.name, isLiked: $0.isLiked)
                 }
@@ -102,7 +102,7 @@ final class DndClassesViewModel: ObservableObject {
                 print("🐉 DndClassesViewModel: \(String(describing: viewItems))")
                 self.classItems = viewItems
             }
-            await observer.cancelObserving()
+            await observer.stopObserving()
         }
     }
 
