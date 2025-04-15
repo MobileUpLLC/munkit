@@ -11,13 +11,12 @@ import munkit
 public func getNetworkService(
     apiProvider: MoyaProvider<DNDAPITarget>,
     tokenRefreshProvider: TokenProvider,
-    setTokenRefreshFailureHandler: @escaping @Sendable () -> Void
+    tokenRefreshFailureHandler: @escaping @Sendable () -> Void
 ) async -> MUNNetworkService<DNDAPITarget> {
-
     let networkService = await MUNNetworkService(apiProvider: apiProvider, tokenRefreshProvider: tokenRefreshProvider)
 
     await networkService.setTokenRefreshFailureHandler {
-        setTokenRefreshFailureHandler()
+        tokenRefreshFailureHandler()
     }
 
     return networkService
