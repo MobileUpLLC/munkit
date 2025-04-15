@@ -25,11 +25,21 @@ let networkService = await getNetworkService(
 
 let repository = await DNDClassesRepository(networkService: networkService)
 
-let observerActivityStream: AsyncStreamBundle = AsyncStream<Bool>.makeStream()
-let observer = await repository.replica.observe(activityStream: observerActivityStream.stream)
+let firstObserverActivityStream: AsyncStreamBundle = AsyncStream<Bool>.makeStream()
+let secondeObserverActivityStream: AsyncStreamBundle = AsyncStream<Bool>.makeStream()
 
-// observerActivityStream.continuation.yield(true)
-// Task.sleep(for: .seconds(2))
-// observerActivityStream.continuation.yield(false)
+let firstObserver = await repository.replica.observe(activityStream: firstObserverActivityStream.stream)
+let secondeObserver = await repository.replica.observe(activityStream: secondeObserverActivityStream.stream)
+
+firstObserverActivityStream.continuation.yield(true)
+try await _Concurrency.Task.sleep(for: .seconds(2))
+secondeObserverActivityStream.continuation.yield(true)
+
+try await _Concurrency.Task.sleep(for: .seconds(2))
+
+firstObserverActivityStream.continuation.yield(false)
+try await _Concurrency.Task.sleep(for: .seconds(2))
+secondeObserverActivityStream.continuation.yield(false)
+
 
 try await _Concurrency.Task.sleep(for: .seconds(10))
