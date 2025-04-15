@@ -29,7 +29,7 @@ actor ReplicaLoadingController<T> where T: Sendable {
         /// Запускаем асинхронную задачу для обработки потока вывода загрузчика данных
         Task {
             for await output in dataLoader.outputStreamBundle.stream {
-                await onDataLoaderOutput(output: output)
+                await handleDataLoaderOutput(output)
             }
         }
     }
@@ -150,7 +150,9 @@ actor ReplicaLoadingController<T> where T: Sendable {
 
     /// Обрабатывает вывод от загрузчика данных и обновляет состояние реплики.
     /// - Parameter output: Результат работы загрузчика данных.
-    private func onDataLoaderOutput(output: DataLoader<T>.Output) async {
+    private func handleDataLoaderOutput(_ output: DataLoader<T>.Output) async {
+        print("📥", #function, output)
+
         switch output {
         case .storageRead(.data(let data)):
             let data = ReplicaData(value: data, isFresh: false, changingDate: .now)

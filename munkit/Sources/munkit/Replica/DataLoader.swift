@@ -7,23 +7,54 @@
 
 import Foundation
 
-actor DataLoader<T> where T: Sendable {
-    enum Output {
-        case storageRead(StorageRead)
-        case loadingFinished(LoadingFinished)
+enum DataLoaderOutput<T: Sendable> {
+    case storageRead(StorageRead)
+    case loadingFinished(LoadingFinished)
 
-        /// Результат чтения из хранилища.
-        enum StorageRead {
-            case data(T)
-            case empty
-        }
+    /// Результат чтения из хранилища.
+    enum StorageRead {
+        case data(T)
+        case empty
+    }
 
-        /// Результат завершения загрузки.
-        enum LoadingFinished {
-            case success(T)
-            case error(Error)
+    /// Результат завершения загрузки.
+    enum LoadingFinished {
+        case success(T)
+        case error(Error)
+    }
+}
+
+extension DataLoaderOutput: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .storageRead(
+            let read
+        ): return "Storage read: (read)" case .loadingFinished(
+            let finished
+        ): return "Loading finished: (finished)"
         }
     }
+}
+
+extension DataLoaderOutput.StorageRead: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .data: return "Data found" case .empty: return "No data"
+        }
+    }
+}
+
+extension DataLoaderOutput.LoadingFinished: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .success: return "Success" case .error(let error): return "Error: (error)"
+        }
+    }
+}
+
+
+actor DataLoader<T> where T: Sendable {
+    typealias Output = DataLoaderOutput<T>
 
     let outputStreamBundle: AsyncStreamBundle<Output>
     /// Опциональное хранилище, используемое для чтения и записи данных типа `T`.
