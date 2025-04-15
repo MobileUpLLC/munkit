@@ -32,4 +32,8 @@ Task {
     await observer2.simulateActivity()
 }
 
+
+try await _Concurrency.Task.sleep(for: .seconds(10))
+let observer3 = await Observer(name: "observer3", replica: repository.replica)
+
 try await _Concurrency.Task.sleep(for: .seconds(120))
