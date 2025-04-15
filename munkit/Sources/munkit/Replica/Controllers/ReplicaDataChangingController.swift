@@ -14,25 +14,16 @@ actor ReplicaDataChangingController<T> where T: Sendable {
 
     init(
         replicaState: ReplicaState<T>,
-        replicaStateStream: AsyncStream<ReplicaState<T>>,
         replicaEventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation,
         storage: (any Storage<T>)?
     ) {
         self.replicaState = replicaState
         self.replicaEventStreamContinuation = replicaEventStreamContinuation
         self.storage = storage
-
-        Task {
-            await subscribeForReplicaStateStream(replicaStateStream: replicaStateStream)
-        }
     }
 
-    private func subscribeForReplicaStateStream(replicaStateStream: AsyncStream<ReplicaState<T>>) async {
-        Task {
-            for await newReplicaState in replicaStateStream {
-                replicaState = newReplicaState
-            }
-        }
+    func updateState(_ newState: ReplicaState<T>) async {
+        self.replicaState = newState
     }
 
     func setData(data: T) async throws {

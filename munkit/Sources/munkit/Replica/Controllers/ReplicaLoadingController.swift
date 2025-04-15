@@ -19,7 +19,6 @@ actor ReplicaLoadingController<T> where T: Sendable {
 
     init(
         replicaState: ReplicaState<T>,
-        replicaStateStream: AsyncStream<ReplicaState<T>>,
         replicaEventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation,
         dataLoader: DataLoader<T>
     ) {
@@ -32,10 +31,6 @@ actor ReplicaLoadingController<T> where T: Sendable {
             for await output in dataLoader.outputStreamBundle.stream {
                 await onDataLoaderOutput(output: output)
             }
-        }
-
-        Task {
-            await subscribeForReplicaStreams(replicaStateStream: replicaStateStream)
         }
     }
 
@@ -66,6 +61,10 @@ actor ReplicaLoadingController<T> where T: Sendable {
         await dataLoader.cancel()
 
         replicaEventStreamContinuation.yield(.loading(.loadingFinished(.canceled)))
+    }
+
+    func updateState(_ newState: ReplicaState<T>) async {
+        replicaState = newState
     }
 
     /// Обновляет данные после инвалидации в зависимости от указанного режима.

@@ -13,23 +13,14 @@ actor ReplicaObserversController<T> where T: Sendable {
 
     init(
         initialState: ReplicaState<T>,
-        stateStream: AsyncStream<ReplicaState<T>>,
         eventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation
     ) {
         self.replicaState = initialState
         self.eventStreamContinuation = eventStreamContinuation
-
-        Task {
-            await subscribeToStateStream(stateStream: stateStream)
-        }
     }
 
-    private func subscribeToStateStream(stateStream: AsyncStream<ReplicaState<T>>) async {
-        Task {
-            for await updatedState in stateStream {
-                replicaState = updatedState
-            }
-        }
+    func updateState(_ newState: ReplicaState<T>) async {
+        self.replicaState = newState
     }
 
     /// Handles the addition of a new observer.

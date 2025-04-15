@@ -13,23 +13,14 @@ actor ReplicaFreshnessController<T> where T: Sendable {
 
     init(
         replicaState: ReplicaState<T>,
-        replicaStateStream: AsyncStream<ReplicaState<T>>,
         replicaEventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation
     ) {
         self.replicaState = replicaState
         self.replicaEventStreamContinuation = replicaEventStreamContinuation
-
-        Task {
-            await subscribeForReplicaStateStream(replicaStateStream: replicaStateStream)
-        }
     }
 
-    private func subscribeForReplicaStateStream(replicaStateStream: AsyncStream<ReplicaState<T>>) async {
-        Task {
-            for await newReplicaState in replicaStateStream {
-                replicaState = newReplicaState
-            }
-        }
+    func updateState(_ newState: ReplicaState<T>) async {
+        self.replicaState = newState
     }
 
     func invalidate() async {

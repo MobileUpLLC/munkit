@@ -12,13 +12,14 @@ actor ReplicaClearingController<T> where T: Sendable {
     private let storage: (any Storage<T>)?
 
     init(
-        replicaStateStream: AsyncStream<ReplicaState<T>>,
         replicaEventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation,
         storage: (any Storage<T>)?
     ) {
         self.replicaEventStreamContinuation = replicaEventStreamContinuation
         self.storage = storage
     }
+
+    func updateState(_ newState: ReplicaState<T>) async {}
 
     func clear(removeFromStorage: Bool) async throws {
         replicaEventStreamContinuation.yield(.cleared)
