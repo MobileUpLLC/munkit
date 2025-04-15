@@ -11,15 +11,15 @@ public struct ReplicaData<T>: Sendable where T: Sendable {
     public var value: T
     var isFresh: Bool
     var changingDate: Date
-    var optimisticUpdates: [any OptimisticUpdate<T>]
+    var optimisticUpdates: [OptimisticUpdate<T>]
 
-    var valueWithOptimisticUpdates: T {
+    public var valueWithOptimisticUpdates: T {
         optimisticUpdates.reduce(value) { currentData, update in
-            update.apply(to: currentData)
+            update.apply(currentData)
         }
     }
 
-    init(value: T, isFresh: Bool, changingDate: Date, optimisticUpdates: [any OptimisticUpdate<T>] = []) {
+    init(value: T, isFresh: Bool, changingDate: Date, optimisticUpdates: [OptimisticUpdate<T>] = []) {
         self.value = value
         self.isFresh = isFresh
         self.changingDate = changingDate
@@ -27,8 +27,15 @@ public struct ReplicaData<T>: Sendable where T: Sendable {
     }
 }
 
-public protocol OptimisticUpdate<T>: Sendable, AnyObject {
-    associatedtype T
+// Оптимистичное обновление
+public final class OptimisticUpdate<T>: Sendable where T: Sendable {
+    private let _apply: @Sendable (T) -> T
 
-    func apply(to data: T) -> T
+    public init(apply: @escaping @Sendable (T) -> T) {
+        self._apply = apply
+    }
+
+    func apply(_ data: T) -> T {
+        _apply(data)
+    }
 }

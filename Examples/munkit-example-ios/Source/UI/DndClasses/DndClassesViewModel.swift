@@ -95,14 +95,27 @@ final class DndClassesViewModel: ObservableObject {
             self.observerContinuation.yield(true)
             
             for await state in await observer.replicaStateStream {
-                let viewItems = state.data?.value.results.map {
-                    DndClassesView.ViewItem(id: $0.index, name: $0.name)
+                let viewItems = state.data?.valueWithOptimisticUpdates.results.map {
+                    DndClassesView.ViewItem(id: $0.index, name: $0.name, isLiked: $0.isLiked)
                 }
 
                 print("🐉 DndClassesViewModel: \(String(describing: viewItems))")
                 self.classItems = viewItems
             }
             await observer.cancelObserving()
+        }
+    }
+
+    @MainActor
+    func setLike(index: String) {
+        guard
+            let itemIndex = classItems?.firstIndex(where: { $0.id == index }),
+            let isLiked = classItems?[itemIndex].isLiked
+        else {
+            return
+        }
+        Task {
+            await repository.setLike(index: index, liked: !isLiked)
         }
     }
 

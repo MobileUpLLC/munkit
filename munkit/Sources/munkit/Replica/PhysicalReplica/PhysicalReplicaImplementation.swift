@@ -160,6 +160,84 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         }
     }
 
+    public func withOptimisticUpdate(
+        update: OptimisticUpdate<T>,
+        onSuccess: (@Sendable () async -> Void)? = nil,
+        onError: (@Sendable (Error) async -> Void)? = nil,
+        onCanceled: (@Sendable () async -> Void)? = nil,
+        onFinished: (@Sendable () async -> Void)? = nil,
+        block: @escaping @Sendable () async throws -> T
+    ) async throws -> T {
+        await beginOptimisticUpdate(update)
+
+        do {
+            let result = try await block()
+
+            await commitOptimisticUpdate(update)
+
+            if let onSuccess {
+                await onSuccess()
+            }
+
+            if let onFinished {
+                await onFinished()
+            }
+
+            return result
+        } catch {
+            await rollbackOptimisticUpdate(update)
+
+            if let onError {
+                await onError(error)
+            }
+
+            if let onFinished {
+                await onFinished()
+            }
+
+            throw error
+        }
+    }
+
+    public func withOptimisticUpdate(
+        update: OptimisticUpdate<T>,
+        onSuccess: (@Sendable () async -> Void)? = nil,
+        onError: (@Sendable (Error) async -> Void)? = nil,
+        onCanceled: (@Sendable () async -> Void)? = nil,
+        onFinished: (@Sendable () async -> Void)? = nil,
+        block: @escaping @Sendable () async throws -> T
+    ) async throws -> T {
+        await beginOptimisticUpdate(update)
+
+        do {
+            let result = try await block()
+
+            await commitOptimisticUpdate(update)
+
+            if let onSuccess {
+                await onSuccess()
+            }
+
+            if let onFinished {
+                await onFinished()
+            }
+
+            return result
+        } catch {
+            await rollbackOptimisticUpdate(update)
+
+            if let onError {
+                await onError(error)
+            }
+
+            if let onFinished {
+                await onFinished()
+            }
+
+            throw error
+        }
+    }
+
     func cancel() async {
         await loadingController.cancel()
     }

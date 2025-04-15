@@ -9,6 +9,7 @@ import munkit
 
 public actor DNDClassesRepository {
     private let networkService: MUNNetworkService<DNDAPITarget>
+    private var toggleLikeTasks: [String: Task<Void, Never>] = [:]
 
     public let replica: any PhysicalReplica<DNDClassesListModel>
 
@@ -25,6 +26,43 @@ public actor DNDClassesRepository {
         return try await networkService.executeRequest(target: .classes)
     }
 
+    public func setLike(index: String, liked: Bool) {
+//        guard
+//            let itemIndex = classItems?.firstIndex(where: { $0.id == index }),
+//            let isLiked = classItems?[itemIndex].isLiked
+//        else {
+//            return
+//        }
+
+        toggleLikeTasks[index]?.cancel()
+
+        toggleLikeTasks[index] = Task {
+            try? await setLike(id: index, liked: liked)
+        }
+    }
+
+
+    private func setLike(id: String, liked: Bool) async throws {
+        let updateClassLiked = OptimisticUpdate<DNDClassesListModel> { classesList in
+            var updatedClassesList = classesList
+            updatedClassesList.results = classesList.results.map { model in
+                if model.index == id {
+                    var updatedModel = model
+                    updatedModel.isLiked = liked
+                    return updatedModel
+                } else {
+                    return model
+                }
+            }
+            return updatedClassesList
+        }
+        
+        try await replica.withOptimisticUpdate(update: updateClassLiked) {
+            try await Task.sleep(for: .seconds(3))
+
+            return try await self.networkService.executeRequest(target: .like(liked))
+        }
+    }
 
     public func clearData() async {
         await replica.clear()

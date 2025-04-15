@@ -33,26 +33,23 @@ actor ReplicaOptimisticUpdatesController<T> where T: Sendable {
         }
     }
 
-    func beginOptimisticUpdate(update: any OptimisticUpdate<T>) async {
+    func beginOptimisticUpdate(update: OptimisticUpdate<T>) async {
         guard let data = replicaState.data else {
             return
         }
 
-        let updatedOptimisticUpdates = data.optimisticUpdates + [update]
-
         var updatedData = data
-        updatedData.optimisticUpdates = updatedOptimisticUpdates
+        updatedData.optimisticUpdates.append(update)
 
         replicaEventStreamContinuation.yield(.optimisticUpdates(.begin(data: updatedData)))
     }
 
-    func commitOptimisticUpdate(update: any OptimisticUpdate<T>) async {
+    func commitOptimisticUpdate(update: OptimisticUpdate<T>) async {
         guard let data = replicaState.data else {
             return
         }
 
-        let newData = update.apply(to: data.value)
-
+        let newData = update.apply(data.value)
 
         let updatedOptimisticUpdates = data.optimisticUpdates.filter { $0 !== update }
 
@@ -67,7 +64,7 @@ actor ReplicaOptimisticUpdatesController<T> where T: Sendable {
 
     /// Откатывает оптимистичное обновление, удаляя его из списка ожидающих обновлений.
     /// - Parameter update: Оптимистичное обновление для отката.
-    func rollbackOptimisticUpdate(update: any OptimisticUpdate<T>) async {
+    func rollbackOptimisticUpdate(update: OptimisticUpdate<T>) async {
         guard let data = replicaState.data else {
             return
         }

@@ -17,10 +17,10 @@ struct ClassOverviewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             if let viewItem = viewModel.viewItem {
-            Text(viewItem.name)
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .padding(.horizontal)
+                Text(viewItem.name)
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .padding(.horizontal)
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Hit Die: \(viewItem.hitDie)")
                     Text("Saving Throws: \(viewItem.savingThrows.joined(separator: ", "))")

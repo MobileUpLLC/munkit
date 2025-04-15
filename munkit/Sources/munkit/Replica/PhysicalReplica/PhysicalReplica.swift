@@ -20,13 +20,13 @@ public protocol PhysicalReplica<T>: Replica where T: Sendable {
     func mutateData(transform: @escaping (T) -> T)
 
     func withOptimisticUpdate(
-        update: any OptimisticUpdate<T>,
-        onSuccess: (@Sendable () async -> Void)?,
-        onError: (@Sendable (Error) async -> Void)?,
-        onCanceled: (@Sendable () async -> Void)?,
-        onFinished: (@Sendable () async -> Void)?,
-        block: @escaping @Sendable () async throws -> T
-    ) async throws -> T
+           update: OptimisticUpdate<T>,
+           onSuccess: (@Sendable () async -> Void)?,
+           onError: (@Sendable (Error) async -> Void)?,
+           onCanceled: (@Sendable () async -> Void)?,
+           onFinished: (@Sendable () async -> Void)?,
+           block: @escaping @Sendable () async throws -> T
+       ) async throws -> T
 }
 
 public extension PhysicalReplica {
@@ -39,12 +39,12 @@ public extension PhysicalReplica {
     }
 
     func withOptimisticUpdate(
-        update: any OptimisticUpdate<T>,
-        onSuccess: (@Sendable () async -> Void)? = nil,
-        onError: (@Sendable (Error) async -> Void)? = nil,
-        onCanceled: (@Sendable () async -> Void)? = nil,
-        onFinished: (@Sendable () async -> Void)? = nil,
-        block: @escaping @Sendable () async throws -> T
+           update: OptimisticUpdate<T>,
+           onSuccess: (@Sendable () async -> Void)? = nil,
+           onError: (@Sendable (Error) async -> Void)? = nil,
+           onCanceled: (@Sendable () async -> Void)? = nil,
+           onFinished: (@Sendable () async -> Void)? = nil,
+           block: @escaping @Sendable () async throws -> T
     ) async throws -> T {
         try await withOptimisticUpdate(
             update: update,
