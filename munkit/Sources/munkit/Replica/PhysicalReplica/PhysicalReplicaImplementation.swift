@@ -203,27 +203,35 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         case .freshness(let freshnessEvent):
             await handleFreshnessEvent(freshnessEvent)
         case .cleared:
-            var state = replicaState
-            state.data = nil
-            state.error = nil
-            state.loadingFromStorageRequired = false
-            await updateState(state)
+            await handleClearedEvent()
         case .clearedError:
-            var state = replicaState
-            state.error = nil
-            await updateState(state)
+            await handleClearedErrorEvent()
         case .observerCountChanged(let observingState):
-            let previousState = replicaState
-            let updatedState = replicaState.copy(observingState: observingState)
-            await updateState(updatedState)
-
-            if observingState.activeObserverIds.count > previousState.observingState.activeObserverIds.count {
-                await revalidate()
-            }
+            await handleObserverCountChangedEvent(observingState: observingState)
         case .changing(let changingEvent):
             await handleDataMutationEvent(changingEvent)
         case .optimisticUpdates(let optimisticUpdateEvent):
             await handleOptimisticUpdateEvent(optimisticUpdateEvent)
+        }
+    }
+
+    private func handleClearedEvent() async {
+        let updatedState = replicaState.copy(data: nil, error: nil, loadingFromStorageRequired: false)
+        await updateState(updatedState)
+    }
+
+    private func handleClearedErrorEvent() async {
+        let updatedState = replicaState.copy(error: nil)
+        await updateState(updatedState)
+    }
+
+    private func handleObserverCountChangedEvent(observingState: ObservingState) async {
+        let previousState = replicaState
+        let updatedState = replicaState.copy(observingState: observingState)
+        await updateState(updatedState)
+
+        if observingState.activeObserverIds.count > previousState.observingState.activeObserverIds.count {
+            await revalidate()
         }
     }
 
@@ -261,11 +269,12 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     private func handleLoadingEvent(_ event: LoadingEvent<T>) async {
         switch event {
         case .loadingStarted:
-            var state = replicaState
-            state.loading = true
-            state.error = nil
-            state.dataRequested = true
-            await updateState(state)
+            let updatedState = replicaState.copy(
+                loading: true,
+                error: nil,
+                dataRequested: true
+            )
+            await updateState(updatedState)
         case .dataFromStorageLoaded(let data):
             let updatedState = replicaState.copy(
                 data: data,
@@ -280,26 +289,31 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     private func handleFreshnessEvent(_ event: FreshnessEvent) async {
         switch event {
         case .freshened:
-            var state = replicaState
-            state.data?.isFresh = true
-            await updateState(state)
+            if var data = replicaState.data {
+                data.isFresh = true
+                let updatedState = replicaState.copy(data: data)
+                await updateState(updatedState)
+            }
         case .becameStale:
-            var state = replicaState
-            state.data?.isFresh = false
-            await updateState(state)
+            if var data = replicaState.data {
+                data.isFresh = false
+                let updatedState = replicaState.copy(data: data)
+                await updateState(updatedState)
+            }
         }
     }
 
     private func handleLoadingFinishedEvent(_ event: LoadingFinished<T>) async {
         switch event {
         case .success(let data):
-            var state = replicaState
-            state.loading = false
-            state.data = data
-            state.error = nil
-            state.dataRequested = false
-            state.preloading = false
-            await updateState(state)
+            let updatedState = replicaState.copy(
+                loading: false,
+                data: data,
+                error: nil,
+                dataRequested: false,
+                preloading: false
+            )
+            await updateState(updatedState)
         case .canceled:
             let updatedState = replicaState.copy(
                 loading: false,
