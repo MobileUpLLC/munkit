@@ -203,7 +203,8 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     }
 
     private func updateState(_ newState: ReplicaState<T>) {
-        print("💾 Replica \(self) updated state: \(newState)")
+        print("⚖️", name, #function, newState)
+
         replicaState = newState
 
         let allStateStreams = observerStateStreams + [
@@ -219,7 +220,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     }
 
     private func handleEvent(_ event: ReplicaEvent<T>) {
-        print("\n⚡️ \(self) received event: \(event)")
+        print("⚡️", name, #function, event)
 
         switch event {
         case .loading(let loadingEvent):

@@ -132,27 +132,21 @@ actor ReplicaLoadingController<T> where T: Sendable {
     ///   - skipLoadingIfFresh: Пропускает загрузку, если данные свежие.
     ///   - setDataRequested: Устанавливает флаг запроса данных.
     private func loadData(skipLoadingIfFresh: Bool, setDataRequested: Bool = false) async {
-        if skipLoadingIfFresh && replicaState.hasFreshData {
+        guard
+            replicaState.loading == false,
+            (skipLoadingIfFresh && replicaState.hasFreshData) == false
+        else {
             return
         }
 
-        let loadingStarted: Bool
-
-        if replicaState.loading == false {
-            await dataLoader.load(loadingFromStorageRequired: replicaState.loadingFromStorageRequired)
-            loadingStarted = true
-        } else {
-            loadingStarted = false
-        }
+        await dataLoader.load(loadingFromStorageRequired: replicaState.loadingFromStorageRequired)
 
         let dataRequested: Bool = setDataRequested || replicaState.dataRequested
         let preloading: Bool = (replicaState.observingState.status == .none) || replicaState.preloading
 
-        if loadingStarted {
-            replicaEventStreamContinuation.yield(
-                .loading(.loadingStarted(dataRequested: dataRequested, preloading: preloading))
-            )
-        }
+        replicaEventStreamContinuation.yield(
+            .loading(.loadingStarted(dataRequested: dataRequested, preloading: preloading))
+        )
     }
 
     /// Обрабатывает вывод от загрузчика данных и обновляет состояние реплики.

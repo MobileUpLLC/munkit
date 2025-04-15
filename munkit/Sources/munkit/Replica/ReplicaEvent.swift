@@ -72,3 +72,72 @@ struct ObserversCountInfo: Sendable {
     let previousCount: Int
     let previousActiveCount: Int
 }
+
+extension ReplicaEvent: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .loading(let event): return "Loading: \(event)"
+        case .freshness(let event): return "Freshness: \(event)"
+        case .cleared: return "Data cleared"
+        case .clearedError: return "Error cleared"
+        case .observerCountChanged(let state): return "Observers changed: \(state)"
+        case .changing(let event): return "Data change: \(event)"
+        case .optimisticUpdates(let event): return "Optimistic update: \(event)"
+        }
+    }
+}
+
+extension OptimisticUpdatesEvent: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .begin: return "Began update"
+        case .commit: return "Committed update"
+        case .rollback: return "Rolled back update"
+        }
+    }
+}
+
+extension ChangingDataEvent: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .dataSetting: return "Data set"
+        case .dataMutating: return "Data mutated"
+        }
+    }
+}
+
+extension LoadingFinished: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .success: return "Loaded successfully"
+        case .canceled: return "Loading canceled"
+        case .error(let error): return "Loading failed: \(error)"
+        }
+    }
+}
+
+extension LoadingEvent: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .loadingStarted(let dataRequested, let preloading):
+            return "Started loading (dataRequested: \(dataRequested), preloading: \(preloading))"
+        case .dataFromStorageLoaded: return "Loaded from storage"
+        case .loadingFinished(let result): return "Finished: \(result)"
+        }
+    }
+}
+
+extension FreshnessEvent: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .freshened: return "Data freshened"
+        case .becameStale: return "Data stale"
+        }
+    }
+}
+
+extension ObserversCountInfo: CustomStringConvertible {
+    var description: String {
+        "count: \(count), active: \(activeCount) (prev: \(previousCount), prevActive: \(previousActiveCount))"
+    }
+}

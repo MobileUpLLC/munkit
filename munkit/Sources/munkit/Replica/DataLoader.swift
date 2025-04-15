@@ -45,7 +45,7 @@ actor DataLoader<T> where T: Sendable {
     /// - Parameter loadingFromStorageRequired: Указывает, нужно ли сначала пытаться загрузить данные из хранилища.
     ///  Результаты загрузки передаются в поток `outputStream` в виде событий `Output`.
     func load(loadingFromStorageRequired: Bool) async {
-       print("\(self): load(loadingFromStorageRequired: \(loadingFromStorageRequired)")
+        print("\(self): load(loadingFromStorageRequired: \(loadingFromStorageRequired)")
         await cancel()
 
         loadingTask = Task { [weak self] in
@@ -53,9 +53,8 @@ actor DataLoader<T> where T: Sendable {
 
             do {
                 if loadingFromStorageRequired {
-                    try Task.checkCancellation()
-
                     if let data = try await storage?.read() {
+                        try Task.checkCancellation()
                         outputStreamBundle.continuation.yield(.storageRead(.data(data)))
                     } else {
                         outputStreamBundle.continuation.yield(.storageRead(.empty))
@@ -63,23 +62,17 @@ actor DataLoader<T> where T: Sendable {
                 }
 
                 let data = try await fetcher()
-
                 try Task.checkCancellation()
 
                 if let storage = storage {
                     try await storage.write(data: data)
+                    try Task.checkCancellation()
                 }
-
-                try Task.checkCancellation()
-
                 outputStreamBundle.continuation.yield(.loadingFinished(.success(data)))
-
             } catch is CancellationError {
                 return
             } catch {
-                if Task.isCancelled == false {
-                    outputStreamBundle.continuation.yield(.loadingFinished(.error(error)))
-                }
+                outputStreamBundle.continuation.yield(.loadingFinished(.error(error)))
             }
         }
     }

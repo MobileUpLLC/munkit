@@ -61,3 +61,26 @@ public struct ReplicaState<T>: Sendable where T: Sendable {
         )
     }
 }
+
+extension ReplicaState: CustomStringConvertible {
+    public var description: String {
+        """
+        ReplicaState:
+          loading: \(loading)
+          data: \(data != nil ? "present" : "absent")
+          error: \(error?.localizedDescription ?? "none")
+          observing: \(observingState)
+          dataRequested: \(dataRequested)
+          preloading: \(preloading)
+          loadingFromStorageRequired: \(loadingFromStorageRequired)
+          hasFreshData: \(hasFreshData)
+        """
+    }
+}
+
+extension ObservingState: CustomStringConvertible {
+    public var description: String {
+        "observers: \(observerIds.count), active: \(activeObserverIds.count), observingSince: \(observingTime)"
+    }
+}
+

@@ -5,41 +5,61 @@
 //  Created by Ilia Chub on 11.04.2025.
 //
 
-import Moya
 import munkit
 import munkit_example_core
 import Foundation
 
-let tokenProvider = TokenProvider(accessToken: "0")
-
-let apiProvider = MoyaProvider<DNDAPITarget>(
-    session: Session(startRequestsImmediately: true),
-    plugins: [MUNLoggerPlugin.instance]
-)
+let tokenProvider = TokenProvider()
 
 let networkService = await getNetworkService(
-    apiProvider: apiProvider,
+    plugins: [],
     tokenRefreshProvider: tokenProvider,
-    setTokenRefreshFailureHandler: { print("🧨 Token refresh failed handler called") }
+    tokenRefreshFailureHandler: { print("🧨 Token refresh failed handler called") }
 )
 
 let repository = await DNDClassesRepository(networkService: networkService)
 
-let firstObserverActivityStream: AsyncStreamBundle = AsyncStream<Bool>.makeStream()
-let secondeObserverActivityStream: AsyncStreamBundle = AsyncStream<Bool>.makeStream()
-
-let firstObserver = await repository.replica.observe(activityStream: firstObserverActivityStream.stream)
-let secondeObserver = await repository.replica.observe(activityStream: secondeObserverActivityStream.stream)
-
-firstObserverActivityStream.continuation.yield(true)
-try await _Concurrency.Task.sleep(for: .seconds(2))
-secondeObserverActivityStream.continuation.yield(true)
-
-try await _Concurrency.Task.sleep(for: .seconds(2))
-
-firstObserverActivityStream.continuation.yield(false)
-try await _Concurrency.Task.sleep(for: .seconds(2))
-secondeObserverActivityStream.continuation.yield(false)
-
+let observer1 = await Observer(name: "observer1", replica: repository.replica)
+let observer2 = await Observer(name: "observer2", replica: repository.replica)
 
 try await _Concurrency.Task.sleep(for: .seconds(10))
+
+final class Observer: Sendable {
+    private let name: String
+    private let replica: any Replica<DNDClassesListModel>
+    private let observer: ReplicaObserver<DNDClassesListModel>
+    private let activityStream: AsyncStreamBundle<Bool>
+
+    init(name: String, replica: any Replica<DNDClassesListModel>) async {
+        self.name = name
+        self.replica = replica
+        self.activityStream = AsyncStream<Bool>.makeStream()
+        self.observer = await replica.observe(activityStream: activityStream.stream)
+
+        Task {
+            for await state in await observer.stateStream {
+                await handleNewState(state)
+            }
+        }
+
+//        Task {
+//            try? await Task.sleep(for: .seconds(Int.random(in: 1...3)))
+//            await self.simulateActivity()
+//        }
+    }
+
+    func simulateActivity() async {
+        print("🤖", name, #function, "+")
+        activityStream.continuation.yield(true)
+        try? await Task.sleep(for: .seconds(Int.random(in: 1...5)))
+        print("🤖", name, #function, "-")
+        activityStream.continuation.yield(false)
+        try? await Task.sleep(for: .seconds(Int.random(in: 1...5)))
+        print("🤖", name, #function, "+")
+        activityStream.continuation.yield(true)
+    }
+
+    private func handleNewState(_ state: ReplicaState<DNDClassesListModel>) async {
+//        print("🤖", name, #function, state)
+    }
+}
