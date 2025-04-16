@@ -31,6 +31,10 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     private let dataMutationController: ReplicaDataChangingController<T>
     private let optimisticUpdatesController: ReplicaOptimisticUpdatesController<T>
 
+    public var canBeRemoved: Bool {
+        replicaState.canBeRemoved
+    }
+
     public init(storage: (any Storage<T>)?, fetcher: @Sendable @escaping () async throws -> T, name: String) {
         self.name = name
         self.storage = storage
@@ -202,7 +206,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         ]
 
         Task {
-            await withTaskGroup { group in
+            await withTaskGroup(of: Void.self) { group in
                 for stream in eventStreams {
                     group.addTask { [weak self] in
                         for await event in stream {

@@ -14,6 +14,8 @@ public struct ObservingState: Sendable {
     /// Время последнего наблюдения за репликой.
     let observingTime: ObservingTime
 
+    var observersCountInfo: ObserversCountInfo
+
     /// Текущий статус наблюдения, основанный на количестве наблюдателей.
     var status: ObservingStatus {
         if activeObserverIds.count > 0 {

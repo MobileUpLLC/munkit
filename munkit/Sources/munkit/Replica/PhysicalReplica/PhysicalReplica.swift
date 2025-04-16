@@ -10,6 +10,9 @@ import Foundation
 public protocol PhysicalReplica<T>: Replica where T: Sendable {
     var name: String { get }
 
+    var observersControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>> { get }
+    var canBeRemoved: Bool { get }
+
     init(storage: (any Storage<T>)?, fetcher: @Sendable @escaping () async throws -> T, name: String)
 
     func clear(invalidationMode: InvalidationMode, removeFromStorage: Bool) async
