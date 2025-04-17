@@ -7,7 +7,7 @@
 
 import Foundation
 
-public actor KeyedPhysicalReplicaImplementation<K: Hashable & Sendable, T: Sendable>: KeyedReplica {
+public actor KeyedPhysicalReplicaImplementation<K: Hashable & Sendable, T: Sendable>: KeyedPhysicalReplica {
     public let id: String
     public let name: String
 
@@ -27,7 +27,7 @@ public actor KeyedPhysicalReplicaImplementation<K: Hashable & Sendable, T: Senda
     public init(
         id: String = UUID().uuidString,
         name: String,
-        replicaFactory: @escaping @Sendable (K) async -> any PhysicalReplica<T>
+        replicaFactory: @escaping @Sendable (K) async -> (any PhysicalReplica<T>)
     ) {
         self.id = id
         self.name = name
@@ -89,7 +89,8 @@ public actor KeyedPhysicalReplicaImplementation<K: Hashable & Sendable, T: Senda
 
     private func processEvents() {
         let eventStreams = [
-            observersControllerEventStream.stream
+            observersControllerEventStream.stream,
+            childRemovingControllerEventStream.stream
         ]
 
         Task {

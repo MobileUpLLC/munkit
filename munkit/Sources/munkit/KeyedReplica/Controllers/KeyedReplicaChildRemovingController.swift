@@ -28,16 +28,16 @@ actor KeyedReplicaChildRemovingController<K: Hashable & Sendable, T: Sendable> {
         }
 
         // TODO: 
-        Task {
-            for await state in replica.stateStream.dropFirst() {
-                if state.canBeRemoved {
-                    additionalCheckTask.cancel()
-                    removeReplica(key)
-                    break
-                } else {
-                    additionalCheckTask.cancel()
-                }
-            }
-        }
+//        Task {
+//            for await state in replica.stateStream.dropFirst() {
+//                if state.canBeRemoved {
+//                    additionalCheckTask.cancel()
+//                    removeReplica(key)
+//                    break
+//                } else {
+//                    additionalCheckTask.cancel()
+//                }
+//            }
+//        }
     }
 }
