@@ -8,6 +8,7 @@
 import Foundation
 
 public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
+    public let id: String
     public let name: String
 
     private let storage: (any Storage<T>)?
@@ -17,7 +18,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     private var observerStateStreams: [AsyncStreamBundle<ReplicaState<T>>] = []
     private var observerEventStreams: [AsyncStreamBundle<ReplicaEvent<T>>] = []
 
-    private let observersControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
+    public let observersControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
     private let loadingControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
     private let clearingControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
     private let freshnessControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
@@ -35,7 +36,8 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         replicaState.canBeRemoved
     }
 
-    public init(storage: (any Storage<T>)?, fetcher: @Sendable @escaping () async throws -> T, name: String) {
+    public init(id: String = UUID().uuidString, name: String, storage: (any Storage<T>)?, fetcher: @Sendable @escaping () async throws -> T) {
+        self.id = id
         self.name = name
         self.storage = storage
         self.dataFetcher = fetcher

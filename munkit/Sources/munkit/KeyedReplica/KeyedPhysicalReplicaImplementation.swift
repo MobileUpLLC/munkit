@@ -8,8 +8,8 @@
 import Foundation
 
 public actor KeyedPhysicalReplicaImplementation<K: Hashable & Sendable, T: Sendable>: KeyedReplica {
+    public let id: String
     public let name: String
-    public let id: String = UUID().uuidString
 
     private let replicaFactory: @Sendable (K) async -> any PhysicalReplica<T>
     private var keyedReplicaState: KeyedReplicaState
@@ -19,17 +19,22 @@ public actor KeyedPhysicalReplicaImplementation<K: Hashable & Sendable, T: Senda
     public let observersControllerEventStream: AsyncStreamBundle<KeyedReplicaEvent<K, T>>
     public let eventStream: AsyncStreamBundle<KeyedReplicaEvent<K, T>>
 
+    private let childRemovingControllerEventStream: AsyncStreamBundle<KeyedReplicaEvent<K, T>>
+
     private let childRemovingController: KeyedReplicaChildRemovingController<K, T>
     private let observerCountController: KeyedReplicaObserversController<K, T>
 
     public init(
+        id: String = UUID().uuidString,
         name: String,
         replicaFactory: @escaping @Sendable (K) async -> any PhysicalReplica<T>
     ) {
+        self.id = id
         self.name = name
         self.replicaFactory = replicaFactory
 
         self.eventStream = AsyncStream.makeStream(of: KeyedReplicaEvent<K, T>.self)
+        self.childRemovingControllerEventStream = AsyncStream.makeStream(of: KeyedReplicaEvent<K, T>.self)
 
         self.keyedReplicaState = KeyedReplicaState.empty
 
@@ -39,15 +44,21 @@ public actor KeyedPhysicalReplicaImplementation<K: Hashable & Sendable, T: Senda
             initialState: keyedReplicaState,
             eventStreamContinuation: observersControllerEventStream.continuation
         )
-
-        // TODO:
-        self.childRemovingController = KeyedReplicaChildRemovingController(removeReplica: { [weak self] key in
-            //  await self?.removeReplica(key: key)
-        })
+        self.childRemovingController = KeyedReplicaChildRemovingController(
+            replicaEventStreamContinuation: childRemovingControllerEventStream.continuation
+        )
 
         Task {
             await processEvents()
         }
+    }
+
+    private func removeReplica(key: K) async {
+        let removedReplica = replicas.removeValue(forKey: key)
+        guard let removedReplica else {
+            return
+        }
+        await eventStream.continuation.yield(.replicaRemoved(key: key, replicaId: removedReplica.id))
     }
 
     public func observe(activityStream: AsyncStream<Bool>, key: AsyncStream<K?>) async ->

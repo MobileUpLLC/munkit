@@ -24,9 +24,9 @@ public actor ReplicaClient {
         }
 
         let replica = PhysicalReplicaImplementation(
+            name: name,
             storage: storage,
-            fetcher: fetcher,
-            name: name
+            fetcher: fetcher
         )
 
         if replicas.isEmpty {

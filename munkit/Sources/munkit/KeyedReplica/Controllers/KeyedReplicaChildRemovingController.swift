@@ -7,11 +7,11 @@
 
 import Foundation
 
-final class KeyedReplicaChildRemovingController<K: Hashable & Sendable, T: Sendable> {
-    private let removeReplica: @Sendable (K) -> Void
+actor KeyedReplicaChildRemovingController<K: Hashable & Sendable, T: Sendable> {
+    private let replicaEventStreamContinuation: AsyncStream<KeyedReplicaEvent<K, T>>.Continuation
 
-    init(removeReplica: @escaping @Sendable (K) -> Void) {
-        self.removeReplica = removeReplica
+    init(replicaEventStreamContinuation: AsyncStream<KeyedReplicaEvent<K, T>>.Continuation) {
+        self.replicaEventStreamContinuation = replicaEventStreamContinuation
     }
 
     func setupAutoRemoving(key: K, replica: any PhysicalReplica<T>) {
@@ -23,7 +23,7 @@ final class KeyedReplicaChildRemovingController<K: Hashable & Sendable, T: Senda
             }
 
             if await replica.canBeRemoved {
-                removeReplica(key)
+                replicaEventStreamContinuation.yield(.replicaCanBeRemoved)
             }
         }
 
