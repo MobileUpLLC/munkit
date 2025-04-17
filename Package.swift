@@ -12,7 +12,7 @@ let package = Package(
     products: [
         .library(
             name: "MUNKit",
-            targets: ["MUNKit"]),
+            targets: ["MUNKit"])
     ],
     dependencies: [
            .package(url: "https://github.com/Moya/Moya.git", exact: "15.0.3")

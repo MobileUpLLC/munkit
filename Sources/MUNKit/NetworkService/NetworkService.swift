@@ -15,6 +15,7 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
     private var tokenRefreshFailureHandler: (() async -> Void)?
     private var tokenRefreshTask: _Concurrency.Task<Void, Error>?
     private let authErrorStatusCodes: Set<Int> = [401, 403, 409]
+    private var hasAttemptedTokenRefresh = false
 
     public init(apiProvider: MoyaProvider<Target>, tokenRefreshProvider: MUNAccessTokenProvider) {
         self.moyaProvider = apiProvider
@@ -61,23 +62,25 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
         guard
             let serverError = error as? MoyaError,
             let statusCode = serverError.response?.statusCode,
-            authErrorStatusCodes.contains(statusCode)
+            authErrorStatusCodes.contains(statusCode),
+            target.isAccessTokenRequired
         else {
             throw error
         }
 
-        if target.isAccessTokenRequired {
-            try await renewAccessToken(target: target)
-        } else {
-            throw error
-        }
+        try await renewAccessToken(target: target)
     }
 
     private func renewAccessToken(target: Target) async throws {
-        if let tokenRefreshTask = tokenRefreshTask {
+        if let tokenRefreshTask {
             return try await tokenRefreshTask.value
         }
 
+        guard hasAttemptedTokenRefresh == false else {
+            return
+        }
+
+        hasAttemptedTokenRefresh = true
         tokenRefreshTask = _Concurrency.Task { [weak self] in
             try await self?.tokenProvider.refreshToken()
         }
