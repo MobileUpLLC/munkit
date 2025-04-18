@@ -7,7 +7,7 @@
 
 import Foundation
 
-public actor KeyedReplicaObserver<T: Sendable, K: Hashable & Sendable> { // : ReplicaObserver<T>
+public actor KeyedReplicaObserver<T: Sendable, K: Hashable & Sendable>: ReplicaObserver {
     public let stateStream: AsyncStream<ReplicaState<T>>
     private let eventStream: AsyncStream<ReplicaEvent<T>>
 
@@ -16,7 +16,7 @@ public actor KeyedReplicaObserver<T: Sendable, K: Hashable & Sendable> { // : Re
     private let replicaProvider: @Sendable (K) async -> (any PhysicalReplica<T>)?
 
     private var currentReplica: (any PhysicalReplica<T>)?
-    private var currentReplicaObserver: ReplicaObserver<T>?
+    private var currentReplicaObserver: (any ReplicaObserver<T>)?
     private var stateObservingTask: Task<Void, Never>?
     private var errorObservingTask: Task<Void, Never>?
 
@@ -72,7 +72,7 @@ public actor KeyedReplicaObserver<T: Sendable, K: Hashable & Sendable> { // : Re
         }
 
         stateObservingTask = Task {
-            for await state in observer.stateStream {
+            for await state in await observer.stateStream {
                 stateContinuation.yield(state)
             }
         }

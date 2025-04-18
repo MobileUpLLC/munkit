@@ -83,19 +83,20 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         }
     }
 
-    public func observe(activityStream: AsyncStream<Bool>) async -> ReplicaObserver<T> {
+    public func observe(activityStream: AsyncStream<Bool>) async -> any ReplicaObserver<T> {
         let stateStreamBundle = AsyncStream<ReplicaState<T>>.makeStream()
         observerStateStreams.append(stateStreamBundle)
 
         let eventStreamBundle = AsyncStream<ReplicaEvent<T>>.makeStream()
         observerEventStreams.append(eventStreamBundle)
 
-        return await ReplicaObserver<T>(
+        let replicaObserver = await PhysicalReplicaObserver(
             activityStream: activityStream,
             stateStream: stateStreamBundle.stream,
             eventStream: eventStreamBundle.stream,
             observersController: observersController
         )
+        return replicaObserver
     }
 
     public func refresh() async {

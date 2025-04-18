@@ -12,7 +12,7 @@ public protocol Replica<T>: Actor where T: Sendable {
     associatedtype T: Sendable
 
     /// Starts observing the replica's state.
-    func observe(activityStream: AsyncStream<Bool>) async -> ReplicaObserver<T>
+    func observe(activityStream: AsyncStream<Bool>) async -> any ReplicaObserver<T>
 
     /// Fetches fresh data from the network.
     /// - Note: Does not trigger a new request if one is already in progress.

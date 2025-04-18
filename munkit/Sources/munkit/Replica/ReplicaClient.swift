@@ -36,9 +36,7 @@ public actor ReplicaClient {
         return replica
     }
 
-
-
-    func createKeyedReplica<K: Sendable & Hashable, T: Sendable>(
+    public func createKeyedReplica<K: Sendable & Hashable, T: Sendable>(
         name: String,
         childName: @Sendable @escaping (K) -> String,
         fetcher: @Sendable @escaping (K)  async throws -> T

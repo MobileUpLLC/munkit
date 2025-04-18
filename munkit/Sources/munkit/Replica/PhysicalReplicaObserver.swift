@@ -1,5 +1,5 @@
 //
-//  ReplicaObserver.swift
+//  PhysicalReplicaObserver.swift
 //  MUNKit
 //
 //  Created by Natalia Luzyanina on 01.04.2025.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-public actor ReplicaObserver<T> where T: Sendable {
+public actor PhysicalReplicaObserver<T>: ReplicaObserver where T: Sendable {
     public let stateStream: AsyncStream<ReplicaState<T>>
     private var stateObservingTask: Task<Void, Never>?
 

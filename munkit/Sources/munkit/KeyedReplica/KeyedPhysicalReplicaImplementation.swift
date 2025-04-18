@@ -62,7 +62,7 @@ public actor KeyedPhysicalReplicaImplementation<K: Hashable & Sendable, T: Senda
     }
 
     public func observe(activityStream: AsyncStream<Bool>, key: AsyncStream<K?>) async ->
-    KeyedReplicaObserver<T, K> {
+    any ReplicaObserver<T> {
         let stateStreamBundle = AsyncStream<KeyedReplicaState>.makeStream()
         observerStateStreams.append(stateStreamBundle)
 
