@@ -16,7 +16,7 @@ public actor DNDClassesRepository {
     public init(networkService: MUNNetworkService<DNDAPITarget>) async {
         self.networkService = networkService
         self.replica = await ReplicaClient.shared.createReplica(
-            name: "DndReplica",
+            name: "DNDClasses",
             storage: nil,
             fetcher: { try await networkService.executeRequest(target: .classes) }
         )

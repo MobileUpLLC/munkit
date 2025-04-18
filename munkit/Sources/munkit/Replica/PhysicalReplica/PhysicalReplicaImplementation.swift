@@ -18,7 +18,8 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     private var observerStateStreams: [AsyncStreamBundle<ReplicaState<T>>] = []
     private var observerEventStreams: [AsyncStreamBundle<ReplicaEvent<T>>] = []
 
-    public let observersControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
+    public let eventStream: AsyncStreamBundle<ReplicaEvent<T>>
+    private let observersControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
     private let loadingControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
     private let clearingControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
     private let freshnessControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
@@ -42,6 +43,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         self.storage = storage
         self.dataFetcher = fetcher
         self.replicaState = ReplicaState<T>.createEmpty(hasStorage: storage != nil)
+        self.eventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
         self.observersControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
         self.loadingControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
         self.clearingControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
@@ -250,6 +252,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
             await handleClearedErrorEvent()
         case .observerCountChanged(let observingState):
             await handleObserverCountChangedEvent(observingState: observingState)
+            eventStream.continuation.yield(event)
         case .changing(let changingEvent):
             await handleDataMutationEvent(changingEvent)
         case .optimisticUpdates(let optimisticUpdateEvent):

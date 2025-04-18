@@ -13,7 +13,7 @@ public actor KeyedReplicaObserver<T: Sendable, K: Hashable & Sendable>: ReplicaO
 
     private let activityStream: AsyncStream<Bool>
     private let keyStream: AsyncStream<K?>
-    private let replicaProvider: @Sendable (K) async -> (any PhysicalReplica<T>)?
+    private let replicaProvider: (K) async -> (any PhysicalReplica<T>)?
 
     private var currentReplica: (any PhysicalReplica<T>)?
     private var currentReplicaObserver: (any ReplicaObserver<T>)?
@@ -26,7 +26,7 @@ public actor KeyedReplicaObserver<T: Sendable, K: Hashable & Sendable>: ReplicaO
     public init(
         activityStream: AsyncStream<Bool>,
         keyStream: AsyncStream<K?>,
-        replicaProvider: @escaping @Sendable (K) async -> (any PhysicalReplica<T>)?
+        replicaProvider: @escaping (K) async -> (any PhysicalReplica<T>)?
     ) {
         self.activityStream = activityStream
         self.keyStream = keyStream

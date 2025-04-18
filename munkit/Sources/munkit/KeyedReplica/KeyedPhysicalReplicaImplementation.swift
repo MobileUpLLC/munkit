@@ -70,7 +70,7 @@ public actor KeyedPhysicalReplicaImplementation<K: Hashable & Sendable, T: Senda
             activityStream: activityStream,
             keyStream: key,
             replicaProvider: { [weak self] key in
-                return await self?.getOrCreateReplica(key: key)
+                await self?.getOrCreateReplica(key: key)
             }
         )
     }
