@@ -1,5 +1,4 @@
 import UIKit
-import munkit
 import munkit_example_core
 
 enum DndClassesFactory {

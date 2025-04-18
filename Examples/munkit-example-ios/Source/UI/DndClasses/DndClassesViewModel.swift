@@ -8,8 +8,7 @@ final class DndClassesViewModel: ObservableObject {
     private let coordinator: DndClassesCoordinator
     private let repository: DNDClassesRepository
     private let replica: any Replica<DNDClassesListModel>
-    private let observerStateStream: AsyncStream<Bool>
-    private let observerContinuation: AsyncStream<Bool>.Continuation
+    private let observerStateStream: AsyncStreamBundle<Bool>
     private var observerTask: Task<Void, Never>?
 
     init(
@@ -20,11 +19,7 @@ final class DndClassesViewModel: ObservableObject {
         self.coordinator = coordinator
         self.repository = repository
         self.replica = replica
-
-        let (observerActive, observerContinuation) = AsyncStream<Bool>.makeStream()
-        
-        self.observerStateStream = observerActive
-        self.observerContinuation = observerContinuation
+        self.observerStateStream = AsyncStream<Bool>.makeStream()
     }
 
     @MainActor
@@ -90,10 +85,10 @@ final class DndClassesViewModel: ObservableObject {
                 return
             }
 
-            let observer = await replica.observe(activityStream: observerStateStream)
+            let observer = await replica.observe(activityStream: observerStateStream.stream)
 
-            self.observerContinuation.yield(true)
-            
+            observerStateStream.continuation.yield(true)
+
             for await state in await observer.stateStream {
                 let viewItems = state.data?.valueWithOptimisticUpdates.results.map {
                     DndClassesView.ViewItem(id: $0.index, name: $0.name, isLiked: $0.isLiked)
@@ -129,7 +124,7 @@ final class DndClassesViewModel: ObservableObject {
     }
 
     func deinitObserver() {
-        observerContinuation.yield(false)
+        observerStateStream.continuation.yield(false)
         observerTask?.cancel()
         observerTask = nil
     }

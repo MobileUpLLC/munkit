@@ -46,7 +46,7 @@ actor KeyedReplicaObserversController<K: Hashable & Sendable, T: Sendable> {
                     }()
 
                     if replicaWithObserversCountDiff != 0 || replicaWithActiveObserversCountDiff != 0 {
-                        let currentState = keyedReplicaState                  )
+                        let currentState = keyedReplicaState
                         let replicaWithObserversCount = currentState.replicaWithObserversCount + replicaWithObserversCountDiff
                         let replicaWithActiveObserversCount = currentState.replicaWithActiveObserversCount + replicaWithActiveObserversCountDiff
 
