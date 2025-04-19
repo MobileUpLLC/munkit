@@ -35,7 +35,7 @@ func performRequest(id: Int) async {
 }
 
 await withTaskGroup(of: Void.self) { group in
-    for id in 1...30 {
+    for id in 1...100 {
         group.addTask {
             _ = await performRequest(id: id)
         }

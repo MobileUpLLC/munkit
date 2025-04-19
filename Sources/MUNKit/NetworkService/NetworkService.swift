@@ -35,7 +35,11 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
             let result = try filteredResponse.map(T.self)
             return result
         case .failure(let error):
-            try await resolveRequestError(error, target: target, isTokenRefreshed: isTokenRefreshed)
+            let resolveRequestErrorTask = _Concurrency.Task { @MainActor in
+                try await resolveRequestError(error, target: target, isTokenRefreshed: isTokenRefreshed)
+            }
+
+            try await resolveRequestErrorTask.value
             return try await executeRequest(target: target, isTokenRefreshed: true)
         }
     }
@@ -51,14 +55,9 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
     }
 
     private func resolveRequestError(_ error: MoyaError, target: Target, isTokenRefreshed: Bool) async throws {
-        guard isTokenRefreshed == false else {
-            throw error
-        }
-        try await ensureTokenValid(error, target: target)
-    }
-
-    private func ensureTokenValid(_ error: Error, target: Target) async throws {
         guard
+            target.isAccessTokenRequired,
+            isTokenRefreshed == false,
             let serverError = error as? MoyaError,
             let statusCode = serverError.response?.statusCode,
             authErrorStatusCodes.contains(statusCode)
@@ -66,15 +65,7 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
             throw error
         }
 
-        if target.isAccessTokenRequired {
-            try await renewAccessToken(target: target)
-        } else {
-            throw error
-        }
-    }
-
-    private func renewAccessToken(target: Target) async throws {
-        if let tokenRefreshTask = tokenRefreshTask {
+        if let tokenRefreshTask {
             return try await tokenRefreshTask.value
         }
 
