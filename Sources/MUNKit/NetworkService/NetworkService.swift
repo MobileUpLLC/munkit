@@ -35,11 +35,7 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
             let result = try filteredResponse.map(T.self)
             return result
         case .failure(let error):
-            let resolveRequestErrorTask = _Concurrency.Task { @MainActor in
-                try await resolveRequestError(error, target: target, isTokenRefreshed: isTokenRefreshed)
-            }
-
-            try await resolveRequestErrorTask.value
+            try await resolveRequestError(error, target: target, isTokenRefreshed: isTokenRefreshed)
             return try await executeRequest(target: target, isTokenRefreshed: true)
         }
     }

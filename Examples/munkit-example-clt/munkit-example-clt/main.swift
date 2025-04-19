@@ -24,20 +24,16 @@ await networkService.setTokenRefreshFailureHandler { print("🧨 Token refresh f
 
 let dndClassesRepository = await DNDClassesRepository(networkService: networkService)
 
-func performRequest(id: Int) async {
-    print("👁️", #function, "\(id)")
-    do {
-        let _ = try await dndClassesRepository.getClassesList()
-        print("🥳", #function, "\(id)")
-    } catch {
-        print("☠️", #function, "\(id)")
-    }
-}
-
 await withTaskGroup(of: Void.self) { group in
     for id in 1...100 {
         group.addTask {
-            _ = await performRequest(id: id)
+            print("👁️", #function, "\(id)")
+            do {
+                let _ = try await dndClassesRepository.getClassesList()
+                print("🥳", #function, "\(id)")
+            } catch {
+                print("☠️", #function, "\(id)")
+            }
         }
     }
     await group.waitForAll()
