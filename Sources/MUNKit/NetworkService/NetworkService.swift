@@ -10,11 +10,12 @@ import Foundation
 
 public actor MUNNetworkService<Target: MUNAPITarget> {
     private let moyaProvider: MoyaProvider<Target>
-
     private let tokenProvider: MUNAccessTokenProvider
+
     private var tokenRefreshFailureHandler: (() async -> Void)?
     private var tokenRefreshTask: _Concurrency.Task<Void, Error>?
-    private let authErrorStatusCodes: Set<Int> = [401, 403, 409]
+    private var activeRequests: Set<UUID> = []
+    private var requestsPendingTokenRefresh: Set<UUID> = []
 
     public init(apiProvider: MoyaProvider<Target>, tokenRefreshProvider: MUNAccessTokenProvider) {
         self.moyaProvider = apiProvider
@@ -25,62 +26,61 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
         tokenRefreshFailureHandler = action
     }
 
-    private var activeRequests: Set<UUID> = []
-    private var requestsPendingTokenRefresh: Set<UUID> = []
-
     public func executeRequest<T: Decodable & Sendable>(
         target: Target,
         isTokenRefreshed: Bool = false
     ) async throws -> T {
-        let requestId = UUID()
-        activeRequests.insert(requestId)
-        let result = await performRequest(target: target)
+        let requestId = startRequest()
+        defer { completeRequest(requestId) }
 
-        switch result {
+        switch await performRequest(target: target) {
         case .success(let response):
             let filteredResponse = try response.filterSuccessfulStatusCodes()
-            let result = try filteredResponse.map(T.self)
-            activeRequests.remove(requestId)
-            requestsPendingTokenRefresh.remove(requestId)
-            return result
+            return try filteredResponse.map(T.self)
         case .failure(let error):
-            do {
-                try await resolveRequestError(
-                    error,
-                    requestId: requestId,
-                    target: target,
-                    isTokenRefreshed: isTokenRefreshed
-                )
-            } catch {
-                activeRequests.remove(requestId)
-                requestsPendingTokenRefresh.remove(requestId)
-            }
+            try await resolveRequestError(
+                error,
+                requestId: requestId,
+                target: target,
+                isTokenRefreshed: isTokenRefreshed
+            )
             return try await executeRequest(target: target, isTokenRefreshed: true)
         }
     }
 
     public func executeRequest(target: Target, isTokenRefreshed: Bool = false) async throws {
-        let requestId = UUID()
-        activeRequests.insert(requestId)
+        let requestId = startRequest()
+        defer { completeRequest(requestId) }
+
         switch await performRequest(target: target) {
         case .success(let response):
             let _ = try response.filterSuccessfulStatusCodes()
-            activeRequests.remove(requestId)
-            requestsPendingTokenRefresh.remove(requestId)
         case .failure(let error):
-            do {
-                try await resolveRequestError(
-                    error,
-                    requestId: requestId,
-                    target: target,
-                    isTokenRefreshed: isTokenRefreshed
-                )
-            } catch {
-                activeRequests.remove(requestId)
-                requestsPendingTokenRefresh.remove(requestId)
-            }
+            try await resolveRequestError(
+                error,
+                requestId: requestId,
+                target: target,
+                isTokenRefreshed: isTokenRefreshed
+            )
             try await executeRequest(target: target, isTokenRefreshed: true)
         }
+    }
+
+    private func startRequest() -> UUID {
+        let requestId = UUID()
+        activeRequests.insert(requestId)
+        return requestId
+    }
+
+    private func performRequest(target: Target) async -> Result<Response, MoyaError> {
+        return await withCheckedContinuation { continuation in
+            moyaProvider.request(target) { continuation.resume(returning: $0) }
+        }
+    }
+
+    private func completeRequest(_ requestId: UUID) {
+        activeRequests.remove(requestId)
+        requestsPendingTokenRefresh.remove(requestId)
     }
 
     private func resolveRequestError(
@@ -94,16 +94,14 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
             isTokenRefreshed == false,
             let serverError = error as? MoyaError,
             let statusCode = serverError.response?.statusCode,
-            authErrorStatusCodes.contains(statusCode)
+            [401, 403, 409].contains(statusCode)
         else {
             throw error
         }
 
         if let tokenRefreshTask {
             return try await tokenRefreshTask.value
-        }
-
-        if requestsPendingTokenRefresh.contains(requestId) {
+        } else if requestsPendingTokenRefresh.contains(requestId) {
             return
         }
 
@@ -119,12 +117,6 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
             await tokenRefreshFailureHandler?()
             tokenRefreshFailureHandler = nil
             throw error
-        }
-    }
-
-    private func performRequest(target: Target) async -> Result<Response, MoyaError> {
-        return await withCheckedContinuation { continuation in
-            moyaProvider.request(target) { continuation.resume(returning: $0) }
         }
     }
 }
