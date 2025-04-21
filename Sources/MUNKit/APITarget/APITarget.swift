@@ -7,7 +7,7 @@
 
 import Moya
 
-public protocol MUNAPITarget: TargetType, AccessTokenAuthorizable, Sendable {
+public protocol MUNAPITarget: TargetType, AccessTokenAuthorizable {
     var parameters: [String: Any] { get }
     var isAccessTokenRequired: Bool { get }
     var isRefreshTokenRequest: Bool { get }
