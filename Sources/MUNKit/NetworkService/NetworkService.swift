@@ -14,7 +14,7 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
 
     private var tokenRefreshFailureHandler: (() async -> Void)?
     private var tokenRefreshTask: _Concurrency.Task<Void, Error>?
-    private var activeRequests: Set<UUID> = []
+    private var activeRequests: Set<NetworkServiceActiveRequest> = []
     private var requestsPendingTokenRefresh: Set<UUID> = []
 
     public init(apiProvider: MoyaProvider<Target>, tokenRefreshProvider: MUNAccessTokenProvider) {
@@ -30,7 +30,7 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
         target: Target,
         isTokenRefreshed: Bool = false
     ) async throws -> T {
-        let requestId = startRequest()
+        let requestId = startRequest(isAccessTokenRequired: target.isAccessTokenRequired)
         defer { completeRequest(requestId) }
 
         switch await performRequest(target: target) {
@@ -49,7 +49,7 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
     }
 
     public func executeRequest(target: Target, isTokenRefreshed: Bool = false) async throws {
-        let requestId = startRequest()
+        let requestId = startRequest(isAccessTokenRequired: target.isAccessTokenRequired)
         defer { completeRequest(requestId) }
 
         switch await performRequest(target: target) {
@@ -66,9 +66,11 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
         }
     }
 
-    private func startRequest() -> UUID {
+    private func startRequest(isAccessTokenRequired: Bool) -> UUID {
         let requestId = UUID()
-        activeRequests.insert(requestId)
+        activeRequests.insert(
+            NetworkServiceActiveRequest(id: requestId, isAccessTokenRequired: isAccessTokenRequired)
+        )
         return requestId
     }
 
@@ -79,7 +81,9 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
     }
 
     private func completeRequest(_ requestId: UUID) {
-        activeRequests.remove(requestId)
+        if let index = activeRequests.firstIndex(where: { $0.id == requestId }) {
+            activeRequests.remove(at: index)
+        }
         requestsPendingTokenRefresh.remove(requestId)
     }
 
@@ -105,7 +109,7 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
             return
         }
 
-        requestsPendingTokenRefresh = activeRequests
+        requestsPendingTokenRefresh = Set(activeRequests.compactMap { $0.isAccessTokenRequired ? $0.id : nil })
         tokenRefreshTask = _Concurrency.Task { [weak self] in
             try await self?.tokenProvider.refreshToken()
         }

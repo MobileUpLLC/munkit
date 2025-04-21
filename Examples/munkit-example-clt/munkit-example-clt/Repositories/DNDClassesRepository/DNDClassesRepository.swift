@@ -14,7 +14,11 @@ actor DNDClassesRepository {
         self.networkService = networkService
     }
 
-    func getClassesList() async throws -> DNDClassesListModel {
-        return try await networkService.executeRequest(target: .classes)
+    func getClassesListWithAuth() async throws -> DNDClassesListModel {
+        return try await networkService.executeRequest(target: .classesWithAuth)
+    }
+
+    func getClassesListWithoutAuth() async throws -> DNDClassesListModel {
+        return try await networkService.executeRequest(target: .classesWithoutAuth)
     }
 }
