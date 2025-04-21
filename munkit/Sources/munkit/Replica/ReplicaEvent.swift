@@ -6,7 +6,7 @@
 //
 
 /// Событие, произошедшее в реплике.
-enum ReplicaEvent<T>: Sendable where T: Sendable  {
+public enum ReplicaEvent<T>: Sendable where T: Sendable  {
     /// События, связанные с загрузкой.
     case loading(LoadingEvent<T>)
     /// События, связанные со свежестью данных.
@@ -23,7 +23,7 @@ enum ReplicaEvent<T>: Sendable where T: Sendable  {
     case optimisticUpdates(OptimisticUpdatesEvent<T>)
 }
 
-enum OptimisticUpdatesEvent<T>: Sendable where T: Sendable {
+public enum OptimisticUpdatesEvent<T>: Sendable where T: Sendable {
     /// Добавляет обновление в список ожидающих обновлений
     case begin(data: ReplicaData<T>)
     /// Подтверждает оптимистичное обновление, применяя его к данным и сохраняя в хранилище.
@@ -32,14 +32,14 @@ enum OptimisticUpdatesEvent<T>: Sendable where T: Sendable {
     case rollback(data: ReplicaData<T>)
 }
 
-enum ChangingDataEvent<T>: Sendable where T: Sendable {
+public enum ChangingDataEvent<T>: Sendable where T: Sendable {
     /// Замена текущих данных на новые
     case dataSetting(data: ReplicaData<T>)
     /// Модификация текущих данных
     case dataMutating(data: ReplicaData<T>)
 }
 
-enum LoadingFinished<T>: Sendable where T: Sendable {
+public enum LoadingFinished<T>: Sendable where T: Sendable {
     /// Успешная загрузка с данными.
     case success(data: ReplicaData<T>)
     /// Загрузка отменена.
@@ -48,7 +48,7 @@ enum LoadingFinished<T>: Sendable where T: Sendable {
     case error(Error)
 }
 
-enum LoadingEvent<T>: Sendable where T: Sendable {
+public enum LoadingEvent<T>: Sendable where T: Sendable {
     /// Начало загрузки.
     case loadingStarted(dataRequested: Bool, preloading: Bool)
     /// Данные загружены из хранилища.
@@ -57,14 +57,14 @@ enum LoadingEvent<T>: Sendable where T: Sendable {
     case loadingFinished(LoadingFinished<T>)
 }
 
-enum FreshnessEvent: Sendable {
+public enum FreshnessEvent: Sendable {
     /// Данные стали свежими.
     case freshened
     /// Данные устарели.
     case becameStale
 }
 
-struct ObserversCountInfo: Sendable {
+public struct ObserversCountInfo: Sendable {
     let count: Int
     let activeCount: Int
     let previousCount: Int
@@ -72,7 +72,7 @@ struct ObserversCountInfo: Sendable {
 }
 
 extension ReplicaEvent: CustomStringConvertible {
-    var description: String {
+    public var description: String {
         switch self {
         case .loading(let event): "Loading: \(event)"
         case .freshness(let event): "Freshness: \(event)"
@@ -86,7 +86,7 @@ extension ReplicaEvent: CustomStringConvertible {
 }
 
 extension OptimisticUpdatesEvent: CustomStringConvertible {
-    var description: String {
+    public var description: String {
         switch self {
         case .begin: "Began update"
         case .commit: "Committed update"
@@ -96,7 +96,7 @@ extension OptimisticUpdatesEvent: CustomStringConvertible {
 }
 
 extension ChangingDataEvent: CustomStringConvertible {
-    var description: String {
+    public var description: String {
         switch self {
         case .dataSetting: "Data set"
         case .dataMutating: "Data mutated"
@@ -105,7 +105,7 @@ extension ChangingDataEvent: CustomStringConvertible {
 }
 
 extension LoadingFinished: CustomStringConvertible {
-    var description: String {
+    public var description: String {
         switch self {
         case .success: "Loaded successfully"
         case .canceled: "Loading canceled"
@@ -115,7 +115,7 @@ extension LoadingFinished: CustomStringConvertible {
 }
 
 extension LoadingEvent: CustomStringConvertible {
-    var description: String {
+    public var description: String {
         switch self {
         case .loadingStarted(let dataRequested, let preloading):
             "Started loading (dataRequested: \(dataRequested), preloading: \(preloading))"
@@ -126,7 +126,7 @@ extension LoadingEvent: CustomStringConvertible {
 }
 
 extension FreshnessEvent: CustomStringConvertible {
-    var description: String {
+    public var description: String {
         switch self {
         case .freshened: "Data freshened"
         case .becameStale: "Data stale"
@@ -135,7 +135,7 @@ extension FreshnessEvent: CustomStringConvertible {
 }
 
 extension ObserversCountInfo: CustomStringConvertible {
-    var description: String {
+    public var description: String {
         "count: \(count), active: \(activeCount) (prev: \(previousCount), prevActive: \(previousActiveCount))"
     }
 }

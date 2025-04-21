@@ -8,6 +8,7 @@
 import Foundation
 
 public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
+    public let id: String
     public let name: String
 
     private let storage: (any Storage<T>)?
@@ -17,6 +18,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     private var observerStateStreams: [AsyncStreamBundle<ReplicaState<T>>] = []
     private var observerEventStreams: [AsyncStreamBundle<ReplicaEvent<T>>] = []
 
+    public let eventStream: AsyncStreamBundle<ReplicaEvent<T>>
     private let observersControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
     private let loadingControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
     private let clearingControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
@@ -31,11 +33,17 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     private let dataMutationController: ReplicaDataChangingController<T>
     private let optimisticUpdatesController: ReplicaOptimisticUpdatesController<T>
 
-    public init(storage: (any Storage<T>)?, fetcher: @Sendable @escaping () async throws -> T, name: String) {
+    public var canBeRemoved: Bool {
+        replicaState.canBeRemoved
+    }
+
+    public init(id: String = UUID().uuidString, name: String, storage: (any Storage<T>)?, fetcher: @Sendable @escaping () async throws -> T) {
+        self.id = id
         self.name = name
         self.storage = storage
         self.dataFetcher = fetcher
         self.replicaState = ReplicaState<T>.createEmpty(hasStorage: storage != nil)
+        self.eventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
         self.observersControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
         self.loadingControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
         self.clearingControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
@@ -77,19 +85,20 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         }
     }
 
-    public func observe(activityStream: AsyncStream<Bool>) async -> ReplicaObserver<T> {
+    public func observe(activityStream: AsyncStream<Bool>) async -> any ReplicaObserver<T> {
         let stateStreamBundle = AsyncStream<ReplicaState<T>>.makeStream()
         observerStateStreams.append(stateStreamBundle)
 
         let eventStreamBundle = AsyncStream<ReplicaEvent<T>>.makeStream()
         observerEventStreams.append(eventStreamBundle)
 
-        return await ReplicaObserver<T>(
+        let replicaObserver = await PhysicalReplicaObserver(
             activityStream: activityStream,
             stateStream: stateStreamBundle.stream,
             eventStream: eventStreamBundle.stream,
             observersController: observersController
         )
+        return replicaObserver
     }
 
     public func refresh() async {
@@ -202,7 +211,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         ]
 
         Task {
-            await withTaskGroup { group in
+            await withTaskGroup(of: Void.self) { group in
                 for stream in eventStreams {
                     group.addTask { [weak self] in
                         for await event in stream {
@@ -243,6 +252,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
             await handleClearedErrorEvent()
         case .observerCountChanged(let observingState):
             await handleObserverCountChangedEvent(observingState: observingState)
+            eventStream.continuation.yield(event)
         case .changing(let changingEvent):
             await handleDataMutationEvent(changingEvent)
         case .optimisticUpdates(let optimisticUpdateEvent):

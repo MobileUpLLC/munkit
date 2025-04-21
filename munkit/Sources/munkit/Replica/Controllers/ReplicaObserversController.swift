@@ -27,16 +27,26 @@ actor ReplicaObserversController<T> where T: Sendable {
     func handleObserverAdded(observerId: UUID, isActive: Bool) {
         let currentObservingState = replicaState.observingState
 
+        let updatedObserverIds = currentObservingState.observerIds.union([observerId])
+
         let updatedActiveObserverIds = isActive
             ? currentObservingState.activeObserverIds.union([observerId])
             : currentObservingState.activeObserverIds
 
         let updatedObservingTime = isActive ? .now : currentObservingState.observingTime
 
+        let observersCountInfo = ObserversCountInfo(
+            count: updatedObserverIds.count,
+            activeCount: updatedActiveObserverIds.count,
+            previousCount: currentObservingState.observerIds.count,
+            previousActiveCount: currentObservingState.activeObserverIds.count
+        )
+
         let newObservingState = ObservingState(
-            observerIds: currentObservingState.observerIds.union([observerId]),
+            observerIds: updatedObserverIds,
             activeObserverIds: updatedActiveObserverIds,
-            observingTime: updatedObservingTime
+            observingTime: updatedObservingTime,
+            observersCountInfo: observersCountInfo
         )
 
         emitStateChangeIfNeeded(
@@ -54,10 +64,21 @@ actor ReplicaObserversController<T> where T: Sendable {
 
         let updatedObservingTime = isLastActive ? .timeInPast(.now) : currentObservingState.observingTime
 
+        let observerIds = currentObservingState.observerIds.subtracting([observerId])
+        let activeObserverIds = currentObservingState.activeObserverIds.subtracting([observerId])
+
+        let observersCountInfo = ObserversCountInfo(
+            count: observerIds.count,
+            activeCount: activeObserverIds.count,
+            previousCount: currentObservingState.observerIds.count,
+            previousActiveCount: currentObservingState.activeObserverIds.count
+        )
+
         let newObservingState = ObservingState(
-            observerIds: currentObservingState.observerIds.subtracting([observerId]),
-            activeObserverIds: currentObservingState.activeObserverIds.subtracting([observerId]),
-            observingTime: updatedObservingTime
+            observerIds: observerIds,
+            activeObserverIds: activeObserverIds,
+            observingTime: updatedObservingTime,
+            observersCountInfo: observersCountInfo
         )
 
         emitStateChangeIfNeeded(
@@ -73,10 +94,18 @@ actor ReplicaObserversController<T> where T: Sendable {
         var updatedActiveObserverIds = currentObservingState.activeObserverIds
         updatedActiveObserverIds.insert(observerId)
 
+        let observersCountInfo = ObserversCountInfo(
+            count: currentObservingState.observerIds.count,
+            activeCount: updatedActiveObserverIds.count,
+            previousCount: currentObservingState.observerIds.count,
+            previousActiveCount: currentObservingState.activeObserverIds.count
+        )
+
         let newObservingState = ObservingState(
             observerIds: currentObservingState.observerIds,
             activeObserverIds: updatedActiveObserverIds,
-            observingTime: .now
+            observingTime: .now,
+            observersCountInfo: observersCountInfo
         )
 
         emitStateChangeIfNeeded(
@@ -93,11 +122,20 @@ actor ReplicaObserversController<T> where T: Sendable {
             && currentObservingState.activeObserverIds.contains(observerId)
 
         let updatedObservingTime = isLastActive ? .timeInPast(.now) : currentObservingState.observingTime
+        let activeObserverIds = currentObservingState.activeObserverIds.subtracting([observerId])
+
+        let observersCountInfo = ObserversCountInfo(
+            count: currentObservingState.observerIds.count,
+            activeCount: activeObserverIds.count,
+            previousCount: currentObservingState.observerIds.count,
+            previousActiveCount: currentObservingState.activeObserverIds.count
+        )
 
         let newObservingState = ObservingState(
             observerIds: currentObservingState.observerIds,
-            activeObserverIds: currentObservingState.activeObserverIds.subtracting([observerId]),
-            observingTime: updatedObservingTime
+            activeObserverIds: activeObserverIds,
+            observingTime: updatedObservingTime,
+            observersCountInfo: observersCountInfo
         )
 
         emitStateChangeIfNeeded(

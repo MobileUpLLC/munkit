@@ -24,7 +24,15 @@ public struct ReplicaState<T>: Sendable where T: Sendable {
     var hasFreshData: Bool {
         data?.isFresh ?? false
     }
-    
+
+    var canBeRemoved: Bool {
+        data == nil &&
+        error == nil &&
+        !loading &&
+        !dataRequested &&
+        observingState.status == .none
+    }
+
     func copy(
         loading: Bool? = nil,
         data: ReplicaData<T>? = nil,
@@ -46,7 +54,13 @@ public struct ReplicaState<T>: Sendable where T: Sendable {
     }
 
     static func createEmpty(hasStorage: Bool) -> ReplicaState<T> {
-        let observingState = ObservingState(observerIds: [], activeObserverIds: [], observingTime: .never)
+        let observersCountInfo = ObserversCountInfo(count: 0, activeCount: 0, previousCount: 0, previousActiveCount: 0)
+        let observingState = ObservingState(
+            observerIds: [],
+            activeObserverIds: [],
+            observingTime: .never,
+            observersCountInfo: observersCountInfo
+        )
 
         return ReplicaState(
             loading: false,

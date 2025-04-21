@@ -17,8 +17,13 @@
 		6D1FD8CE2D9EBACB00EBD46D /* RootFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1FD8C92D9EBACB00EBD46D /* RootFactory.swift */; };
 		6D1FD8CF2D9EBACB00EBD46D /* RootCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1FD8C82D9EBACB00EBD46D /* RootCoordinator.swift */; };
 		6D1FD8D02D9EBACB00EBD46D /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1FD8CA2D9EBACB00EBD46D /* RootView.swift */; };
+		6D2357752DB17A1D005C1E7E /* ClassOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2357722DB17A1D005C1E7E /* ClassOverviewView.swift */; };
+		6D2357772DB17A1D005C1E7E /* ClassOverviewFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2357712DB17A1D005C1E7E /* ClassOverviewFactory.swift */; };
+		6D2357782DB17A1D005C1E7E /* ClassOverviewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2357732DB17A1D005C1E7E /* ClassOverviewViewModel.swift */; };
+		6D2357792DB17A1D005C1E7E /* ClassOverviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D23576F2DB17A1D005C1E7E /* ClassOverviewController.swift */; };
 		6D4B1A592DAD267C008F9DDF /* munkit-example-core in Frameworks */ = {isa = PBXBuildFile; productRef = 6D4B1A582DAD267C008F9DDF /* munkit-example-core */; };
 		6DD1833A2DACFA91008B38D6 /* munkit in Frameworks */ = {isa = PBXBuildFile; productRef = 6DD183392DACFA91008B38D6 /* munkit */; };
+		6DF0B4E72DB262FD009AB85E /* MobileService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DF0B4E62DB262FD009AB85E /* MobileService.swift */; };
 		6DFE1ED52D9A8880006B827D /* DndClassesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1ED32D9A8880006B827D /* DndClassesViewModel.swift */; };
 		6DFE1ED62D9A8880006B827D /* DndClassesCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1ED02D9A8880006B827D /* DndClassesCoordinator.swift */; };
 		6DFE1ED72D9A8880006B827D /* DndClassesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DFE1ED22D9A8880006B827D /* DndClassesView.swift */; };
@@ -46,6 +51,11 @@
 		6D1FD8C92D9EBACB00EBD46D /* RootFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootFactory.swift; sourceTree = "<group>"; };
 		6D1FD8CA2D9EBACB00EBD46D /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		6D1FD8CB2D9EBACB00EBD46D /* RootViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewModel.swift; sourceTree = "<group>"; };
+		6D23576F2DB17A1D005C1E7E /* ClassOverviewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassOverviewController.swift; sourceTree = "<group>"; };
+		6D2357712DB17A1D005C1E7E /* ClassOverviewFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassOverviewFactory.swift; sourceTree = "<group>"; };
+		6D2357722DB17A1D005C1E7E /* ClassOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassOverviewView.swift; sourceTree = "<group>"; };
+		6D2357732DB17A1D005C1E7E /* ClassOverviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassOverviewViewModel.swift; sourceTree = "<group>"; };
+		6DF0B4E62DB262FD009AB85E /* MobileService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileService.swift; sourceTree = "<group>"; };
 		6DFE1ECF2D9A8880006B827D /* DndClassesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DndClassesController.swift; sourceTree = "<group>"; };
 		6DFE1ED02D9A8880006B827D /* DndClassesCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DndClassesCoordinator.swift; sourceTree = "<group>"; };
 		6DFE1ED12D9A8880006B827D /* DndClassesFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DndClassesFactory.swift; sourceTree = "<group>"; };
@@ -128,6 +138,7 @@
 				A577824B1E43E21481C6D68C /* Routers */,
 				98030BE61FD16270AB0448D8 /* UI */,
 				8B90DD7C274B82A576C267C2 /* Resources */,
+				6DF0B4E92DB2636C009AB85E /* Services */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -155,11 +166,30 @@
 			path = Root;
 			sourceTree = "<group>";
 		};
+		6D2357742DB17A1D005C1E7E /* DndClassOverview */ = {
+			isa = PBXGroup;
+			children = (
+				6D23576F2DB17A1D005C1E7E /* ClassOverviewController.swift */,
+				6D2357712DB17A1D005C1E7E /* ClassOverviewFactory.swift */,
+				6D2357722DB17A1D005C1E7E /* ClassOverviewView.swift */,
+				6D2357732DB17A1D005C1E7E /* ClassOverviewViewModel.swift */,
+			);
+			path = DndClassOverview;
+			sourceTree = "<group>";
+		};
 		6D8B3E122D9A89E100343A02 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		6DF0B4E92DB2636C009AB85E /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				6DF0B4E62DB262FD009AB85E /* MobileService.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		6DFE1ED42D9A8880006B827D /* DndClasses */ = {
@@ -195,6 +225,7 @@
 			children = (
 				6DFE1ED42D9A8880006B827D /* DndClasses */,
 				6D1FD8D12D9EBAD400EBD46D /* Root */,
+				6D2357742DB17A1D005C1E7E /* DndClassOverview */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -339,6 +370,11 @@
 				6DFE1ED62D9A8880006B827D /* DndClassesCoordinator.swift in Sources */,
 				6DFE1ED72D9A8880006B827D /* DndClassesView.swift in Sources */,
 				6DFE1ED82D9A8880006B827D /* DndClassesFactory.swift in Sources */,
+				6D2357752DB17A1D005C1E7E /* ClassOverviewView.swift in Sources */,
+				6D2357772DB17A1D005C1E7E /* ClassOverviewFactory.swift in Sources */,
+				6DF0B4E72DB262FD009AB85E /* MobileService.swift in Sources */,
+				6D2357782DB17A1D005C1E7E /* ClassOverviewViewModel.swift in Sources */,
+				6D2357792DB17A1D005C1E7E /* ClassOverviewController.swift in Sources */,
 				6DFE1ED92D9A8880006B827D /* DndClassesController.swift in Sources */,
 				6D1FD8CC2D9EBACB00EBD46D /* RootController.swift in Sources */,
 				6D1FD8CD2D9EBACB00EBD46D /* RootViewModel.swift in Sources */,
