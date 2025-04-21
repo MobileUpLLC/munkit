@@ -24,21 +24,40 @@ await networkService.setTokenRefreshFailureHandler { print("🧨 Token refresh f
 
 let dndClassesRepository = await DNDClassesRepository(networkService: networkService)
 
-func performRequest(id: Int) async {
-    print("👁️", #function, "\(id)")
-    do {
-        let _ = try await dndClassesRepository.getClassesList()
-        print("🥳", #function, "\(id)")
-    } catch {
-        print("☠️", #function, "\(id)")
-    }
-}
+var completedTasks = 0
+let taskCount = 30
 
-await withTaskGroup(of: Void.self) { group in
-    for id in 1...30 {
+await withTaskGroup { group in
+    for id in 1...taskCount {
         group.addTask {
-            _ = await performRequest(id: id)
+            print("👁️🔑", #function, "\(id)")
+            do {
+                let _ = try await dndClassesRepository.getClassesListWithAuth()
+                print("🥳🔑", #function, "\(id)")
+            } catch {
+                print("☠️🔑", #function, "\(id)")
+            }
+
+            await MainActor.run { completedTasks += 1 }
+        }
+
+        group.addTask {
+            print("👁️", #function, "\(id)")
+            do {
+                let _ = try await dndClassesRepository.getClassesListWithoutAuth()
+                print("🥳", #function, "\(id)")
+            } catch {
+                print("☠️", #function, "\(id)")
+            }
+
+            await MainActor.run { completedTasks += 1 }
         }
     }
     await group.waitForAll()
+}
+
+if completedTasks != taskCount * 2 {
+    print("🚨 completedTasks: \(completedTasks) != \(taskCount * 2)")
+} else {
+    print("✅ All tasks completed successfully!")
 }

@@ -27,13 +27,15 @@ final class TokenProvider: MUNAccessTokenProvider, @unchecked Sendable {
     }
 
     func refreshToken() async throws {
-        print("✍️", #function)
+        print("✍️", #function, "start")
 
         guard let previousToken = accessToken else {
             throw MoyaError.statusCode(.init(statusCode: 400, data: Data()))
         }
 
+        print("✍️", #function, "before sleep")
         try await _Concurrency.Task.sleep(for: .seconds(2))
+        print("✍️", #function, "after sleep")
         let newToken = previousToken + "0"
         accessToken = newToken
     }
