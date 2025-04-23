@@ -1,5 +1,5 @@
 //
-//  TokenProvider.swift
+//  AccessTokenProviderAndRefresher.swift
 //  munkit-example-clt
 //
 //  Created by Ilia Chub on 11.04.2025.
@@ -9,7 +9,7 @@ import MUNKit
 import Moya
 import Foundation
 
-final class TokenProvider: MUNAccessTokenProvider, @unchecked Sendable {
+final class AccessTokenProviderAndRefresher: MUNAccessTokenProvider, MUNAccessTokenRefresher, @unchecked Sendable {
     var accessToken: String? {
         get { accessTokenQueue.sync { _accessToken } }
         set { accessTokenQueue.sync { _accessToken = newValue } }
@@ -26,7 +26,7 @@ final class TokenProvider: MUNAccessTokenProvider, @unchecked Sendable {
         )
     }
 
-    func refreshToken() async throws {
+    func refresh() async throws {
         print("✍️", #function, "start")
 
         guard let previousToken = accessToken else {

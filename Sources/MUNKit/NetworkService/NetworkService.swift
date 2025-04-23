@@ -1,5 +1,5 @@
 //
-//  NetworkService.swift
+//  MUNNetworkService.swift
 //  MUNKit
 //
 //  Created by Natalia Luzyanina on 01.04.2025.
@@ -10,16 +10,19 @@ import Foundation
 
 public actor MUNNetworkService<Target: MUNAPITarget> {
     private let moyaProvider: MoyaProvider<Target>
-    private let tokenProvider: MUNAccessTokenProvider
+    private var accessTokenRefresher: MUNAccessTokenRefresher?
 
     private var tokenRefreshFailureHandler: (() async -> Void)?
     private var tokenRefreshTask: _Concurrency.Task<Void, Error>?
     private var activeRequests: Set<NetworkServiceActiveRequest> = []
     private var requestsPendingTokenRefresh: Set<UUID> = []
 
-    public init(apiProvider: MoyaProvider<Target>, tokenRefreshProvider: MUNAccessTokenProvider) {
+    public init(apiProvider: MoyaProvider<Target>) {
         self.moyaProvider = apiProvider
-        self.tokenProvider = tokenRefreshProvider
+    }
+
+    public func setAccessTokenRefresher(_ refresher: MUNAccessTokenRefresher) {
+        self.accessTokenRefresher = refresher
     }
 
     public func setTokenRefreshFailureHandler(_ action: @escaping () async -> Void) {
@@ -96,8 +99,7 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
         guard
             target.isAccessTokenRequired,
             isTokenRefreshed == false,
-            let serverError = error as? MoyaError,
-            let statusCode = serverError.response?.statusCode,
+            let statusCode = error.response?.statusCode,
             [401, 403, 409].contains(statusCode)
         else {
             throw error
@@ -111,7 +113,11 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
 
         requestsPendingTokenRefresh = Set(activeRequests.compactMap { $0.isAccessTokenRequired ? $0.id : nil })
         tokenRefreshTask = _Concurrency.Task { [weak self] in
-            try await self?.tokenProvider.refreshToken()
+            guard let accessTokenRefresher = await self?.accessTokenRefresher else {
+                throw error
+            }
+
+            try await accessTokenRefresher.refresh()
         }
 
         do {
