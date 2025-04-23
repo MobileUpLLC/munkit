@@ -13,15 +13,14 @@ public protocol MUNAPITarget: TargetType, AccessTokenAuthorizable {
     var isAccessTokenRequired: Bool { get }
     var isRefreshTokenRequest: Bool { get }
     var isMockEnabled: Bool { get }
-
-    func getMockFileName() -> String?
+    var mockFileName: String? { get }
 }
 
 extension MUNAPITarget {
     var sampleData: Data { getSampleData() }
 
     private func getSampleData() -> Data {
-        guard let mockFileName = getMockFileName() else {
+        guard let mockFileName else {
             print("🕸️💽🆓 The request \(path) does not use mock data.")
             return Data()
         }

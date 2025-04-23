@@ -25,6 +25,9 @@ extension DNDAPITarget: MUNAPITarget {
     var headers: [String: String]? { getHeaders() }
     var authorizationType: Moya.AuthorizationType? { getAuthorizationType() }
 
+    var mockFileName: String? { nil }
+    var isMockEnabled: Bool { false }
+
     private func getParameters() -> [String: Any] {
         switch self {
         case .classesWithAuth, .classesWithoutAuth:

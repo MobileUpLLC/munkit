@@ -16,7 +16,7 @@ extension MUNMockablePaginationAPITarget {
     var sampleData: Data { getSampleData() }
 
     private func getSampleData() -> Data {
-        guard var mockFileName = getMockFileName() else {
+        guard var mockFileName else {
             print("🕸️💽🆓 The request \(path) does not use mock data.")
             return Data()
         }
