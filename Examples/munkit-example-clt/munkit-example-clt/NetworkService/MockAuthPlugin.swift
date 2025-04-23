@@ -5,7 +5,7 @@
 //  Created by Ilia Chub on 11.04.2025.
 //
 
-import MUNKit
+import munkit
 import Moya
 import Foundation
 

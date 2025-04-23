@@ -8,14 +8,14 @@
 import Foundation
 import Moya
 
-public struct MUNAccessTokenPlugin: PluginType {
+struct AccessTokenPlugin: PluginType {
     private let accessTokenProvider: MUNAccessTokenProvider
 
-    public init(accessTokenProvider: MUNAccessTokenProvider) {
+    init(accessTokenProvider: MUNAccessTokenProvider) {
         self.accessTokenProvider = accessTokenProvider
     }
     
-    public func prepare(_ request: URLRequest, target: TargetType) -> URLRequest {
+    func prepare(_ request: URLRequest, target: TargetType) -> URLRequest {
         guard let target = target as? MUNAPITarget else {
             return request
         }

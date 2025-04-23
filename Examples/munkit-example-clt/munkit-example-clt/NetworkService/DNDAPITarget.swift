@@ -5,7 +5,7 @@
 //  Created by Ilia Chub on 11.04.2025.
 //
 
-import MUNKit
+import munkit
 import Moya
 import Foundation
 
@@ -24,6 +24,9 @@ extension DNDAPITarget: MUNAPITarget {
     var task: Moya.Task { getTask() }
     var headers: [String: String]? { getHeaders() }
     var authorizationType: Moya.AuthorizationType? { getAuthorizationType() }
+
+    var mockFileName: String? { nil }
+    var isMockEnabled: Bool { false }
 
     private func getParameters() -> [String: Any] {
         switch self {

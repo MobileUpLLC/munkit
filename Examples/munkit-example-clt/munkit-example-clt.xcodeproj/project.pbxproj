@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4AFFC1132DA86EFA005D6A81 /* MUNKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4AFFC1122DA86EFA005D6A81 /* MUNKit */; };
+		4A56356C2DB967E0001CA021 /* munkit in Frameworks */ = {isa = PBXBuildFile; productRef = 4A56356B2DB967E0001CA021 /* munkit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -39,7 +39,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4AFFC1132DA86EFA005D6A81 /* MUNKit in Frameworks */,
+				4A56356C2DB967E0001CA021 /* munkit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -82,7 +82,7 @@
 			);
 			name = "munkit-example-clt";
 			packageProductDependencies = (
-				4AFFC1122DA86EFA005D6A81 /* MUNKit */,
+				4A56356B2DB967E0001CA021 /* munkit */,
 			);
 			productName = "munkit-example-clt";
 			productReference = 4AFFC1032DA86E65005D6A81 /* munkit-example-clt */;
@@ -323,9 +323,10 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		4AFFC1122DA86EFA005D6A81 /* MUNKit */ = {
+		4A56356B2DB967E0001CA021 /* munkit */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = MUNKit;
+			package = 4AFFC1112DA86EFA005D6A81 /* XCLocalSwiftPackageReference "../../../MUNKit" */;
+			productName = munkit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
