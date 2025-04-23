@@ -5,7 +5,7 @@
 //  Created by Ilia Chub on 11.04.2025.
 //
 
-import MUNKit
+import munkit
 
 actor DNDClassesRepository {
     private let networkService: MUNNetworkService<DNDAPITarget>

@@ -9,7 +9,7 @@ import Moya
 import Foundation
 
 public actor MUNNetworkService<Target: MUNAPITarget> {
-    private let moyaProvider: MoyaProvider<Target>
+    private var moyaProvider: MoyaProvider<Target>
     private var accessTokenRefresher: MUNAccessTokenRefresher?
 
     private var tokenRefreshFailureHandler: (() async -> Void)?
@@ -17,16 +17,31 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
     private var activeRequests: Set<NetworkServiceActiveRequest> = []
     private var requestsPendingTokenRefresh: Set<UUID> = []
 
-    public init(apiProvider: MoyaProvider<Target>) {
-        self.moyaProvider = apiProvider
+    public init(
+        session: Session = MoyaProvider<Target>.defaultAlamofireSession(),
+        plugins: [any PluginType] = [],
+    ) {
+        self.moyaProvider = MoyaProvider<Target>.init(
+            stubClosure: { $0.isMockEnabled ? .delayed(seconds: 1.5) : .never },
+            session: session,
+            plugins: plugins
+        )
     }
 
-    public func setAccessTokenRefresher(_ refresher: MUNAccessTokenRefresher) {
+    public func setAuthorizationObjects(
+        provider: MUNAccessTokenProvider,
+        refresher: MUNAccessTokenRefresher,
+        tokenRefreshFailureHandler: @escaping () async -> Void
+    ) {
         self.accessTokenRefresher = refresher
-    }
+        self.tokenRefreshFailureHandler = tokenRefreshFailureHandler
 
-    public func setTokenRefreshFailureHandler(_ action: @escaping () async -> Void) {
-        tokenRefreshFailureHandler = action
+        let accessTokenPlugin = AccessTokenPlugin(accessTokenProvider: provider)
+        self.moyaProvider = MoyaProvider<Target>(
+            stubClosure: moyaProvider.stubClosure,
+            session: moyaProvider.session,
+            plugins: moyaProvider.plugins + [accessTokenPlugin]
+        )
     }
 
     public func executeRequest<T: Decodable & Sendable>(

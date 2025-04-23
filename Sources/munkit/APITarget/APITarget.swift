@@ -1,19 +1,23 @@
 //
-//  MockableAPITarget.swift
+//  APITarget.swift
 //  MUNKit
 //
 //  Created by Natalia Luzyanina on 01.04.2025.
 //
 
+import Moya
 import Foundation
 
-public protocol MUNMockableAPITarget: MUNAPITarget {
+public protocol MUNAPITarget: TargetType, AccessTokenAuthorizable {
+    var parameters: [String: Any] { get }
+    var isAccessTokenRequired: Bool { get }
+    var isRefreshTokenRequest: Bool { get }
     var isMockEnabled: Bool { get }
-    
+
     func getMockFileName() -> String?
 }
 
-extension MUNMockableAPITarget {
+extension MUNAPITarget {
     var sampleData: Data { getSampleData() }
 
     private func getSampleData() -> Data {
@@ -24,34 +28,7 @@ extension MUNMockableAPITarget {
 
         return getSampleDataFromFileWithName(mockFileName)
     }
-}
 
-public protocol MockablePaginationMobileApiTarget: MUNMockableAPITarget {
-    var pageIndexParameterName: String { get }
-    var pageSizeParameterName: String { get }
-}
-
-extension MockablePaginationMobileApiTarget {
-    var sampleData: Data { getSampleData() }
-
-    private func getSampleData() -> Data {
-        guard var mockFileName = getMockFileName() else {
-            print("🕸️💽🆓 The request \(path) does not use mock data.")
-            return Data()
-        }
-
-        if
-            let pageIndex = parameters[pageIndexParameterName],
-            let pageSize = parameters[pageSizeParameterName]
-        {
-            mockFileName = "\(mockFileName)&PI=\(pageIndex)&PS=\(pageSize)"
-        }
-
-        return getSampleDataFromFileWithName(mockFileName)
-    }
-}
-
-extension MUNMockableAPITarget {
     func getSampleDataFromFileWithName(_ mockFileName: String) -> Data {
         let logStart = "For the request \(path), mock data"
         let mockExtension = "json"

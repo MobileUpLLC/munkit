@@ -5,23 +5,18 @@
 //  Created by Ilia Chub on 11.04.2025.
 //
 
-import MUNKit
+import munkit
 import Moya
 import Foundation
 
 private let accessTokenProviderAndRefresher = AccessTokenProviderAndRefresher()
 
-private let provider = MoyaProvider<DNDAPITarget>(
-    plugins: [
-        MUNAccessTokenPlugin(accessTokenProvider: accessTokenProviderAndRefresher),
-        MockAuthPlugin()
-    ]
+private let networkService = MUNNetworkService<DNDAPITarget>(plugins: [MockAuthPlugin()])
+await networkService.setAuthorizationObjects(
+    provider: accessTokenProviderAndRefresher,
+    refresher: accessTokenProviderAndRefresher,
+    tokenRefreshFailureHandler: { print("🧨 Token refresh failed handler called") }
 )
-
-private let networkService = MUNNetworkService(apiProvider: provider)
-
-//await networkService.setAccessTokenRefresher(accessTokenProviderAndRefresher)
-await networkService.setTokenRefreshFailureHandler { print("🧨 Token refresh failed handler called") }
 
 let dndClassesRepository = await DNDClassesRepository(networkService: networkService)
 
@@ -60,5 +55,5 @@ await withTaskGroup { group in
 if completedTasks != taskCount * 2 {
     print("🚨 completedTasks: \(completedTasks) != \(taskCount * 2)")
 } else {
-    print("✅ All tasks completed successfully!")
+    print("✅ All tasks finished (maybe without success)!")
 }
