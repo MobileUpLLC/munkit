@@ -113,6 +113,7 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
     ) async throws {
         guard
             target.isAccessTokenRequired,
+            target.isRefreshTokenRequest == false,
             isTokenRefreshed == false,
             let statusCode = error.response?.statusCode,
             [401, 403, 409].contains(statusCode)
