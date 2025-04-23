@@ -9,17 +9,18 @@ import MUNKit
 import Moya
 import Foundation
 
-private let tokenProvider = TokenProvider()
+private let accessTokenProviderAndRefresher = AccessTokenProviderAndRefresher()
 
 private let provider = MoyaProvider<DNDAPITarget>(
     plugins: [
-        MUNAccessTokenPlugin(accessTokenProvider: tokenProvider),
+        MUNAccessTokenPlugin(accessTokenProvider: accessTokenProviderAndRefresher),
         MockAuthPlugin()
     ]
 )
 
-private let networkService = MUNNetworkService(apiProvider: provider, tokenRefreshProvider: tokenProvider)
+private let networkService = MUNNetworkService(apiProvider: provider)
 
+//await networkService.setAccessTokenRefresher(accessTokenProviderAndRefresher)
 await networkService.setTokenRefreshFailureHandler { print("🧨 Token refresh failed handler called") }
 
 let dndClassesRepository = await DNDClassesRepository(networkService: networkService)
