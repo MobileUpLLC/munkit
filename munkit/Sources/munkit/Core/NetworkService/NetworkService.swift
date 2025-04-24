@@ -1,5 +1,5 @@
 //
-//  NetworkService.swift
+//  MUNNetworkService.swift
 //  MUNKit
 //
 //  Created by Natalia Luzyanina on 01.04.2025.
@@ -9,77 +9,131 @@ import Moya
 import Foundation
 
 public actor MUNNetworkService<Target: MUNAPITarget> {
-    private let moyaProvider: MoyaProvider<Target>
+    private var moyaProvider: MoyaProvider<Target>
+    private var accessTokenRefresher: MUNAccessTokenRefresher?
 
-    private let tokenProvider: MUNAccessTokenProvider
     private var tokenRefreshFailureHandler: (() async -> Void)?
     private var tokenRefreshTask: _Concurrency.Task<Void, Error>?
-    private let authErrorStatusCodes: Set<Int> = [401, 403, 409]
+    private var activeRequests: Set<NetworkServiceActiveRequest> = []
+    private var requestsPendingTokenRefresh: Set<UUID> = []
 
-    public init(apiProvider: MoyaProvider<Target>, tokenRefreshProvider: MUNAccessTokenProvider) {
-        self.moyaProvider = apiProvider
-        self.tokenProvider = tokenRefreshProvider
+    public init(
+        session: Session = MoyaProvider<Target>.defaultAlamofireSession(),
+        plugins: [any PluginType] = [],
+    ) {
+        self.moyaProvider = MoyaProvider<Target>.init(
+            stubClosure: { $0.isMockEnabled ? .delayed(seconds: 1.5) : .never },
+            session: session,
+            plugins: plugins
+        )
     }
 
-    public func setTokenRefreshFailureHandler(_ action: @escaping () async -> Void) {
-        tokenRefreshFailureHandler = action
+    public func setAuthorizationObjects(
+        provider: MUNAccessTokenProvider,
+        refresher: MUNAccessTokenRefresher,
+        tokenRefreshFailureHandler: @escaping () async -> Void
+    ) {
+        self.accessTokenRefresher = refresher
+        self.tokenRefreshFailureHandler = tokenRefreshFailureHandler
+
+        let accessTokenPlugin = AccessTokenPlugin(accessTokenProvider: provider)
+        self.moyaProvider = MoyaProvider<Target>(
+            stubClosure: moyaProvider.stubClosure,
+            session: moyaProvider.session,
+            plugins: moyaProvider.plugins + [accessTokenPlugin]
+        )
     }
 
     public func executeRequest<T: Decodable & Sendable>(
         target: Target,
         isTokenRefreshed: Bool = false
     ) async throws -> T {
+        let requestId = startRequest(isAccessTokenRequired: target.isAccessTokenRequired)
+        defer { completeRequest(requestId) }
+
         switch await performRequest(target: target) {
         case .success(let response):
             let filteredResponse = try response.filterSuccessfulStatusCodes()
-            let result = try filteredResponse.map(T.self)
-            return result
+            return try filteredResponse.map(T.self)
         case .failure(let error):
-            try await resolveRequestError(error, target: target, isTokenRefreshed: isTokenRefreshed)
+            try await resolveRequestError(
+                error,
+                requestId: requestId,
+                target: target,
+                isTokenRefreshed: isTokenRefreshed
+            )
             return try await executeRequest(target: target, isTokenRefreshed: true)
         }
     }
 
     public func executeRequest(target: Target, isTokenRefreshed: Bool = false) async throws {
+        let requestId = startRequest(isAccessTokenRequired: target.isAccessTokenRequired)
+        defer { completeRequest(requestId) }
+
         switch await performRequest(target: target) {
         case .success(let response):
             let _ = try response.filterSuccessfulStatusCodes()
         case .failure(let error):
-            try await resolveRequestError(error, target: target, isTokenRefreshed: isTokenRefreshed)
+            try await resolveRequestError(
+                error,
+                requestId: requestId,
+                target: target,
+                isTokenRefreshed: isTokenRefreshed
+            )
             try await executeRequest(target: target, isTokenRefreshed: true)
         }
     }
 
-    private func resolveRequestError(_ error: MoyaError, target: Target, isTokenRefreshed: Bool) async throws {
-        guard isTokenRefreshed == false else {
-            throw error
-        }
-        try await ensureTokenValid(error, target: target)
+    private func startRequest(isAccessTokenRequired: Bool) -> UUID {
+        let requestId = UUID()
+        activeRequests.insert(
+            NetworkServiceActiveRequest(id: requestId, isAccessTokenRequired: isAccessTokenRequired)
+        )
+        return requestId
     }
 
-    private func ensureTokenValid(_ error: Error, target: Target) async throws {
+    private func performRequest(target: Target) async -> Result<Response, MoyaError> {
+        return await withCheckedContinuation { continuation in
+            moyaProvider.request(target) { continuation.resume(returning: $0) }
+        }
+    }
+
+    private func completeRequest(_ requestId: UUID) {
+        if let index = activeRequests.firstIndex(where: { $0.id == requestId }) {
+            activeRequests.remove(at: index)
+        }
+        requestsPendingTokenRefresh.remove(requestId)
+    }
+
+    private func resolveRequestError(
+        _ error: MoyaError,
+        requestId: UUID,
+        target: Target,
+        isTokenRefreshed: Bool
+    ) async throws {
         guard
-            let serverError = error as? MoyaError,
-            let statusCode = serverError.response?.statusCode,
-            authErrorStatusCodes.contains(statusCode)
+            target.isAccessTokenRequired,
+            target.isRefreshTokenRequest == false,
+            isTokenRefreshed == false,
+            let statusCode = error.response?.statusCode,
+            [401, 403, 409].contains(statusCode)
         else {
             throw error
         }
 
-        if target.isAccessTokenRequired {
-            try await renewAccessToken(target: target)
-        } else {
-            throw error
-        }
-    }
-
-    private func renewAccessToken(target: Target) async throws {
-        if let tokenRefreshTask = tokenRefreshTask {
+        if let tokenRefreshTask {
             return try await tokenRefreshTask.value
+        } else if requestsPendingTokenRefresh.contains(requestId) {
+            return
         }
 
+        requestsPendingTokenRefresh = Set(activeRequests.compactMap { $0.isAccessTokenRequired ? $0.id : nil })
         tokenRefreshTask = _Concurrency.Task { [weak self] in
-            try await self?.tokenProvider.refreshToken()
+            guard let accessTokenRefresher = await self?.accessTokenRefresher else {
+                throw error
+            }
+
+            try await accessTokenRefresher.refresh()
         }
 
         do {
@@ -89,12 +143,6 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
             await tokenRefreshFailureHandler?()
             tokenRefreshFailureHandler = nil
             throw error
-        }
-    }
-
-    private func performRequest(target: Target) async -> Result<Response, MoyaError> {
-        return await withCheckedContinuation { continuation in
-            moyaProvider.request(target) { continuation.resume(returning: $0) }
         }
     }
 }
