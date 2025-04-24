@@ -141,7 +141,6 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
             tokenRefreshTask = nil
         } catch {
             await tokenRefreshFailureHandler?()
-            tokenRefreshFailureHandler = nil
             throw error
         }
     }
