@@ -14,21 +14,11 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     private let storage: (any Storage<T>)?
     private let dataFetcher: @Sendable () async throws -> T
     private var replicaState: ReplicaState<T>
+    private let dataLoader: DataLoader<T>
 
     private var observerStateStreams: [AsyncStreamBundle<ReplicaState<T>>] = []
-    private var observerEventStreams: [AsyncStreamBundle<ReplicaEvent<T>>] = []
-
-    private let observersControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
-    private let loadingControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
-    private let clearingControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
-    private let freshnessControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
-    private let dataMutationControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
-
-    private let observersController: ReplicaObserversController<T>
-    private let loadingController: ReplicaLoadingController<T>
-    private let clearingController: ReplicaClearingController<T>
-    private let freshnessController: ReplicaFreshnessController<T>
-    private let dataMutationController: ReplicaDataChangingController<T>
+    private var dataClearingTask: Task<Void, Error>?
+    private var staleTask: Task<Void, Error>?
 
     public init(
         name: String,
@@ -41,263 +31,361 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         self.storage = storage
         self.dataFetcher = fetcher
         self.replicaState = ReplicaState<T>.createEmpty(hasStorage: storage != nil)
-        self.observersControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
-        self.loadingControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
-        self.clearingControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
-        self.freshnessControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
-        self.dataMutationControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
-
-        self.observersController = ReplicaObserversController(
-            initialState: replicaState,
-            eventStreamContinuation: observersControllerEventStream.continuation,
-            clearTime: settings.clearTime
-        )
-        let dataLoader = DataLoader(storage: storage, fetcher: fetcher)
-        self.loadingController = ReplicaLoadingController(
-            replicaState: replicaState,
-            replicaEventStreamContinuation: loadingControllerEventStream.continuation,
-            dataLoader: dataLoader
-        )
-        self.clearingController = ReplicaClearingController(
-            replicaEventStreamContinuation: clearingControllerEventStream.continuation,
-            storage: storage
-        )
-        self.freshnessController = ReplicaFreshnessController(
-            replicaState: replicaState,
-            replicaEventStreamContinuation: freshnessControllerEventStream.continuation,
-            staleTime: settings.staleTime
-        )
-        self.dataMutationController = ReplicaDataChangingController(
-            replicaState: replicaState,
-            replicaEventStreamContinuation: dataMutationControllerEventStream.continuation,
-            storage: storage
-        )
+        self.dataLoader = DataLoader(storage: storage, fetcher: fetcher)
 
         Task {
-            await processEvents()
+            await processDataLoaderOutput()
         }
     }
+
+    // MARK: - Additional Public Methods
 
     public func observe(activityStream: AsyncStream<Bool>) async -> ReplicaObserver<T> {
         let stateStreamBundle = AsyncStream<ReplicaState<T>>.makeStream()
         observerStateStreams.append(stateStreamBundle)
 
-        let eventStreamBundle = AsyncStream<ReplicaEvent<T>>.makeStream()
-        observerEventStreams.append(eventStreamBundle)
-
         return await ReplicaObserver<T>(
             activityStream: activityStream,
             stateStream: stateStreamBundle.stream,
-            eventStream: eventStreamBundle.stream,
-            observersController: observersController
+            replica: self
         )
     }
 
     public func refresh() async {
-        await loadingController.refresh()
+        await loadData(skipLoadingIfFresh: false)
     }
 
     public func revalidate() async {
-        await loadingController.revalidate()
+        await loadData(skipLoadingIfFresh: true)
     }
 
     public func fetchData(forceRefresh: Bool) async throws -> T {
-        try await loadingController.getData(forceRefresh: forceRefresh)
-    }
-
-    public func clear(invalidationMode: InvalidationMode, removeFromStorage: Bool) async {
-        await loadingController.cancel()
-        try? await clearingController.clear(removeFromStorage: removeFromStorage)
-        Task {
-            await loadingController.refreshAfterInvalidation(invalidationMode: invalidationMode)
+        if !forceRefresh, let data = replicaState.data, data.isFresh {
+            return data.valueWithOptimisticUpdates
         }
-    }
 
-    public func clearError() async {
-        await clearingController.clearError()
-    }
-
-    public func invalidate(mode: InvalidationMode) {
-        Task {
-            await freshnessController.invalidate()
-            await loadingController.refreshAfterInvalidation(invalidationMode: mode)
-        }
-    }
-
-    public func markAsFresh() async {
-        await freshnessController.makeFresh()
-    }
-
-    public func setData(_ data: T) async {
-        try? await dataMutationController.setData(data: data)
-    }
-
-    public func mutateData(transform: @escaping (T) -> T) {
-        Task {
-            try? await dataMutationController.mutateData(transform: transform)
-        }
-    }
-
-    func cancel() async {
-        await loadingController.cancel()
-    }
-
-    private func processEvents() {
-        let eventStreams = [
-            loadingControllerEventStream.stream,
-            observersControllerEventStream.stream,
-            clearingControllerEventStream.stream,
-            freshnessControllerEventStream.stream,
-            dataMutationControllerEventStream.stream
-        ]
-
-        Task {
-            await withTaskGroup { group in
-                for stream in eventStreams {
-                    group.addTask { [weak self] in
-                        for await event in stream {
-                            await self?.handleEvent(event)
-                        }
+        let outputStream = AsyncStream<DataLoader<T>.Output> { continuation in
+            Task {
+                await loadData(skipLoadingIfFresh: false, setDataRequested: true)
+                for await output in dataLoader.outputStreamBundle.stream {
+                    continuation.yield(output)
+                    if case .loadingFinished = output {
+                        continuation.finish()
                     }
                 }
             }
         }
+
+        for await output in outputStream {
+            switch output {
+            case .loadingFinished(.success(let data)):
+                return replicaState.data?.valueWithOptimisticUpdates ?? data
+            case .loadingFinished(.error(let error)):
+                throw error
+            default:
+                continue
+            }
+        }
+        throw LoadingError()
     }
 
+    public func cancel() async {
+        guard replicaState.loading else { return }
+        await dataLoader.cancel()
+        var updatedState = replicaState
+        updatedState.loading = false
+        updatedState.dataRequested = false
+        updatedState.preloading = false
+        await updateState(updatedState)
+    }
+
+    // MARK: - Observer Management
+
+    func handleObserverAdded(observerId: UUID, isActive: Bool) async {
+        dataClearingTask?.cancel()
+        dataClearingTask = nil
+
+        let currentObservingState = replicaState.observingState
+        let updatedActiveObserverIds = isActive
+            ? currentObservingState.activeObserverIds.union([observerId])
+            : currentObservingState.activeObserverIds
+        let updatedObservingTime = isActive ? .now : currentObservingState.observingTime
+        let newObservingState = ObservingState(
+            observerIds: currentObservingState.observerIds.union([observerId]),
+            activeObserverIds: updatedActiveObserverIds,
+            observingTime: updatedObservingTime
+        )
+
+        await emitObserverCountChangedIfNeeded(from: currentObservingState, to: newObservingState)
+    }
+
+    func handleObserverRemoved(observerId: UUID) async {
+        let currentObservingState = replicaState.observingState
+        let isLastActive = currentObservingState.activeObserverIds.count == 1
+            && currentObservingState.activeObserverIds.contains(observerId)
+        let updatedObservingTime = isLastActive ? .timeInPast(.now) : currentObservingState.observingTime
+        let newObservingState = ObservingState(
+            observerIds: currentObservingState.observerIds.subtracting([observerId]),
+            activeObserverIds: currentObservingState.activeObserverIds.subtracting([observerId]),
+            observingTime: updatedObservingTime
+        )
+
+        await emitObserverCountChangedIfNeeded(from: currentObservingState, to: newObservingState)
+
+        guard newObservingState.observerIds.isEmpty, settings.clearTime < .infinity else {
+            return
+        }
+
+        dataClearingTask?.cancel()
+        dataClearingTask = Task {
+            try await Task.sleep(for: .seconds(settings.clearTime))
+            guard
+                (replicaState.data != nil || replicaState.error != nil),
+                !replicaState.loading,
+                case .none = replicaState.observingState.status
+            else {
+                return
+            }
+            try await clearData(removeFromStorage: false)
+        }
+    }
+
+    func handleObserverActivated(observerId: UUID) async {
+        let currentObservingState = replicaState.observingState
+        var updatedActiveObserverIds = currentObservingState.activeObserverIds
+        updatedActiveObserverIds.insert(observerId)
+        let newObservingState = ObservingState(
+            observerIds: currentObservingState.observerIds,
+            activeObserverIds: updatedActiveObserverIds,
+            observingTime: .now
+        )
+
+        await emitObserverCountChangedIfNeeded(from: currentObservingState, to: newObservingState)
+    }
+
+    func handleObserverDeactivated(observerId: UUID) async {
+        let currentObservingState = replicaState.observingState
+        let isLastActive = currentObservingState.activeObserverIds.count == 1
+            && currentObservingState.activeObserverIds.contains(observerId)
+        let updatedObservingTime = isLastActive ? .timeInPast(.now) : currentObservingState.observingTime
+        let newObservingState = ObservingState(
+            observerIds: currentObservingState.observerIds,
+            activeObserverIds: currentObservingState.activeObserverIds.subtracting([observerId]),
+            observingTime: updatedObservingTime
+        )
+
+        await emitObserverCountChangedIfNeeded(from: currentObservingState, to: newObservingState)
+    }
+
+    private func emitObserverCountChangedIfNeeded(
+        from previousState: ObservingState,
+        to newState: ObservingState
+    ) async {
+        if previousState.observerIds.count != newState.observerIds.count
+            || previousState.activeObserverIds.count != newState.activeObserverIds.count {
+            var updatedState = replicaState
+            updatedState.observingState = newState
+            await updateState(updatedState)
+            if newState.activeObserverIds.count > previousState.activeObserverIds.count {
+                await revalidate()
+            }
+        }
+    }
+
+    // MARK: - Data Loading
+
+    private func loadData(skipLoadingIfFresh: Bool, setDataRequested: Bool = false) async {
+        guard
+            !replicaState.loading,
+            !(skipLoadingIfFresh && replicaState.hasFreshData)
+        else {
+            return
+        }
+
+        await dataLoader.load(loadingFromStorageRequired: replicaState.loadingFromStorageRequired)
+
+        let dataRequested: Bool = setDataRequested || replicaState.dataRequested
+        let preloading: Bool = (replicaState.observingState.status == .none) || replicaState.preloading
+
+        var updatedState = replicaState
+        updatedState.loading = true
+        updatedState.error = nil
+        updatedState.dataRequested = dataRequested
+        updatedState.preloading = preloading
+
+        await updateState(updatedState)
+    }
+
+    private func refreshAfterInvalidation(invalidationMode: InvalidationMode) async {
+        if replicaState.loading {
+            await cancel()
+            await refresh()
+            return
+        }
+
+        switch invalidationMode {
+        case .dontRefresh:
+            break
+        case .refreshIfHasObservers:
+            if replicaState.observingState.status != .none {
+                await refresh()
+            }
+        case .refreshIfHasActiveObservers:
+            if replicaState.observingState.status == .active {
+                await refresh()
+            }
+        case .refreshAlways:
+            await refresh()
+        }
+    }
+
+    private func processDataLoaderOutput() async {
+        for await output in dataLoader.outputStreamBundle.stream {
+            print("📥", #function, output)
+            switch output {
+            case .storageRead(.data(let data)):
+                let data = ReplicaData(value: data, isFresh: false, changingDate: .now)
+                if replicaState.data == nil {
+                    var updatedState = replicaState
+                    updatedState.data = data
+                    updatedState.loadingFromStorageRequired = false
+                    await updateState(updatedState)
+                }
+
+            case .storageRead(.empty):
+                fatalError()
+
+            case .loadingFinished(.success(let data)):
+                let data = ReplicaData(
+                    value: data,
+                    isFresh: true,
+                    changingDate: .now,
+                    optimisticUpdates: replicaState.data?.optimisticUpdates ?? []
+                )
+                var updatedState = replicaState
+
+                updatedState.loading = false
+                updatedState.data = data
+                updatedState.error = nil
+                updatedState.dataRequested = false
+                updatedState.preloading = false
+
+
+                if settings.staleTime < .infinity {
+                    staleTask?.cancel()
+                    staleTask = Task {
+                        try await Task.sleep(for: .seconds(settings.staleTime))
+                        if let data = replicaState.data, data.isFresh {
+                            var newData = replicaState.data
+                            newData?.isFresh = false
+                            var updatedState = replicaState
+                            updatedState.data = newData
+                            await updateState(updatedState)
+                        }
+                    }
+                }
+
+                await updateState(updatedState)
+
+            case .loadingFinished(.error(let error)):
+                var updatedState = replicaState
+                updatedState.loading = false
+                updatedState.error = error
+                updatedState.dataRequested = false
+                updatedState.preloading = false
+
+                await updateState(updatedState)
+            }
+        }
+    }
+
+    // MARK: - Data Mutation
+
+    private func setData(data: T) async throws {
+        let currentData = replicaState.data
+        let updatedData = ReplicaData(
+            value: data,
+            isFresh: currentData?.isFresh ?? false,
+            changingDate: .now,
+            optimisticUpdates: currentData?.optimisticUpdates ?? []
+        )
+        var updatedState = replicaState
+        updatedState.data = updatedData
+        updatedState.loadingFromStorageRequired = false
+        await updateState(updatedState)
+        try await storage?.write(data: data)
+    }
+
+    private func mutateData(transform: @escaping (T) -> T) async throws {
+        if let currentData = replicaState.data {
+            let newValue = transform(currentData.value)
+            let updatedData = ReplicaData(
+                value: newValue,
+                isFresh: currentData.isFresh,
+                changingDate: .now,
+                optimisticUpdates: currentData.optimisticUpdates
+            )
+            var updatedState = replicaState
+            updatedState.data = updatedData
+            updatedState.loadingFromStorageRequired = false
+            await updateState(updatedState)
+            try await storage?.write(data: newValue)
+        }
+    }
+
+    // MARK: - Clearing
+
+    private func clearData(removeFromStorage: Bool) async throws {
+        var updatedState = replicaState
+        updatedState.data = nil
+        updatedState.error = nil
+        updatedState.loadingFromStorageRequired = storage != nil
+        await updateState(updatedState)
+        if removeFromStorage {
+            try await storage?.remove()
+        }
+    }
+
+    // MARK: - State Management
+
     private func updateState(_ newState: ReplicaState<T>) async {
-        print("⚖️", name, #function, newState)
-
+        logStateChange(from: replicaState, to: newState)
         replicaState = newState
-
-        await observersController.updateState(newState)
-        await loadingController.updateState(newState)
-        await clearingController.updateState(newState)
-        await freshnessController.updateState(newState)
-        await dataMutationController.updateState(newState)
-
         observerStateStreams.forEach { $0.continuation.yield(replicaState) }
     }
 
-    private func handleEvent(_ event: ReplicaEvent<T>) async {
-        print("⚡️", name, #function, event)
+    private func logStateChange(from oldState: ReplicaState<T>, to newState: ReplicaState<T>) {
+        var changes: [String] = []
 
-        switch event {
-        case .loading(let loadingEvent):
-            await handleLoadingEvent(loadingEvent)
-        case .freshness(let freshnessEvent):
-            await handleFreshnessEvent(freshnessEvent)
-        case .cleared:
-            await handleClearedEvent()
-        case .clearedError:
-            await handleClearedErrorEvent()
-        case .observerCountChanged(let observingState):
-            await handleObserverCountChangedEvent(observingState: observingState)
-        case .changing(let changingEvent):
-            await handleDataMutationEvent(changingEvent)
+        if oldState.loading != newState.loading {
+            changes.append("loading: \(oldState.loading) → \(newState.loading)")
         }
-    }
-
-    private func handleClearedEvent() async {
-        let updatedState = replicaState.copy(data: nil, error: nil, loadingFromStorageRequired: false)
-        await updateState(updatedState)
-    }
-
-    private func handleClearedErrorEvent() async {
-        let updatedState = replicaState.copy(error: nil)
-        await updateState(updatedState)
-    }
-
-    private func handleObserverCountChangedEvent(observingState: ObservingState) async {
-        let previousState = replicaState
-        let updatedState = replicaState.copy(observingState: observingState)
-        await updateState(updatedState)
-
-        if observingState.activeObserverIds.count > previousState.observingState.activeObserverIds.count {
-            await revalidate()
+        if (oldState.data == nil) != (newState.data == nil) {
+            changes.append("data: \(oldState.data != nil ? "present" : "absent") → \(newState.data != nil ? "present" : "absent")")
         }
-    }
-
-    private func handleDataMutationEvent(_ event: ChangingDataEvent<T>) async {
-        switch event {
-        case .dataSetting(data: let data):
-            let updatedState = replicaState.copy(
-                data: data,
-                loadingFromStorageRequired: false
-            )
-            await updateState(updatedState)
-        case .dataMutating(data: let data):
-            let updatedState = replicaState.copy(
-                data: data,
-                loadingFromStorageRequired: false
-            )
-            await updateState(updatedState)
+        if oldState.error?.localizedDescription != newState.error?.localizedDescription {
+            changes.append("error: \(oldState.error?.localizedDescription ?? "none") → \(newState.error?.localizedDescription ?? "none")")
         }
-    }
-
-    private func handleLoadingEvent(_ event: LoadingEvent<T>) async {
-        switch event {
-        case .loadingStarted:
-            let updatedState = replicaState.copy(
-                loading: true,
-                error: nil,
-                dataRequested: true
-            )
-            await updateState(updatedState)
-        case .dataFromStorageLoaded(let data):
-            let updatedState = replicaState.copy(
-                data: data,
-                loadingFromStorageRequired: false
-            )
-            await updateState(updatedState)
-        case .loadingFinished(let event):
-            await handleLoadingFinishedEvent(event)
+        if oldState.observingState.observerIds != newState.observingState.observerIds {
+            changes.append("observing: \(oldState.observingState) → \(newState.observingState)")
         }
-    }
-
-    private func handleFreshnessEvent(_ event: FreshnessEvent) async {
-        switch event {
-        case .freshened:
-            if var data = replicaState.data {
-                data.isFresh = true
-                let updatedState = replicaState.copy(data: data)
-                await updateState(updatedState)
-            }
-        case .becameStale:
-            if var data = replicaState.data {
-                data.isFresh = false
-                let updatedState = replicaState.copy(data: data)
-                await updateState(updatedState)
-            }
+        if oldState.dataRequested != newState.dataRequested {
+            changes.append("dataRequested: \(oldState.dataRequested) → \(newState.dataRequested)")
         }
-    }
+        if oldState.preloading != newState.preloading {
+            changes.append("preloading: \(oldState.preloading) → \(newState.preloading)")
+        }
+        if oldState.loadingFromStorageRequired != newState.loadingFromStorageRequired {
+            changes.append("loadingFromStorageRequired: \(oldState.loadingFromStorageRequired) → \(newState.loadingFromStorageRequired)")
+        }
+        if oldState.hasFreshData != newState.hasFreshData {
+            changes.append("hasFreshData: \(oldState.hasFreshData) → \(newState.hasFreshData)")
+        }
 
-    private func handleLoadingFinishedEvent(_ event: LoadingFinished<T>) async {
-        switch event {
-        case .success(let data):
-            let updatedState = replicaState.copy(
-                loading: false,
-                data: data,
-                error: nil,
-                dataRequested: false,
-                preloading: false
-            )
-            await updateState(updatedState)
-            await freshnessController.makeFresh()
-        case .canceled:
-            let updatedState = replicaState.copy(
-                loading: false,
-                dataRequested: false,
-                preloading: false
-            )
-            await updateState(updatedState)
-        case .error(let error):
-            let updatedState = replicaState.copy(
-                loading: false,
-                error: error,
-                dataRequested: false,
-                preloading: false
-            )
-            await updateState(updatedState)
+        if changes.isEmpty {
+            print("⚖️ \(name) \(#function): No changes in state")
+        } else {
+            print("⚖️ \(name) \(#function): Changed fields:\n  " + changes.joined(separator: "\n  "))
         }
     }
 }

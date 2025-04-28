@@ -11,16 +11,15 @@ public actor ReplicaObserver<T> where T: Sendable {
     public let stateStream: AsyncStream<ReplicaState<T>>
 
     private let activityStream: AsyncStream<Bool>
-    private let observersController: ReplicaObserversController<T>
+    private let replica: PhysicalReplicaImplementation<T>
 
     init(
         activityStream: AsyncStream<Bool>,
         stateStream: AsyncStream<ReplicaState<T>>,
-        eventStream: AsyncStream<ReplicaEvent<T>>,
-        observersController: ReplicaObserversController<T>
+        replica: PhysicalReplicaImplementation<T>
     ) async {
         self.activityStream = activityStream
-        self.observersController = observersController
+        self.replica = replica
         self.stateStream = stateStream
 
         await startObserverControl()
@@ -30,18 +29,18 @@ public actor ReplicaObserver<T> where T: Sendable {
     private func startObserverControl() async {
         let observerId = UUID()
 
-        await observersController.handleObserverAdded(observerId: observerId, isActive: true)
+        await replica.handleObserverAdded(observerId: observerId, isActive: true)
 
         Task {
             for await isActive in activityStream {
                 if isActive {
-                    await observersController.handleObserverActivated(observerId: observerId)
+                    await replica.handleObserverActivated(observerId: observerId)
                 } else {
-                    await observersController.handleObserverDeactivated(observerId: observerId)
+                    await replica.handleObserverDeactivated(observerId: observerId)
                 }
             }
 
-            await observersController.handleObserverRemoved(observerId: observerId)
+            await replica.handleObserverRemoved(observerId: observerId)
         }
     }
 }

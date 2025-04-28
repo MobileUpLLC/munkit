@@ -18,8 +18,8 @@ public actor DNDClassesRepository {
         self.replica = await ReplicaClient.shared.createReplica(
             name: "DndReplica",
             settings: .init(
-                staleTime: 10,
-                clearTime: 2
+                staleTime: 100,
+                clearTime: 5
             ),
             storage: nil,
             fetcher: { try await networkService.executeRequest(target: .classes) }
@@ -28,23 +28,5 @@ public actor DNDClassesRepository {
 
     public func getClassesList() async throws -> DNDClassesListModel {
         return try await networkService.executeRequest(target: .classes)
-    }
-
-    public func clearData() async {
-        await replica.clear()
-    }
-
-    public func invalidateData() async {
-        await replica.invalidate()
-    }
-
-    public func setData(data: DNDClassesListModel) async {
-        await replica.setData(data)
-    }
-
-    public func mutateData(transform: @escaping (DNDClassesListModel) -> DNDClassesListModel) async {
-        Task {
-            await replica.mutateData(transform: transform)
-        }
     }
 }
