@@ -52,7 +52,8 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
 
         self.observersController = ReplicaObserversController(
             initialState: replicaState,
-            eventStreamContinuation: observersControllerEventStream.continuation
+            eventStreamContinuation: observersControllerEventStream.continuation,
+            clearTime: settings.clearTime
         )
         let dataLoader = DataLoader(storage: storage, fetcher: fetcher)
         self.loadingController = ReplicaLoadingController(

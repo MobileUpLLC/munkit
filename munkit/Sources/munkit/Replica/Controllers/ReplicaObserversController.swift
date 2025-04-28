@@ -10,13 +10,17 @@ import Foundation
 actor ReplicaObserversController<T> where T: Sendable {
     private var replicaState: ReplicaState<T>
     private let eventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation
+    private let clearTime: TimeInterval
+    private var dataClearingTask: Task<Void, Error>? = nil
 
     init(
         initialState: ReplicaState<T>,
-        eventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation
+        eventStreamContinuation: AsyncStream<ReplicaEvent<T>>.Continuation,
+        clearTime: TimeInterval
     ) {
         self.replicaState = initialState
         self.eventStreamContinuation = eventStreamContinuation
+        self.clearTime = clearTime
     }
 
     func updateState(_ newState: ReplicaState<T>) async {
@@ -25,6 +29,11 @@ actor ReplicaObserversController<T> where T: Sendable {
 
     /// Handles the addition of a new observer.
     func handleObserverAdded(observerId: UUID, isActive: Bool) {
+        if dataClearingTask != nil {
+            dataClearingTask?.cancel()
+            dataClearingTask = nil
+        }
+
         let currentObservingState = replicaState.observingState
 
         let updatedActiveObserverIds = isActive
@@ -64,6 +73,25 @@ actor ReplicaObserversController<T> where T: Sendable {
             from: currentObservingState,
             to: newObservingState
         )
+
+        guard newObservingState.observerIds.isEmpty, clearTime < .infinity else {
+            return
+        }
+
+        dataClearingTask?.cancel()
+        dataClearingTask = Task {
+            try await Task.sleep(for: .seconds(clearTime))
+
+            guard
+                (replicaState.data != nil || replicaState.error != nil),
+                replicaState.loading == false,
+                case .none = replicaState.observingState.status
+            else {
+                return
+            }
+
+            eventStreamContinuation.yield(.cleared)
+        }
     }
 
     /// Handles the activation of an existing observer.

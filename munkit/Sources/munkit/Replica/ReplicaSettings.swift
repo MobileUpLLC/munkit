@@ -9,10 +9,14 @@ import Foundation
 
 /// Configures behavior of a replica.
 public struct ReplicaSettings: Sendable {
-    /// Specifies how quickly fetched data will become stale (nil means never).
+    /// Specifies how quickly fetched data will become stale
     let staleTime: TimeInterval
 
-    public init(staleTime: TimeInterval) {
+    /// Specifies how quickly data will be cleared when there is no observers
+    let clearTime: TimeInterval
+
+    public init(staleTime: TimeInterval, clearTime: TimeInterval) {
         self.staleTime = staleTime
+        self.clearTime = clearTime
     }
 }
