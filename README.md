@@ -4,8 +4,9 @@ munkit is a Swift library designed to streamline network operations by providing
 
 ## Requirements
 
-- iOS 16.0 or later
-- macOS 15.0 or later
+- iOS 16.0+
+- macOS 15.0+
+- Swift 6.1+
 
 ## Installation
 
