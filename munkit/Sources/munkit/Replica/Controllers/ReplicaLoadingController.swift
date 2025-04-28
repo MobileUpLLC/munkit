@@ -172,8 +172,6 @@ actor ReplicaLoadingController<T> where T: Sendable {
             )
 
             replicaEventStreamContinuation.yield(.loading(.loadingFinished(.success(data: data))))
-            replicaEventStreamContinuation.yield(.freshness(.freshened))
-
         case .loadingFinished(.error(let error)):
             replicaEventStreamContinuation.yield(.loading(.loadingFinished(.error(error))))
         }

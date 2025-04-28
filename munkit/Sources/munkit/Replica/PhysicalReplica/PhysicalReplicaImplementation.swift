@@ -66,7 +66,8 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         )
         self.freshnessController = ReplicaFreshnessController(
             replicaState: replicaState,
-            replicaEventStreamContinuation: freshnessControllerEventStream.continuation
+            replicaEventStreamContinuation: freshnessControllerEventStream.continuation,
+            staleTime: settings.staleTime
         )
         self.dataMutationController = ReplicaDataChangingController(
             replicaState: replicaState,
@@ -356,6 +357,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
                 preloading: false
             )
             await updateState(updatedState)
+            await freshnessController.makeFresh()
         case .canceled:
             let updatedState = replicaState.copy(
                 loading: false,
