@@ -8,11 +8,12 @@
 import munkit
 import munkit_example_core
 
-final class Observer: Sendable {
+actor Observer: Sendable {
     private let name: String
     private let replica: any Replica<DNDClassesListModel>
     private let observer: ReplicaObserver<DNDClassesListModel>
     private let activityStream: AsyncStreamBundle<Bool>
+    private var observingStateTask: Task<Void, Never>?
 
     init(name: String, replica: any Replica<DNDClassesListModel>) async {
         self.name = name
@@ -20,7 +21,7 @@ final class Observer: Sendable {
         self.activityStream = AsyncStream<Bool>.makeStream()
         self.observer = await replica.observe(activityStream: activityStream.stream)
 
-        Task {
+        self.observingStateTask = Task {
             for await state in await observer.stateStream {
                 await handleNewState(state)
             }
@@ -46,6 +47,8 @@ final class Observer: Sendable {
     }
 
     func stopObserving() async {
+        observingStateTask?.cancel()
+        observingStateTask = nil
         activityStream.continuation.finish()
     }
 
