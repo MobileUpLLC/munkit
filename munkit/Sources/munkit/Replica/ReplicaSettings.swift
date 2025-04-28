@@ -8,7 +8,7 @@
 import Foundation
 
 /// Configures behavior of a replica.
-public struct ReplicaSettings {
+public struct ReplicaSettings: Sendable {
     /// Specifies how quickly fetched data will become stale (nil means never).
     let staleTime: TimeInterval
 

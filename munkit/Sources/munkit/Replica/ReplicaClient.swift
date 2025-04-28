@@ -16,6 +16,7 @@ public actor ReplicaClient {
 
     public func createReplica<T: Sendable>(
         name: String,
+        settings: ReplicaSettings,
         storage: (any Storage<T>)?,
         fetcher: @Sendable @escaping () async throws -> T
     ) async -> any PhysicalReplica<T> {
@@ -24,9 +25,10 @@ public actor ReplicaClient {
         }
 
         let replica = PhysicalReplicaImplementation(
+            name: name,
+            settings: settings,
             storage: storage,
-            fetcher: fetcher,
-            name: name
+            fetcher: fetcher
         )
 
         if replicas.isEmpty {

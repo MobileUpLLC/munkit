@@ -9,6 +9,7 @@ import Foundation
 
 public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     public let name: String
+    public var settings: ReplicaSettings
 
     private let storage: (any Storage<T>)?
     private let dataFetcher: @Sendable () async throws -> T
@@ -31,8 +32,14 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     private let dataMutationController: ReplicaDataChangingController<T>
     private let optimisticUpdatesController: ReplicaOptimisticUpdatesController<T>
 
-    public init(storage: (any Storage<T>)?, fetcher: @Sendable @escaping () async throws -> T, name: String) {
+    public init(
+        name: String,
+        settings: ReplicaSettings,
+        storage: (any Storage<T>)?,
+        fetcher: @Sendable @escaping () async throws -> T
+    ) {
         self.name = name
+        self.settings = settings
         self.storage = storage
         self.dataFetcher = fetcher
         self.replicaState = ReplicaState<T>.createEmpty(hasStorage: storage != nil)
