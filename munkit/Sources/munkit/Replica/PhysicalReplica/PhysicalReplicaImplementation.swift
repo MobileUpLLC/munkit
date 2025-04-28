@@ -299,40 +299,6 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         }
     }
 
-    // MARK: - Data Mutation
-
-    private func setData(data: T) async throws {
-        let currentData = replicaState.data
-        let updatedData = ReplicaData(
-            value: data,
-            isFresh: currentData?.isFresh ?? false,
-            changingDate: .now,
-            optimisticUpdates: currentData?.optimisticUpdates ?? []
-        )
-        var updatedState = replicaState
-        updatedState.data = updatedData
-        updatedState.loadingFromStorageRequired = false
-        await updateState(updatedState)
-        try await storage?.write(data: data)
-    }
-
-    private func mutateData(transform: @escaping (T) -> T) async throws {
-        if let currentData = replicaState.data {
-            let newValue = transform(currentData.value)
-            let updatedData = ReplicaData(
-                value: newValue,
-                isFresh: currentData.isFresh,
-                changingDate: .now,
-                optimisticUpdates: currentData.optimisticUpdates
-            )
-            var updatedState = replicaState
-            updatedState.data = updatedData
-            updatedState.loadingFromStorageRequired = false
-            await updateState(updatedState)
-            try await storage?.write(data: newValue)
-        }
-    }
-
     // MARK: - Clearing
 
     private func clearData(removeFromStorage: Bool) async throws {
