@@ -23,14 +23,12 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     private let clearingControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
     private let freshnessControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
     private let dataMutationControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
-    private let optimisticUpdatesControllerEventStream: AsyncStreamBundle<ReplicaEvent<T>>
 
     private let observersController: ReplicaObserversController<T>
     private let loadingController: ReplicaLoadingController<T>
     private let clearingController: ReplicaClearingController<T>
     private let freshnessController: ReplicaFreshnessController<T>
     private let dataMutationController: ReplicaDataChangingController<T>
-    private let optimisticUpdatesController: ReplicaOptimisticUpdatesController<T>
 
     public init(
         name: String,
@@ -48,7 +46,6 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         self.clearingControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
         self.freshnessControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
         self.dataMutationControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
-        self.optimisticUpdatesControllerEventStream = AsyncStream.makeStream(of: ReplicaEvent<T>.self)
 
         self.observersController = ReplicaObserversController(
             initialState: replicaState,
@@ -73,11 +70,6 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         self.dataMutationController = ReplicaDataChangingController(
             replicaState: replicaState,
             replicaEventStreamContinuation: dataMutationControllerEventStream.continuation,
-            storage: storage
-        )
-        self.optimisticUpdatesController = ReplicaOptimisticUpdatesController(
-            replicaState: replicaState,
-            replicaEventStreamContinuation: optimisticUpdatesControllerEventStream.continuation,
             storage: storage
         )
 
@@ -150,64 +142,13 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         await loadingController.cancel()
     }
 
-    func startOptimisticUpdate(_ update: OptimisticUpdate<T>) async {
-        await optimisticUpdatesController.beginOptimisticUpdate(update: update)
-    }
-
-    func commitOptimisticUpdate(_ update: OptimisticUpdate<T>) async {
-        await optimisticUpdatesController.commitOptimisticUpdate(update: update)
-    }
-
-    func rollbackOptimisticUpdate(_ update: OptimisticUpdate<T>) async {
-        await optimisticUpdatesController.rollbackOptimisticUpdate(update: update)
-    }
-
-    public func withOptimisticUpdate(
-        update: OptimisticUpdate<T>,
-        onSuccess: (@Sendable () async -> Void)? = nil,
-        onError: (@Sendable (Error) async -> Void)? = nil,
-        onCanceled: (@Sendable () async -> Void)? = nil,
-        onFinished: (@Sendable () async -> Void)? = nil,
-        block: @escaping @Sendable () async throws -> T
-    ) async throws -> T {
-        await startOptimisticUpdate(update)
-
-        do {
-            let result = try await block()
-            await commitOptimisticUpdate(update)
-
-            if let onSuccess {
-                await onSuccess()
-            }
-
-            if let onFinished {
-                await onFinished()
-            }
-
-            return result
-        } catch {
-            await rollbackOptimisticUpdate(update)
-
-            if let onError {
-                await onError(error)
-            }
-
-            if let onFinished {
-                await onFinished()
-            }
-
-            throw error
-        }
-    }
-
     private func processEvents() {
         let eventStreams = [
             loadingControllerEventStream.stream,
             observersControllerEventStream.stream,
             clearingControllerEventStream.stream,
             freshnessControllerEventStream.stream,
-            dataMutationControllerEventStream.stream,
-            optimisticUpdatesControllerEventStream.stream
+            dataMutationControllerEventStream.stream
         ]
 
         Task {
@@ -233,7 +174,6 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         await clearingController.updateState(newState)
         await freshnessController.updateState(newState)
         await dataMutationController.updateState(newState)
-        await optimisticUpdatesController.updateState(newState)
 
         observerStateStreams.forEach { $0.continuation.yield(replicaState) }
     }
@@ -254,8 +194,6 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
             await handleObserverCountChangedEvent(observingState: observingState)
         case .changing(let changingEvent):
             await handleDataMutationEvent(changingEvent)
-        case .optimisticUpdates(let optimisticUpdateEvent):
-            await handleOptimisticUpdateEvent(optimisticUpdateEvent)
         }
     }
 
@@ -276,20 +214,6 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
 
         if observingState.activeObserverIds.count > previousState.observingState.activeObserverIds.count {
             await revalidate()
-        }
-    }
-
-    private func handleOptimisticUpdateEvent(_ event: OptimisticUpdatesEvent<T>) async {
-        switch event {
-        case .begin(data: let data):
-            let updatedState = replicaState.copy(data: data)
-            await updateState(updatedState)
-        case .commit(data: let data):
-            let updatedState = replicaState.copy(data: data)
-            await updateState(updatedState)
-        case .rollback(data: let data):
-            let updatedState = replicaState.copy(data: data)
-            await updateState(updatedState)
         }
     }
 

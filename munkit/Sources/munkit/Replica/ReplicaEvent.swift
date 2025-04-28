@@ -19,8 +19,6 @@ enum ReplicaEvent<T>: Sendable where T: Sendable  {
     case observerCountChanged(ObservingState)
     /// События изменения данных
     case changing(ChangingDataEvent<T>)
-    /// События оптимистичных обновлений
-    case optimisticUpdates(OptimisticUpdatesEvent<T>)
 }
 
 enum OptimisticUpdatesEvent<T>: Sendable where T: Sendable {
@@ -80,7 +78,6 @@ extension ReplicaEvent: CustomStringConvertible {
         case .clearedError: "Error cleared"
         case .observerCountChanged(let state): "Observers changed: \(state)"
         case .changing(let event): "Data change: \(event)"
-        case .optimisticUpdates(let event): "Optimistic update: \(event)"
         }
     }
 }
