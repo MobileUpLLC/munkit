@@ -1,0 +1,377 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+<<<<<<< HEAD
+		4A03A3B62DAC5AFF00E1F7B5 /* munkit in Frameworks */ = {isa = PBXBuildFile; productRef = 4A03A3B52DAC5AFF00E1F7B5 /* munkit */; };
+		4A03A3B92DAC5B3700E1F7B5 /* munkit-example-core in Frameworks */ = {isa = PBXBuildFile; productRef = 4A03A3B82DAC5B3700E1F7B5 /* munkit-example-core */; };
+		4A12BEDB2DAC5ECB00A5438C /* munkit-example-core in Frameworks */ = {isa = PBXBuildFile; productRef = 4A12BEDA2DAC5ECB00A5438C /* munkit-example-core */; };
+		4A12BEDE2DAC5ED400A5438C /* munkit in Frameworks */ = {isa = PBXBuildFile; productRef = 4A12BEDD2DAC5ED400A5438C /* munkit */; };
+=======
+		4A56356C2DB967E0001CA021 /* munkit in Frameworks */ = {isa = PBXBuildFile; productRef = 4A56356B2DB967E0001CA021 /* munkit */; };
+>>>>>>> main
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		4AFFC1012DA86E65005D6A81 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		4AFFC1032DA86E65005D6A81 /* munkit-example-clt */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "munkit-example-clt"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		4AFFC1052DA86E65005D6A81 /* munkit-example-clt */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "munkit-example-clt";
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4AFFC1002DA86E65005D6A81 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+<<<<<<< HEAD
+				4A12BEDE2DAC5ED400A5438C /* munkit in Frameworks */,
+				4A03A3B92DAC5B3700E1F7B5 /* munkit-example-core in Frameworks */,
+				4A03A3B62DAC5AFF00E1F7B5 /* munkit in Frameworks */,
+				4A12BEDB2DAC5ECB00A5438C /* munkit-example-core in Frameworks */,
+=======
+				4A56356C2DB967E0001CA021 /* munkit in Frameworks */,
+>>>>>>> main
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		4AFFC0FA2DA86E65005D6A81 = {
+			isa = PBXGroup;
+			children = (
+				4AFFC1052DA86E65005D6A81 /* munkit-example-clt */,
+				4AFFC1042DA86E65005D6A81 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		4AFFC1042DA86E65005D6A81 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4AFFC1032DA86E65005D6A81 /* munkit-example-clt */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		4AFFC1022DA86E65005D6A81 /* munkit-example-clt */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4AFFC10A2DA86E65005D6A81 /* Build configuration list for PBXNativeTarget "munkit-example-clt" */;
+			buildPhases = (
+				4AFFC0FF2DA86E65005D6A81 /* Sources */,
+				4AFFC1002DA86E65005D6A81 /* Frameworks */,
+				4AFFC1012DA86E65005D6A81 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				4AFFC1052DA86E65005D6A81 /* munkit-example-clt */,
+			);
+			name = "munkit-example-clt";
+			packageProductDependencies = (
+<<<<<<< HEAD
+				4A03A3B52DAC5AFF00E1F7B5 /* munkit */,
+				4A03A3B82DAC5B3700E1F7B5 /* munkit-example-core */,
+				4A12BEDA2DAC5ECB00A5438C /* munkit-example-core */,
+				4A12BEDD2DAC5ED400A5438C /* munkit */,
+=======
+				4A56356B2DB967E0001CA021 /* munkit */,
+>>>>>>> main
+			);
+			productName = "munkit-example-clt";
+			productReference = 4AFFC1032DA86E65005D6A81 /* munkit-example-clt */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		4AFFC0FB2DA86E65005D6A81 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1630;
+				LastUpgradeCheck = 1630;
+				TargetAttributes = {
+					4AFFC1022DA86E65005D6A81 = {
+						CreatedOnToolsVersion = 16.3;
+					};
+				};
+			};
+			buildConfigurationList = 4AFFC0FE2DA86E65005D6A81 /* Build configuration list for PBXProject "munkit-example-clt" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 4AFFC0FA2DA86E65005D6A81;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				4A12BED92DAC5ECB00A5438C /* XCLocalSwiftPackageReference "../munkit-example-core" */,
+				4A12BEDC2DAC5ED400A5438C /* XCLocalSwiftPackageReference "../../munkit" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 4AFFC1042DA86E65005D6A81 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4AFFC1022DA86E65005D6A81 /* munkit-example-clt */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4AFFC0FF2DA86E65005D6A81 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		4AFFC1082DA86E65005D6A81 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 4778UMCE49;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.4;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		4AFFC1092DA86E65005D6A81 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 4778UMCE49;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.4;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		4AFFC10B2DA86E65005D6A81 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 4778UMCE49;
+				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_STRICT_MEMORY_SAFETY = NO;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_ACTOR_ISOLATED_TYPES_USABILITY = YES;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_CONCURRENCY = YES;
+				SWIFT_UPCOMING_FEATURE_REGION_BASED_ISOLATION = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		4AFFC10C2DA86E65005D6A81 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 4778UMCE49;
+				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_STRICT_MEMORY_SAFETY = NO;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_ACTOR_ISOLATED_TYPES_USABILITY = YES;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_CONCURRENCY = YES;
+				SWIFT_UPCOMING_FEATURE_REGION_BASED_ISOLATION = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4AFFC0FE2DA86E65005D6A81 /* Build configuration list for PBXProject "munkit-example-clt" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4AFFC1082DA86E65005D6A81 /* Debug */,
+				4AFFC1092DA86E65005D6A81 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4AFFC10A2DA86E65005D6A81 /* Build configuration list for PBXNativeTarget "munkit-example-clt" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4AFFC10B2DA86E65005D6A81 /* Debug */,
+				4AFFC10C2DA86E65005D6A81 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		4A12BED92DAC5ECB00A5438C /* XCLocalSwiftPackageReference "../munkit-example-core" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../munkit-example-core";
+		};
+		4A12BEDC2DAC5ED400A5438C /* XCLocalSwiftPackageReference "../../munkit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../munkit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+<<<<<<< HEAD
+		4A03A3B52DAC5AFF00E1F7B5 /* munkit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = munkit;
+		};
+		4A03A3B82DAC5B3700E1F7B5 /* munkit-example-core */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "munkit-example-core";
+		};
+		4A12BEDA2DAC5ECB00A5438C /* munkit-example-core */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "munkit-example-core";
+		};
+		4A12BEDD2DAC5ED400A5438C /* munkit */ = {
+			isa = XCSwiftPackageProductDependency;
+=======
+		4A56356B2DB967E0001CA021 /* munkit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4AFFC1112DA86EFA005D6A81 /* XCLocalSwiftPackageReference "../../../MUNKit" */;
+>>>>>>> main
+			productName = munkit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 4AFFC0FB2DA86E65005D6A81 /* Project object */;
+}
