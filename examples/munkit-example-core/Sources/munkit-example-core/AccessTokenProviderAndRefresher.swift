@@ -9,13 +9,8 @@ import munkit
 import Moya
 import Foundation
 
-<<<<<<<< HEAD:Examples/munkit-example-core/Sources/munkit-example-core/TokenProvider.swift
-public final class TokenProvider: MUNAccessTokenProvider, @unchecked Sendable {
+public final class AccessTokenProviderAndRefresher: MUNAccessTokenProvider, MUNAccessTokenRefresher, @unchecked Sendable {
     public var accessToken: String? {
-========
-final class AccessTokenProviderAndRefresher: MUNAccessTokenProvider, MUNAccessTokenRefresher, @unchecked Sendable {
-    var accessToken: String? {
->>>>>>>> main:Examples/munkit-example-core/Sources/munkit-example-core/AccessTokenProviderAndRefresher.swift
         get { accessTokenQueue.sync { _accessToken } }
         set { accessTokenQueue.sync { _accessToken = newValue } }
     }
@@ -23,21 +18,16 @@ final class AccessTokenProviderAndRefresher: MUNAccessTokenProvider, MUNAccessTo
     private var _accessToken: String?
     private let accessTokenQueue: DispatchQueue
 
-    public init(accessToken: String? = nil) {
-        self._accessToken = accessToken
+    public init() {
+        self._accessToken = "0"
         self.accessTokenQueue = DispatchQueue(
             label: "com.mobileup.munkit-example-clt.access-token-queue",
             qos: .userInitiated
         )
     }
 
-<<<<<<<< HEAD:Examples/munkit-example-core/Sources/munkit-example-core/TokenProvider.swift
-    public func refreshToken() async throws {
-        print("✍️", #function)
-========
-    func refresh() async throws {
+    public func refresh() async throws {
         print("✍️", #function, "start")
->>>>>>>> main:Examples/munkit-example-core/Sources/munkit-example-core/AccessTokenProviderAndRefresher.swift
 
         guard let previousToken = accessToken else {
             throw MoyaError.statusCode(.init(statusCode: 400, data: Data()))

@@ -7,14 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-<<<<<<< HEAD
-		4A03A3B62DAC5AFF00E1F7B5 /* munkit in Frameworks */ = {isa = PBXBuildFile; productRef = 4A03A3B52DAC5AFF00E1F7B5 /* munkit */; };
 		4A03A3B92DAC5B3700E1F7B5 /* munkit-example-core in Frameworks */ = {isa = PBXBuildFile; productRef = 4A03A3B82DAC5B3700E1F7B5 /* munkit-example-core */; };
-		4A12BEDB2DAC5ECB00A5438C /* munkit-example-core in Frameworks */ = {isa = PBXBuildFile; productRef = 4A12BEDA2DAC5ECB00A5438C /* munkit-example-core */; };
-		4A12BEDE2DAC5ED400A5438C /* munkit in Frameworks */ = {isa = PBXBuildFile; productRef = 4A12BEDD2DAC5ED400A5438C /* munkit */; };
-=======
-		4A56356C2DB967E0001CA021 /* munkit in Frameworks */ = {isa = PBXBuildFile; productRef = 4A56356B2DB967E0001CA021 /* munkit */; };
->>>>>>> main
+		4A56356C2DB967E0001CA021 /* (null) in Frameworks */ = {isa = PBXBuildFile; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -46,14 +40,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-<<<<<<< HEAD
-				4A12BEDE2DAC5ED400A5438C /* munkit in Frameworks */,
 				4A03A3B92DAC5B3700E1F7B5 /* munkit-example-core in Frameworks */,
-				4A03A3B62DAC5AFF00E1F7B5 /* munkit in Frameworks */,
-				4A12BEDB2DAC5ECB00A5438C /* munkit-example-core in Frameworks */,
-=======
-				4A56356C2DB967E0001CA021 /* munkit in Frameworks */,
->>>>>>> main
+				4A56356C2DB967E0001CA021 /* (null) in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -96,14 +84,7 @@
 			);
 			name = "munkit-example-clt";
 			packageProductDependencies = (
-<<<<<<< HEAD
-				4A03A3B52DAC5AFF00E1F7B5 /* munkit */,
 				4A03A3B82DAC5B3700E1F7B5 /* munkit-example-core */,
-				4A12BEDA2DAC5ECB00A5438C /* munkit-example-core */,
-				4A12BEDD2DAC5ED400A5438C /* munkit */,
-=======
-				4A56356B2DB967E0001CA021 /* munkit */,
->>>>>>> main
 			);
 			productName = "munkit-example-clt";
 			productReference = 4AFFC1032DA86E65005D6A81 /* munkit-example-clt */;
@@ -349,27 +330,9 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-<<<<<<< HEAD
-		4A03A3B52DAC5AFF00E1F7B5 /* munkit */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = munkit;
-		};
 		4A03A3B82DAC5B3700E1F7B5 /* munkit-example-core */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = "munkit-example-core";
-		};
-		4A12BEDA2DAC5ECB00A5438C /* munkit-example-core */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = "munkit-example-core";
-		};
-		4A12BEDD2DAC5ED400A5438C /* munkit */ = {
-			isa = XCSwiftPackageProductDependency;
-=======
-		4A56356B2DB967E0001CA021 /* munkit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4AFFC1112DA86EFA005D6A81 /* XCLocalSwiftPackageReference "../../../MUNKit" */;
->>>>>>> main
-			productName = munkit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
