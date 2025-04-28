@@ -9,10 +9,8 @@ import Foundation
 
 public actor ReplicaObserver<T> where T: Sendable {
     public let stateStream: AsyncStream<ReplicaState<T>>
-    private var stateObservingTask: Task<Void, Never>?
 
     private let activityStream: AsyncStream<Bool>
-    private var controlTask: Task<Void, Never>?
     private let observersController: ReplicaObserversController<T>
 
     init(
@@ -28,21 +26,13 @@ public actor ReplicaObserver<T> where T: Sendable {
         await startObserverControl()
     }
 
-    public func stopObserving() async {
-        controlTask?.cancel()
-        controlTask = nil
-
-        stateObservingTask?.cancel()
-        stateObservingTask = nil
-    }
-
     /// Monitors the observer's activity state.
     private func startObserverControl() async {
         let observerId = UUID()
 
         await observersController.handleObserverAdded(observerId: observerId, isActive: true)
 
-        controlTask = Task {
+        Task {
             for await isActive in activityStream {
                 if isActive {
                     await observersController.handleObserverActivated(observerId: observerId)

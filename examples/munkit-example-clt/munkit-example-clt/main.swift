@@ -13,6 +13,16 @@ let tokenProvider = AccessTokenProviderAndRefresher()
 let networkService = MUNNetworkService<DNDAPITarget>()
 let repository = await DNDClassesRepository(networkService: networkService)
 
-let observer = await Observer(name: "observer", replica: repository.replica)
+let observer1 = await Observer(name: "observer1", replica: repository.replica)
 
-try await _Concurrency.Task.sleep(for: .seconds(120))
+Task {
+    try await Task.sleep(for: .seconds(2))
+    let observer2 = await Observer(name: "observer2", replica: repository.replica)
+    try await Task.sleep(for: .seconds(2))
+    await observer2.stopObserving()
+}
+
+try await _Concurrency.Task.sleep(for: .seconds(3))
+await observer1.stopObserving()
+
+try await _Concurrency.Task.sleep(for: .seconds(10))

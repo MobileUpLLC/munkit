@@ -27,6 +27,10 @@ final class Observer: Sendable {
         }
     }
 
+    deinit {
+        print("🗑️", name, #function)
+    }
+
     func simulateActivity() async {
         print("🤖", name, #function, "+")
         activityStream.continuation.yield(true)
@@ -39,6 +43,10 @@ final class Observer: Sendable {
         try? await Task.sleep(for: .seconds(Int.random(in: 1...5)))
         print("🤖", name, #function, "-")
         activityStream.continuation.yield(false)
+    }
+
+    func stopObserving() async {
+        activityStream.continuation.finish()
     }
 
     private func handleNewState(_ state: ReplicaState<DNDClassesListModel>) async {
