@@ -47,7 +47,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         return await ReplicaObserver<T>(
             activityStream: activityStream,
             stateStream: stateStreamBundle.stream,
-            replica: self
+            observerDelegate: self
         )
     }
 
@@ -100,82 +100,6 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     }
 
     // MARK: - Observer Management
-
-    func handleObserverAdded(observerId: UUID, isActive: Bool) async {
-        dataClearingTask?.cancel()
-        dataClearingTask = nil
-
-        let currentObservingState = replicaState.observingState
-        let updatedActiveObserverIds = isActive
-            ? currentObservingState.activeObserverIds.union([observerId])
-            : currentObservingState.activeObserverIds
-        let updatedObservingTime = isActive ? .now : currentObservingState.observingTime
-        let newObservingState = ObservingState(
-            observerIds: currentObservingState.observerIds.union([observerId]),
-            activeObserverIds: updatedActiveObserverIds,
-            observingTime: updatedObservingTime
-        )
-
-        await emitObserverCountChangedIfNeeded(from: currentObservingState, to: newObservingState)
-    }
-
-    func handleObserverRemoved(observerId: UUID) async {
-        let currentObservingState = replicaState.observingState
-        let isLastActive = currentObservingState.activeObserverIds.count == 1
-            && currentObservingState.activeObserverIds.contains(observerId)
-        let updatedObservingTime = isLastActive ? .timeInPast(.now) : currentObservingState.observingTime
-        let newObservingState = ObservingState(
-            observerIds: currentObservingState.observerIds.subtracting([observerId]),
-            activeObserverIds: currentObservingState.activeObserverIds.subtracting([observerId]),
-            observingTime: updatedObservingTime
-        )
-
-        await emitObserverCountChangedIfNeeded(from: currentObservingState, to: newObservingState)
-
-        guard newObservingState.observerIds.isEmpty, settings.clearTime < .infinity else {
-            return
-        }
-
-        dataClearingTask?.cancel()
-        dataClearingTask = Task {
-            try await Task.sleep(for: .seconds(settings.clearTime))
-            guard
-                (replicaState.data != nil || replicaState.error != nil),
-                !replicaState.loading,
-                case .none = replicaState.observingState.status
-            else {
-                return
-            }
-            try await clearData(removeFromStorage: false)
-        }
-    }
-
-    func handleObserverActivated(observerId: UUID) async {
-        let currentObservingState = replicaState.observingState
-        var updatedActiveObserverIds = currentObservingState.activeObserverIds
-        updatedActiveObserverIds.insert(observerId)
-        let newObservingState = ObservingState(
-            observerIds: currentObservingState.observerIds,
-            activeObserverIds: updatedActiveObserverIds,
-            observingTime: .now
-        )
-
-        await emitObserverCountChangedIfNeeded(from: currentObservingState, to: newObservingState)
-    }
-
-    func handleObserverDeactivated(observerId: UUID) async {
-        let currentObservingState = replicaState.observingState
-        let isLastActive = currentObservingState.activeObserverIds.count == 1
-            && currentObservingState.activeObserverIds.contains(observerId)
-        let updatedObservingTime = isLastActive ? .timeInPast(.now) : currentObservingState.observingTime
-        let newObservingState = ObservingState(
-            observerIds: currentObservingState.observerIds,
-            activeObserverIds: currentObservingState.activeObserverIds.subtracting([observerId]),
-            observingTime: updatedObservingTime
-        )
-
-        await emitObserverCountChangedIfNeeded(from: currentObservingState, to: newObservingState)
-    }
 
     private func emitObserverCountChangedIfNeeded(
         from previousState: ObservingState,
@@ -270,7 +194,6 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
                 updatedState.dataRequested = false
                 updatedState.preloading = false
 
-
                 if settings.staleTime < .infinity {
                     staleTask?.cancel()
                     staleTask = Task {
@@ -353,5 +276,83 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         } else {
             print("⚖️ \(name) \(#function): Changed fields:\n  " + changes.joined(separator: "\n  "))
         }
+    }
+}
+
+extension PhysicalReplicaImplementation: ReplicaObserverDelegate {
+    func handleObserverAdded(observerId: UUID, isActive: Bool) async {
+        dataClearingTask?.cancel()
+        dataClearingTask = nil
+
+        let currentObservingState = replicaState.observingState
+        let updatedActiveObserverIds = isActive
+            ? currentObservingState.activeObserverIds.union([observerId])
+            : currentObservingState.activeObserverIds
+        let updatedObservingTime = isActive ? .now : currentObservingState.observingTime
+        let newObservingState = ObservingState(
+            observerIds: currentObservingState.observerIds.union([observerId]),
+            activeObserverIds: updatedActiveObserverIds,
+            observingTime: updatedObservingTime
+        )
+
+        await emitObserverCountChangedIfNeeded(from: currentObservingState, to: newObservingState)
+    }
+
+    func handleObserverRemoved(observerId: UUID) async {
+        let currentObservingState = replicaState.observingState
+        let isLastActive = currentObservingState.activeObserverIds.count == 1
+            && currentObservingState.activeObserverIds.contains(observerId)
+        let updatedObservingTime = isLastActive ? .timeInPast(.now) : currentObservingState.observingTime
+        let newObservingState = ObservingState(
+            observerIds: currentObservingState.observerIds.subtracting([observerId]),
+            activeObserverIds: currentObservingState.activeObserverIds.subtracting([observerId]),
+            observingTime: updatedObservingTime
+        )
+
+        await emitObserverCountChangedIfNeeded(from: currentObservingState, to: newObservingState)
+
+        guard newObservingState.observerIds.isEmpty, settings.clearTime < .infinity else {
+            return
+        }
+
+        dataClearingTask?.cancel()
+        dataClearingTask = Task {
+            try await Task.sleep(for: .seconds(settings.clearTime))
+            guard
+                (replicaState.data != nil || replicaState.error != nil),
+                !replicaState.loading,
+                case .none = replicaState.observingState.status
+            else {
+                return
+            }
+            try await clearData(removeFromStorage: false)
+        }
+    }
+
+    func handleObserverActivated(observerId: UUID) async {
+        let currentObservingState = replicaState.observingState
+        var updatedActiveObserverIds = currentObservingState.activeObserverIds
+        updatedActiveObserverIds.insert(observerId)
+        let newObservingState = ObservingState(
+            observerIds: currentObservingState.observerIds,
+            activeObserverIds: updatedActiveObserverIds,
+            observingTime: .now
+        )
+
+        await emitObserverCountChangedIfNeeded(from: currentObservingState, to: newObservingState)
+    }
+
+    func handleObserverDeactivated(observerId: UUID) async {
+        let currentObservingState = replicaState.observingState
+        let isLastActive = currentObservingState.activeObserverIds.count == 1
+            && currentObservingState.activeObserverIds.contains(observerId)
+        let updatedObservingTime = isLastActive ? .timeInPast(.now) : currentObservingState.observingTime
+        let newObservingState = ObservingState(
+            observerIds: currentObservingState.observerIds,
+            activeObserverIds: currentObservingState.activeObserverIds.subtracting([observerId]),
+            observingTime: updatedObservingTime
+        )
+
+        await emitObserverCountChangedIfNeeded(from: currentObservingState, to: newObservingState)
     }
 }
