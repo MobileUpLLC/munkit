@@ -11,21 +11,21 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     public let name: String
     public var settings: ReplicaSettings
 
-    private let storage: (any Storage<T>)?
+    private let storage: (any ReplicaStorage<T>)?
     private let dataFetcher: @Sendable () async throws -> T
     private var replicaState: ReplicaState<T>
-    private let dataLoader: DataLoader<T>
 
     private var observerStateStreams: [AsyncStreamBundle<ReplicaState<T>>] = []
     private var dataClearingTask: Task<Void, Error>?
     private var errorClearingTask: Task<Void, Error>?
     private var cancelTask: Task<Void, Error>?
     private var staleTask: Task<Void, Error>?
+    private var loadingTask: Task<Void, Never>?
 
     public init(
         name: String,
         settings: ReplicaSettings,
-        storage: (any Storage<T>)?,
+        storage: (any ReplicaStorage<T>)?,
         fetcher: @Sendable @escaping () async throws -> T
     ) {
         self.name = name
@@ -33,14 +33,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         self.storage = storage
         self.dataFetcher = fetcher
         self.replicaState = ReplicaState<T>.createEmpty(hasStorage: storage != nil)
-        self.dataLoader = DataLoader(storage: storage, fetcher: fetcher)
-
-        Task {
-            await processDataLoaderOutput()
-        }
     }
-
-    // MARK: - Additional Public Methods
 
     public func observe(activityStream: AsyncStream<Bool>) async -> ReplicaObserver<T> {
         let stateStreamBundle = AsyncStream<ReplicaState<T>>.makeStream()
@@ -54,58 +47,24 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     }
 
     public func refresh() async {
-        await loadData(skipLoadingIfFresh: false)
+        await setLoadingStateAndloadData(skipLoadingIfFresh: false)
     }
 
     public func revalidate() async {
-        await loadData(skipLoadingIfFresh: true)
-    }
-
-    public func fetchData(forceRefresh: Bool) async throws -> T {
-        if !forceRefresh, let data = replicaState.data, data.isFresh {
-            return data.value
-        }
-
-        let outputStream = AsyncStream<DataLoader<T>.Output> { continuation in
-            Task {
-                await loadData(skipLoadingIfFresh: false, setDataRequested: true)
-                for await output in dataLoader.outputStreamBundle.stream {
-                    continuation.yield(output)
-                    if case .loadingFinished = output {
-                        continuation.finish()
-                    }
-                }
-            }
-        }
-
-        for await output in outputStream {
-            switch output {
-            case .loadingFinished(.success(let data)):
-                return data
-            case .loadingFinished(.error(let error)):
-                throw error
-            default:
-                continue
-            }
-        }
-        throw LoadingError()
+        await setLoadingStateAndloadData(skipLoadingIfFresh: true)
     }
 
     public func cancel() async {
         guard replicaState.loading else { return }
-        await dataLoader.cancel()
+        await loadingTask?.cancel()
         var updatedState = replicaState
         updatedState.loading = false
-        updatedState.dataRequested = false
-        updatedState.preloading = false
         await updateState(updatedState)
     }
 
-    // MARK: - Observer Management
-
     private func emitObserverCountChangedIfNeeded(
-        from previousState: ObservingState,
-        to newState: ObservingState
+        from previousState: ReplicaObservingState,
+        to newState: ReplicaObservingState
     ) async {
         guard
             previousState.observerIds.count != newState.observerIds.count
@@ -128,31 +87,62 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         await revalidate()
     }
 
-    // MARK: - Data Loading
-
-    private func loadData(skipLoadingIfFresh: Bool, setDataRequested: Bool = false) async {
-        guard
-            !replicaState.loading,
-            !(skipLoadingIfFresh && replicaState.hasFreshData)
-        else {
+    private func setLoadingStateAndloadData(skipLoadingIfFresh: Bool) async {
+        guard !replicaState.loading, !(skipLoadingIfFresh && replicaState.hasFreshData) else {
             return
         }
-
-        await dataLoader.load(loadingFromStorageRequired: replicaState.loadingFromStorageRequired)
-
-        let dataRequested: Bool = setDataRequested || replicaState.dataRequested
-        let preloading: Bool = (replicaState.observingState.status == .none) || replicaState.preloading
 
         var updatedState = replicaState
         updatedState.loading = true
         updatedState.error = nil
-        updatedState.dataRequested = dataRequested
-        updatedState.preloading = preloading
 
         await updateState(updatedState)
+
+        loadingTask = Task { [weak self] in await self?.loadData() }
     }
 
-    private func refreshAfterInvalidation(invalidationMode: InvalidationMode) async {
+    private func loadData() async {
+        do {
+            let data: T
+
+            if let storage, let dataFromStorage = try await storage.read() {
+                data = dataFromStorage
+            } else {
+                data = try await dataFetcher()
+
+                if let storage = storage {
+                    try await storage.write(data: data)
+                }
+            }
+
+            let replicaData = ReplicaData(value: data, isFresh: false, changingDate: .now)
+
+            var updatedState = replicaState
+            updatedState.loading = false
+            updatedState.data = replicaData
+            updatedState.error = nil
+
+            await updateState(updatedState)
+
+            let staleTime = settings.staleTime
+            guard staleTime < .infinity else {
+                return
+            }
+
+            staleTask?.cancel()
+            staleTask = Task { [weak self] in await self?.performDataStaling(after: staleTime) }
+        } catch is CancellationError {
+            return
+        } catch {
+            var updatedState = replicaState
+            updatedState.loading = false
+            updatedState.error = error
+
+            await updateState(updatedState)
+        }
+    }
+
+    private func refreshAfterInvalidation(invalidationMode: ReplicaInvalidationMode) async {
         if replicaState.loading {
             await cancel()
             await refresh()
@@ -175,83 +165,78 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         }
     }
 
-    private func processDataLoaderOutput() async {
-        for await output in dataLoader.outputStreamBundle.stream {
-            print("📥", #function, output)
-            switch output {
-            case .storageRead(.data(let data)):
-                let data = ReplicaData(value: data, isFresh: false, changingDate: .now)
-                if replicaState.data == nil {
-                    var updatedState = replicaState
-                    updatedState.data = data
-                    updatedState.loadingFromStorageRequired = false
-                    await updateState(updatedState)
-                }
-
-            case .storageRead(.empty):
-                fatalError()
-
-            case .loadingFinished(.success(let data)):
-                let data = ReplicaData(
-                    value: data,
-                    isFresh: true,
-                    changingDate: .now
-                )
-                var updatedState = replicaState
-
-                updatedState.loading = false
-                updatedState.data = data
-                updatedState.error = nil
-                updatedState.dataRequested = false
-                updatedState.preloading = false
-
-                if settings.staleTime < .infinity {
-                    staleTask?.cancel()
-                    staleTask = Task {
-                        try await Task.sleep(for: .seconds(settings.staleTime))
-                        if let data = replicaState.data, data.isFresh {
-                            var newData = replicaState.data
-                            newData?.isFresh = false
-                            var updatedState = replicaState
-                            updatedState.data = newData
-                            await updateState(updatedState)
-                        }
-                    }
-                }
-
-                await updateState(updatedState)
-
-            case .loadingFinished(.error(let error)):
-                var updatedState = replicaState
-                updatedState.loading = false
-                updatedState.error = error
-                updatedState.dataRequested = false
-                updatedState.preloading = false
-
-                await updateState(updatedState)
-            }
-        }
-    }
-
-    // MARK: - Clearing
-
     private func clearData(removeFromStorage: Bool) async throws {
         var updatedState = replicaState
         updatedState.data = nil
         updatedState.error = nil
-        updatedState.loadingFromStorageRequired = storage != nil
         await updateState(updatedState)
+
         if removeFromStorage {
             try await storage?.remove()
         }
     }
 
-    // MARK: - State Management
-
     private func updateState(_ newState: ReplicaState<T>) async {
         logStateChange(from: replicaState, to: newState)
         replicaState = newState
         observerStateStreams.forEach { $0.continuation.yield(replicaState) }
+    }
+
+    private func performDataClearing(after seconds: TimeInterval) async {
+        try? await Task.sleep(for: .seconds(seconds))
+        let replicaState = await replicaState
+
+        guard
+            (replicaState.data != nil || replicaState.error != nil),
+            !replicaState.loading,
+            case .none = replicaState.observingState.status
+        else {
+            return
+        }
+
+        try? await clearData(removeFromStorage: false)
+    }
+
+    private func performErrorClearing(after seconds: TimeInterval) async {
+        try? await Task.sleep(for: .seconds(seconds))
+        let replicaState = await replicaState
+
+        guard replicaState.error != nil, !replicaState.loading, case .none = replicaState.observingState.status else {
+            return
+        }
+
+        await clearError()
+    }
+
+    private func performCanceling(after seconds: TimeInterval) async {
+        try? await Task.sleep(for: .seconds(seconds))
+        let replicaState = await replicaState
+
+        guard replicaState.loading, case .none = replicaState.observingState.status else {
+            return
+        }
+
+        await cancel()
+    }
+
+    private func performDataStaling(after seconds: TimeInterval) async {
+        try? await Task.sleep(for: .seconds(settings.staleTime))
+
+        guard let data = replicaState.data, data.isFresh else {
+            return
+        }
+
+        var newData = replicaState.data
+        newData?.isFresh = false
+        var updatedState = replicaState
+        updatedState.data = newData
+        await updateState(updatedState)
+    }
+
+    private func clearError() async {
+        var updatedState = replicaState
+        updatedState.error = nil
+        await updateState(updatedState)
     }
 
     private func logStateChange(from oldState: ReplicaState<T>, to newState: ReplicaState<T>) {
@@ -269,15 +254,6 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         if oldState.observingState.observerIds != newState.observingState.observerIds {
             changes.append("observing: \(oldState.observingState) → \(newState.observingState)")
         }
-        if oldState.dataRequested != newState.dataRequested {
-            changes.append("dataRequested: \(oldState.dataRequested) → \(newState.dataRequested)")
-        }
-        if oldState.preloading != newState.preloading {
-            changes.append("preloading: \(oldState.preloading) → \(newState.preloading)")
-        }
-        if oldState.loadingFromStorageRequired != newState.loadingFromStorageRequired {
-            changes.append("loadingFromStorageRequired: \(oldState.loadingFromStorageRequired) → \(newState.loadingFromStorageRequired)")
-        }
         if oldState.hasFreshData != newState.hasFreshData {
             changes.append("hasFreshData: \(oldState.hasFreshData) → \(newState.hasFreshData)")
         }
@@ -287,51 +263,6 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         } else {
             print("⚖️ \(name) \(#function): Changed fields:\n  " + changes.joined(separator: "\n  "))
         }
-    }
-
-    private func performDataClearing(after seconds: TimeInterval) async {
-        try? await Task.sleep(for: .seconds(seconds))
-        let replicaState = await replicaState
-        guard
-            (replicaState.data != nil || replicaState.error != nil),
-            !replicaState.loading,
-            case .none = replicaState.observingState.status
-        else {
-            return
-        }
-        try? await clearData(removeFromStorage: false)
-    }
-
-    private func performErrorClearing(after seconds: TimeInterval) async {
-        try? await Task.sleep(for: .seconds(seconds))
-        let replicaState = await replicaState
-        guard
-            replicaState.error != nil,
-            !replicaState.loading,
-            case .none = replicaState.observingState.status
-        else {
-            return
-        }
-        await clearError()
-    }
-
-    private func performCancel(after seconds: TimeInterval) async {
-        try? await Task.sleep(for: .seconds(seconds))
-        let replicaState = await replicaState
-        guard
-            replicaState.loading,
-            !replicaState.dataRequested,
-            case .none = replicaState.observingState.status
-        else {
-            return
-        }
-        await cancel()
-    }
-
-    private func clearError() async {
-        var updatedState = replicaState
-        updatedState.error = nil
-        await updateState(updatedState)
     }
 }
 
@@ -344,7 +275,7 @@ extension PhysicalReplicaImplementation: ReplicaObserverDelegate {
             ? currentObservingState.activeObserverIds.union([observerId])
             : currentObservingState.activeObserverIds
         let updatedObservingTime = isActive ? .now : currentObservingState.observingTime
-        let newObservingState = ObservingState(
+        let newObservingState = ReplicaObservingState(
             observerIds: currentObservingState.observerIds.union([observerId]),
             activeObserverIds: updatedActiveObserverIds,
             observingTime: updatedObservingTime
@@ -358,7 +289,7 @@ extension PhysicalReplicaImplementation: ReplicaObserverDelegate {
         let isLastActive = currentObservingState.activeObserverIds.count == 1
             && currentObservingState.activeObserverIds.contains(observerId)
         let updatedObservingTime = isLastActive ? .timeInPast(.now) : currentObservingState.observingTime
-        let newObservingState = ObservingState(
+        let newObservingState = ReplicaObservingState(
             observerIds: currentObservingState.observerIds.subtracting([observerId]),
             activeObserverIds: currentObservingState.activeObserverIds.subtracting([observerId]),
             observingTime: updatedObservingTime
@@ -373,7 +304,7 @@ extension PhysicalReplicaImplementation: ReplicaObserverDelegate {
         let cancelTime = settings.cancelTime
         if cancelTime < .infinity {
             cancelTask?.cancel()
-            cancelTask = Task { [weak self] in await self?.performCancel(after: cancelTime) }
+            cancelTask = Task { [weak self] in await self?.performCanceling(after: cancelTime) }
         }
 
         let clearTime = settings.clearTime
@@ -393,7 +324,7 @@ extension PhysicalReplicaImplementation: ReplicaObserverDelegate {
         let currentObservingState = replicaState.observingState
         var updatedActiveObserverIds = currentObservingState.activeObserverIds
         updatedActiveObserverIds.insert(observerId)
-        let newObservingState = ObservingState(
+        let newObservingState = ReplicaObservingState(
             observerIds: currentObservingState.observerIds,
             activeObserverIds: updatedActiveObserverIds,
             observingTime: .now
@@ -407,7 +338,7 @@ extension PhysicalReplicaImplementation: ReplicaObserverDelegate {
         let isLastActive = currentObservingState.activeObserverIds.count == 1
             && currentObservingState.activeObserverIds.contains(observerId)
         let updatedObservingTime = isLastActive ? .timeInPast(.now) : currentObservingState.observingTime
-        let newObservingState = ObservingState(
+        let newObservingState = ReplicaObservingState(
             observerIds: currentObservingState.observerIds,
             activeObserverIds: currentObservingState.activeObserverIds.subtracting([observerId]),
             observingTime: updatedObservingTime

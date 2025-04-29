@@ -6,7 +6,7 @@
 //
 
 /// Интерфейс для сохранения данных реплики в постоянное хранилище.
-public protocol Storage<T>: Sendable {
+public protocol ReplicaStorage<T>: Sendable {
     associatedtype T: Sendable
 
     /// Записывает данные в хранилище.

@@ -13,29 +13,20 @@ public struct ReplicaState<T>: Sendable where T: Sendable {
     /// Представляет ошибку, произошедшую во время загрузки.
     public var error: Error?
     /// Состояние наблюдения.
-    var observingState: ObservingState
-    /// Указывает, были ли запрошены данные.
-    var dataRequested: Bool
-    /// Указывает, происходит ли в данный момент предварительная загрузка.
-    var preloading: Bool
-    /// Указывает, требуется ли загрузка из хранилища.
-    var loadingFromStorageRequired: Bool
+    var observingState: ReplicaObservingState
     
     var hasFreshData: Bool {
         data?.isFresh ?? false
     }
 
     static func createEmpty(hasStorage: Bool) -> ReplicaState<T> {
-        let observingState = ObservingState(observerIds: [], activeObserverIds: [], observingTime: .never)
+        let observingState = ReplicaObservingState(observerIds: [], activeObserverIds: [], observingTime: .never)
 
         return ReplicaState(
             loading: false,
             data: nil,
             error: nil,
-            observingState: observingState,
-            dataRequested: false,
-            preloading: false,
-            loadingFromStorageRequired: hasStorage
+            observingState: observingState
         )
     }
 }
@@ -48,15 +39,12 @@ extension ReplicaState: CustomStringConvertible {
           data: \(data != nil ? "present" : "absent")
           error: \(error?.localizedDescription ?? "none")
           observing: \(observingState)
-          dataRequested: \(dataRequested)
-          preloading: \(preloading)
-          loadingFromStorageRequired: \(loadingFromStorageRequired)
           hasFreshData: \(hasFreshData)
         """
     }
 }
 
-extension ObservingState: CustomStringConvertible {
+extension ReplicaObservingState: CustomStringConvertible {
     public var description: String {
         "observers: \(observerIds.count), active: \(activeObserverIds.count), observingSince: \(observingTime)"
     }

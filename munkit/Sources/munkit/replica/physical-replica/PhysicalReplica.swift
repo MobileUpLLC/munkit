@@ -14,7 +14,7 @@ public protocol PhysicalReplica<T>: Replica where T: Sendable {
     init(
         name: String,
         settings: ReplicaSettings,
-        storage: (any Storage<T>)?,
+        storage: (any ReplicaStorage<T>)?,
         fetcher: @Sendable @escaping () async throws -> T
     )
 }

@@ -8,7 +8,7 @@
 import Foundation
 
 /// Содержит информацию о наблюдателях реплики.
-public struct ObservingState: Sendable {
+public struct ReplicaObservingState: Sendable {
     let observerIds: Set<UUID>
     let activeObserverIds: Set<UUID>
     /// Время последнего наблюдения за репликой.

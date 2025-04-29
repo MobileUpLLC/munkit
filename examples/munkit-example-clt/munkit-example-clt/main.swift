@@ -14,6 +14,5 @@ let networkService = MUNNetworkService<DNDAPITarget>()
 let repository = await DNDClassesRepository(networkService: networkService)
 
 let observer1 = await Observer(name: "observer1", replica: repository.replica)
-await observer1.stopObserving()
 
 try await _Concurrency.Task.sleep(for: .seconds(20))

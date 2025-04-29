@@ -21,11 +21,4 @@ public protocol Replica<T>: Actor where T: Sendable {
     /// Fetches fresh data from the network if the current data is stale.
     /// - Note: Does not trigger a new request if one is already in progress.
     func revalidate() async
-
-    /// Fetches and returns the data.
-    /// - Parameter forceRefresh: Forces a network request even if data is fresh.
-    /// - Returns: Fresh data.
-    /// - Throws: An error if the fetch fails.
-    /// - Note: Always returns fresh data, fetching if necessary.
-    func fetchData(forceRefresh: Bool) async throws -> T
 }

@@ -17,7 +17,7 @@ public actor ReplicaClient {
     public func createReplica<T: Sendable>(
         name: String,
         settings: ReplicaSettings,
-        storage: (any Storage<T>)?,
+        storage: (any ReplicaStorage<T>)?,
         fetcher: @Sendable @escaping () async throws -> T
     ) async -> any PhysicalReplica<T> {
         if let replica = await findReplica(by: name) as? any PhysicalReplica<T> {
