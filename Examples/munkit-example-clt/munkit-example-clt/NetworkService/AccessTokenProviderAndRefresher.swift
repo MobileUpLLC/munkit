@@ -6,7 +6,7 @@
 //
 
 import munkit
-import Moya
+@preconcurrency import Moya
 import Foundation
 
 final class AccessTokenProviderAndRefresher: MUNAccessTokenProvider, MUNAccessTokenRefresher, @unchecked Sendable {
