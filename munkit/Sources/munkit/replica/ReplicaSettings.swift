@@ -24,22 +24,17 @@ public struct ReplicaSettings: Sendable {
     /// Specifies if stale data will be refreshed when an active observer is added.
     let revalidateOnActiveObserverAdded: Bool
 
-    /// Specifies if stale data will be refreshed when a network connection is established and a replica has active observer.
-    let revalidateOnNetworkConnection: Bool
-
     public init(
         staleTime: TimeInterval,
         clearTime: TimeInterval,
         clearErrorTime: TimeInterval,
         cancelTime: TimeInterval,
-        revalidateOnActiveObserverAdded: Bool,
-        revalidateOnNetworkConnection: Bool
+        revalidateOnActiveObserverAdded: Bool
     ) {
         self.staleTime = staleTime
         self.clearTime = clearTime
         self.clearErrorTime = clearErrorTime
         self.cancelTime = cancelTime
         self.revalidateOnActiveObserverAdded = revalidateOnActiveObserverAdded
-        self.revalidateOnNetworkConnection = revalidateOnNetworkConnection
     }
 }

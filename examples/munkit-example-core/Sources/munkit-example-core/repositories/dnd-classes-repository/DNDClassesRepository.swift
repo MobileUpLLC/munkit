@@ -21,8 +21,7 @@ public actor DNDClassesRepository {
                 clearTime: 5,
                 clearErrorTime: 1,
                 cancelTime: 0.05,
-                revalidateOnActiveObserverAdded: true,
-                revalidateOnNetworkConnection: true
+                revalidateOnActiveObserverAdded: true
             ),
             storage: nil,
             fetcher: { try await networkService.executeRequest(target: .classes) }
