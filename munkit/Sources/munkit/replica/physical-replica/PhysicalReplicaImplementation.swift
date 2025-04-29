@@ -62,7 +62,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
 
     public func fetchData(forceRefresh: Bool) async throws -> T {
         if !forceRefresh, let data = replicaState.data, data.isFresh {
-            return data.valueWithOptimisticUpdates
+            return data.value
         }
 
         let outputStream = AsyncStream<DataLoader<T>.Output> { continuation in
@@ -80,7 +80,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         for await output in outputStream {
             switch output {
             case .loadingFinished(.success(let data)):
-                return replicaState.data?.valueWithOptimisticUpdates ?? data
+                return data
             case .loadingFinished(.error(let error)):
                 throw error
             default:
@@ -184,8 +184,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
                 let data = ReplicaData(
                     value: data,
                     isFresh: true,
-                    changingDate: .now,
-                    optimisticUpdates: replicaState.data?.optimisticUpdates ?? []
+                    changingDate: .now
                 )
                 var updatedState = replicaState
 

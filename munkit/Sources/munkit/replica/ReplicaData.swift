@@ -11,19 +11,11 @@ public struct ReplicaData<T>: Sendable where T: Sendable {
     public var value: T
     var isFresh: Bool
     var changingDate: Date
-    var optimisticUpdates: [OptimisticUpdate<T>]
 
-    public var valueWithOptimisticUpdates: T {
-        optimisticUpdates.reduce(value) { currentData, update in
-            update.apply(currentData)
-        }
-    }
-
-    init(value: T, isFresh: Bool, changingDate: Date, optimisticUpdates: [OptimisticUpdate<T>] = []) {
+    init(value: T, isFresh: Bool, changingDate: Date) {
         self.value = value
         self.isFresh = isFresh
         self.changingDate = changingDate
-        self.optimisticUpdates = optimisticUpdates
     }
 }
 
