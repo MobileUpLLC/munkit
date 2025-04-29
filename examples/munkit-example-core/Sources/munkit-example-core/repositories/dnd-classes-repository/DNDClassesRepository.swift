@@ -18,10 +18,11 @@ public actor DNDClassesRepository {
         self.replica = await ReplicaClient.shared.createReplica(
             name: "DndReplica",
             settings: .init(
-                staleTime: 100,
+                staleTime: 1,
                 clearTime: 5,
                 clearErrorTime: 1,
-                cancelTime: 0.05
+                cancelTime: 0.05,
+                revalidateOnActiveObserverAdded: true
             ),
             storage: nil,
             fetcher: { try await networkService.executeRequest(target: .classes) }

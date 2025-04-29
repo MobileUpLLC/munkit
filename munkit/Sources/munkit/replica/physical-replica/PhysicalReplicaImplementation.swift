@@ -107,15 +107,25 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         from previousState: ObservingState,
         to newState: ObservingState
     ) async {
-        if previousState.observerIds.count != newState.observerIds.count
-            || previousState.activeObserverIds.count != newState.activeObserverIds.count {
-            var updatedState = replicaState
-            updatedState.observingState = newState
-            await updateState(updatedState)
-            if newState.activeObserverIds.count > previousState.activeObserverIds.count {
-                await revalidate()
-            }
+        guard
+            previousState.observerIds.count != newState.observerIds.count
+            || previousState.activeObserverIds.count != newState.activeObserverIds.count
+        else {
+            return
         }
+
+        var updatedState = replicaState
+        updatedState.observingState = newState
+        await updateState(updatedState)
+
+        guard
+            newState.activeObserverIds.count > previousState.activeObserverIds.count,
+            settings.revalidateOnActiveObserverAdded
+        else {
+            return
+        }
+
+        await revalidate()
     }
 
     // MARK: - Data Loading

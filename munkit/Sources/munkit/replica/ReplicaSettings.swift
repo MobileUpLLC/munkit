@@ -21,15 +21,20 @@ public struct ReplicaSettings: Sendable {
     /// Specifies how quickly request will be canceled when there is no observers
     let cancelTime: TimeInterval
 
+    /// Specifies if stale data will be refreshed when an active observer is added.
+    let revalidateOnActiveObserverAdded: Bool
+
     public init(
         staleTime: TimeInterval,
         clearTime: TimeInterval,
         clearErrorTime: TimeInterval,
-        cancelTime: TimeInterval
+        cancelTime: TimeInterval,
+        revalidateOnActiveObserverAdded: Bool = false
     ) {
         self.staleTime = staleTime
         self.clearTime = clearTime
         self.clearErrorTime = clearErrorTime
         self.cancelTime = cancelTime
+        self.revalidateOnActiveObserverAdded = revalidateOnActiveObserverAdded
     }
 }
