@@ -142,29 +142,6 @@ public actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
         }
     }
 
-    private func refreshAfterInvalidation(invalidationMode: ReplicaInvalidationMode) async {
-        if replicaState.loading {
-            await cancel()
-            await refresh()
-            return
-        }
-
-        switch invalidationMode {
-        case .dontRefresh:
-            break
-        case .refreshIfHasObservers:
-            if replicaState.observingState.status != .none {
-                await refresh()
-            }
-        case .refreshIfHasActiveObservers:
-            if replicaState.observingState.status == .active {
-                await refresh()
-            }
-        case .refreshAlways:
-            await refresh()
-        }
-    }
-
     private func clearData(removeFromStorage: Bool) async throws {
         var updatedState = replicaState
         updatedState.data = nil
