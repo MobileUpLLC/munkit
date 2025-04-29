@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4AA70B412DC13FDA003AEADA /* munkit in Frameworks */ = {isa = PBXBuildFile; productRef = 4AA70B402DC13FDA003AEADA /* munkit */; };
+		4AA70B442DC14028003AEADA /* munkit-example-core in Frameworks */ = {isa = PBXBuildFile; productRef = 4AA70B432DC14028003AEADA /* munkit-example-core */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4AA70B442DC14028003AEADA /* munkit-example-core in Frameworks */,
 				4AA70B412DC13FDA003AEADA /* munkit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -71,6 +73,7 @@
 			name = "munkit-example-ios";
 			packageProductDependencies = (
 				4AA70B402DC13FDA003AEADA /* munkit */,
+				4AA70B432DC14028003AEADA /* munkit-example-core */,
 			);
 			productName = "munkit-example-ios";
 			productReference = 4AA70B2B2DC13F30003AEADA /* munkit-example-ios.app */;
@@ -102,6 +105,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				4AA70B3F2DC13FDA003AEADA /* XCLocalSwiftPackageReference "../../munkit" */,
+				4AA70B422DC14028003AEADA /* XCLocalSwiftPackageReference "../munkit-example-core" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4AA70B2C2DC13F30003AEADA /* Products */;
@@ -341,12 +345,20 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../../munkit;
 		};
+		4AA70B422DC14028003AEADA /* XCLocalSwiftPackageReference "../munkit-example-core" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../munkit-example-core";
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		4AA70B402DC13FDA003AEADA /* munkit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = munkit;
+		};
+		4AA70B432DC14028003AEADA /* munkit-example-core */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "munkit-example-core";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
