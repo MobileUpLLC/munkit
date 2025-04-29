@@ -48,7 +48,6 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
         target: Target,
         isTokenRefreshed: Bool = false
     ) async throws -> T {
-        try await _Concurrency.Task.checkCancellation()
         let requestId = startRequest(isAccessTokenRequired: target.isAccessTokenRequired)
         defer { completeRequest(requestId) }
 
