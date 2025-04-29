@@ -278,6 +278,38 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
             print("⚖️ \(name) \(#function): Changed fields:\n  " + changes.joined(separator: "\n  "))
         }
     }
+
+    private func performDataClearing(after seconds: TimeInterval) async {
+        try? await Task.sleep(for: .seconds(seconds))
+        let replicaState = await replicaState
+        guard
+            (replicaState.data != nil || replicaState.error != nil),
+            !replicaState.loading,
+            case .none = replicaState.observingState.status
+        else {
+            return
+        }
+        try? await clearData(removeFromStorage: false)
+    }
+
+    private func performErrorClearing(after seconds: TimeInterval) async {
+        try? await Task.sleep(for: .seconds(seconds))
+        let replicaState = await replicaState
+        guard
+            replicaState.error != nil,
+            !replicaState.loading,
+            case .none = replicaState.observingState.status
+        else {
+            return
+        }
+        await clearError()
+    }
+
+    private func clearError() async {
+        var updatedState = replicaState
+        updatedState.error = nil
+        await updateState(updatedState)
+    }
 }
 
 extension PhysicalReplicaImplementation: ReplicaObserverDelegate {
@@ -319,17 +351,7 @@ extension PhysicalReplicaImplementation: ReplicaObserverDelegate {
         if clearTime < .infinity {
             dataClearingTask?.cancel()
             dataClearingTask = Task { [weak self] in
-                guard let self else { return }
-                try await Task.sleep(for: .seconds(clearTime))
-                let replicaState = await replicaState
-                guard
-                    (replicaState.data != nil || replicaState.error != nil),
-                    !replicaState.loading,
-                    case .none = replicaState.observingState.status
-                else {
-                    return
-                }
-                try await clearData(removeFromStorage: false)
+                await self?.performDataClearing(after: clearTime)
             }
         }
 
@@ -337,25 +359,9 @@ extension PhysicalReplicaImplementation: ReplicaObserverDelegate {
         if clearErrorTime < .infinity {
             errorClearingTask?.cancel()
             errorClearingTask = Task { [weak self] in
-                guard let self else { return }
-                try await Task.sleep(for: .seconds(clearErrorTime))
-                let replicaState = await replicaState
-                guard
-                    replicaState.error != nil,
-                    !replicaState.loading,
-                    case .none = replicaState.observingState.status
-                else {
-                    return
-                }
-                await clearError()
+                await self?.performErrorClearing(after: clearErrorTime)
             }
         }
-    }
-
-    private func clearError() async {
-        var updatedState = replicaState
-        updatedState.error = nil
-        await updateState(updatedState)
     }
 
     func handleObserverActivated(observerId: UUID) async {
