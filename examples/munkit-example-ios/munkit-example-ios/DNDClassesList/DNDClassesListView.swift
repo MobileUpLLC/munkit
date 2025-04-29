@@ -94,6 +94,10 @@ struct DNDClassesListView: View {
         .navigationTitle("D&D Classes")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink(
+                    destination: { Color.red },
+                    label: { Text("Open") }
+                )
                 if replicaState?.hasFreshData == false {
                     Button {
                         Task { await dndClassesRepository.getDNDClassesListReplica().refresh() }
