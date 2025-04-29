@@ -9,7 +9,6 @@ import munkit
 
 public actor DNDClassesRepository {
     private let networkService: MUNNetworkService<DNDAPITarget>
-    private var toggleLikeTasks: [String: Task<Void, Never>] = [:]
 
     public let replica: any PhysicalReplica<DNDClassesListModel>
 
@@ -22,14 +21,11 @@ public actor DNDClassesRepository {
                 clearTime: 5,
                 clearErrorTime: 1,
                 cancelTime: 0.05,
-                revalidateOnActiveObserverAdded: true
+                revalidateOnActiveObserverAdded: true,
+                revalidateOnNetworkConnection: true
             ),
             storage: nil,
             fetcher: { try await networkService.executeRequest(target: .classes) }
         )
-    }
-
-    public func getClassesList() async throws -> DNDClassesListModel {
-        return try await networkService.executeRequest(target: .classes)
     }
 }
