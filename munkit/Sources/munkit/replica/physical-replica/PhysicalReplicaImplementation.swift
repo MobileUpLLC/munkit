@@ -18,6 +18,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
 
     private var observerStateStreams: [AsyncStreamBundle<ReplicaState<T>>] = []
     private var dataClearingTask: Task<Void, Error>?
+    private var errorClearingTask: Task<Void, Error>?
     private var staleTask: Task<Void, Error>?
 
     public init(
@@ -281,8 +282,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
 
 extension PhysicalReplicaImplementation: ReplicaObserverDelegate {
     func handleObserverAdded(observerId: UUID, isActive: Bool) async {
-        dataClearingTask?.cancel()
-        dataClearingTask = nil
+        [errorClearingTask, dataClearingTask].forEach { $0?.cancel() }
 
         let currentObservingState = replicaState.observingState
         let updatedActiveObserverIds = isActive
@@ -311,22 +311,51 @@ extension PhysicalReplicaImplementation: ReplicaObserverDelegate {
 
         await emitObserverCountChangedIfNeeded(from: currentObservingState, to: newObservingState)
 
-        guard newObservingState.observerIds.isEmpty, settings.clearTime < .infinity else {
+        guard newObservingState.status == .none else {
             return
         }
 
-        dataClearingTask?.cancel()
-        dataClearingTask = Task {
-            try await Task.sleep(for: .seconds(settings.clearTime))
-            guard
-                (replicaState.data != nil || replicaState.error != nil),
-                !replicaState.loading,
-                case .none = replicaState.observingState.status
-            else {
-                return
+        let clearTime = settings.clearTime
+        if clearTime < .infinity {
+            dataClearingTask?.cancel()
+            dataClearingTask = Task { [weak self] in
+                guard let self else { return }
+                try await Task.sleep(for: .seconds(clearTime))
+                let replicaState = await replicaState
+                guard
+                    (replicaState.data != nil || replicaState.error != nil),
+                    !replicaState.loading,
+                    case .none = replicaState.observingState.status
+                else {
+                    return
+                }
+                try await clearData(removeFromStorage: false)
             }
-            try await clearData(removeFromStorage: false)
         }
+
+        let clearErrorTime = settings.clearErrorTime
+        if clearErrorTime < .infinity {
+            errorClearingTask?.cancel()
+            errorClearingTask = Task { [weak self] in
+                guard let self else { return }
+                try await Task.sleep(for: .seconds(clearErrorTime))
+                let replicaState = await replicaState
+                guard
+                    replicaState.error != nil,
+                    !replicaState.loading,
+                    case .none = replicaState.observingState.status
+                else {
+                    return
+                }
+                await clearError()
+            }
+        }
+    }
+
+    private func clearError() async {
+        var updatedState = replicaState
+        updatedState.error = nil
+        await updateState(updatedState)
     }
 
     func handleObserverActivated(observerId: UUID) async {

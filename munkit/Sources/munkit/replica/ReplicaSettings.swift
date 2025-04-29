@@ -15,8 +15,12 @@ public struct ReplicaSettings: Sendable {
     /// Specifies how quickly data will be cleared when there is no observers
     let clearTime: TimeInterval
 
-    public init(staleTime: TimeInterval, clearTime: TimeInterval) {
+    /// Specifies how quickly error will be cleared when there is no observers
+    let clearErrorTime: TimeInterval
+
+    public init(staleTime: TimeInterval, clearTime: TimeInterval, clearErrorTime: TimeInterval) {
         self.staleTime = staleTime
         self.clearTime = clearTime
+        self.clearErrorTime = clearErrorTime
     }
 }

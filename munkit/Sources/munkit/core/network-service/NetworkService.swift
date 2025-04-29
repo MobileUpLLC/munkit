@@ -48,6 +48,7 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
         target: Target,
         isTokenRefreshed: Bool = false
     ) async throws -> T {
+        throw MoyaError.requestMapping("Not implemented")
         let requestId = startRequest(isAccessTokenRequired: target.isAccessTokenRequired)
         defer { completeRequest(requestId) }
 

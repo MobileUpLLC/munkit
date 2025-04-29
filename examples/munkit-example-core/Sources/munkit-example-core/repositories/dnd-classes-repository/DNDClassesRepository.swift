@@ -19,7 +19,8 @@ public actor DNDClassesRepository {
             name: "DndReplica",
             settings: .init(
                 staleTime: 100,
-                clearTime: 5
+                clearTime: 5,
+                clearErrorTime: 1
             ),
             storage: nil,
             fetcher: { try await networkService.executeRequest(target: .classes) }
