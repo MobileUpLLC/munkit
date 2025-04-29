@@ -19,6 +19,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     private var observerStateStreams: [AsyncStreamBundle<ReplicaState<T>>] = []
     private var dataClearingTask: Task<Void, Error>?
     private var errorClearingTask: Task<Void, Error>?
+    private var cancelTask: Task<Void, Error>?
     private var staleTask: Task<Void, Error>?
 
     public init(
@@ -304,6 +305,19 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
         await clearError()
     }
 
+    private func performCancel(after seconds: TimeInterval) async {
+        try? await Task.sleep(for: .seconds(seconds))
+        let replicaState = await replicaState
+        guard
+            replicaState.loading,
+            !replicaState.dataRequested,
+            case .none = replicaState.observingState.status
+        else {
+            return
+        }
+        await cancel()
+    }
+
     private func clearError() async {
         var updatedState = replicaState
         updatedState.error = nil
@@ -313,7 +327,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
 
 extension PhysicalReplicaImplementation: ReplicaObserverDelegate {
     func handleObserverAdded(observerId: UUID, isActive: Bool) async {
-        [errorClearingTask, dataClearingTask].forEach { $0?.cancel() }
+        [errorClearingTask, dataClearingTask, cancelTask].forEach { $0?.cancel() }
 
         let currentObservingState = replicaState.observingState
         let updatedActiveObserverIds = isActive
@@ -346,20 +360,22 @@ extension PhysicalReplicaImplementation: ReplicaObserverDelegate {
             return
         }
 
+        let cancelTime = settings.cancelTime
+        if cancelTime < .infinity {
+            cancelTask?.cancel()
+            cancelTask = Task { [weak self] in await self?.performCancel(after: cancelTime) }
+        }
+
         let clearTime = settings.clearTime
         if clearTime < .infinity {
             dataClearingTask?.cancel()
-            dataClearingTask = Task { [weak self] in
-                await self?.performDataClearing(after: clearTime)
-            }
+            dataClearingTask = Task { [weak self] in await self?.performDataClearing(after: clearTime) }
         }
 
         let clearErrorTime = settings.clearErrorTime
         if clearErrorTime < .infinity {
             errorClearingTask?.cancel()
-            errorClearingTask = Task { [weak self] in
-                await self?.performErrorClearing(after: clearErrorTime)
-            }
+            errorClearingTask = Task { [weak self] in await self?.performErrorClearing(after: clearErrorTime) }
         }
     }
 

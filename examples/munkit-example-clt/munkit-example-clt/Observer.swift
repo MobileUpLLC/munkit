@@ -32,20 +32,6 @@ actor Observer: Sendable {
         print("🗑️", name, #function)
     }
 
-    func simulateActivity() async {
-        print("🤖", name, #function, "+")
-        activityStream.continuation.yield(true)
-        try? await Task.sleep(for: .seconds(Int.random(in: 1...5)))
-        print("🤖", name, #function, "-")
-        activityStream.continuation.yield(false)
-        try? await Task.sleep(for: .seconds(Int.random(in: 1...5)))
-        print("🤖", name, #function, "+")
-        activityStream.continuation.yield(true)
-        try? await Task.sleep(for: .seconds(Int.random(in: 1...5)))
-        print("🤖", name, #function, "-")
-        activityStream.continuation.yield(false)
-    }
-
     func stopObserving() async {
         observingStateTask?.cancel()
         observingStateTask = nil
