@@ -8,23 +8,39 @@
 import munkit
 
 public actor DNDClassesRepository {
-    private let networkService: MUNNetworkService<DNDAPITarget>
+    private let networkService: NetworkService
 
-    public let replica: any SingleReplica<DNDClassesListModel>
+    private var dndClassesListReplica: (any SingleReplica<DNDClassesListModel>)?
 
-    public init(networkService: MUNNetworkService<DNDAPITarget>) async {
+    public init(networkService: NetworkService) {
         self.networkService = networkService
-        self.replica = await ReplicasHolder.shared.getReplica(
-            name: "DndReplica",
+    }
+
+    public func getDNDClassesListReplica() async -> any SingleReplica<DNDClassesListModel> {
+        guard let dndClassesListReplica else {
+            await createDNDClassesListReplica()
+            return await getDNDClassesListReplica()
+        }
+        return dndClassesListReplica
+    }
+
+    private func createDNDClassesListReplica() async {
+        self.dndClassesListReplica = await ReplicasHolder.shared.getReplica(
+            name: "DNDClassesListReplica",
             settings: .init(
-                staleTime: 1,
+                staleTime: 10,
                 clearTime: 5,
                 clearErrorTime: 1,
                 cancelTime: 0.05,
                 revalidateOnActiveObserverAdded: true
             ),
             storage: nil,
-            fetcher: { try await networkService.executeRequest(target: .classes) }
+            fetcher: { [weak self] in
+                guard let networkService = self?.networkService else {
+                    throw CancellationError()
+                }
+                return try await networkService.executeRequest(target: .classes)
+            }
         )
     }
 }

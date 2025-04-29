@@ -54,7 +54,7 @@ public actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
         await setLoadingStateAndloadData(skipLoadingIfFresh: true)
     }
 
-    public func cancel() async {
+    private func cancel() async {
         guard replicaState.loading else { return }
         await loadingTask?.cancel()
         var updatedState = replicaState
@@ -102,6 +102,8 @@ public actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
     }
 
     private func loadData() async {
+        print("🔄 \(name) \(#function)")
+
         do {
             let data: T
 
@@ -115,7 +117,7 @@ public actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
                 }
             }
 
-            let replicaData = ReplicaData(value: data, isFresh: false, changingDate: .now)
+            let replicaData = ReplicaData(value: data, isFresh: true, changingDate: .now)
 
             var updatedState = replicaState
             updatedState.loading = false

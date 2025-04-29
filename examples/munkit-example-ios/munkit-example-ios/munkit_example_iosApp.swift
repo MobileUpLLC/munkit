@@ -6,12 +6,25 @@
 //
 
 import SwiftUI
+import munkit
+import munkit_example_core
+
+extension NetworkService: @retroactive Observable {}
+extension DNDClassesRepository: @retroactive Observable {}
 
 @main
 struct munkit_example_iosApp: App {
+    let dndClassesRepository: DNDClassesRepository
+
+    init() {
+        let networkService = NetworkService()
+        self.dndClassesRepository = DNDClassesRepository(networkService: networkService)
+    }
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            FirstView()
+                .environment(dndClassesRepository)
         }
     }
 }

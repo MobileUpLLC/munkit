@@ -15,9 +15,7 @@ public struct ReplicaState<T>: Sendable where T: Sendable {
     /// Состояние наблюдения.
     var observingState: ReplicaObservingState
     
-    var hasFreshData: Bool {
-        data?.isFresh ?? false
-    }
+    public var hasFreshData: Bool { data?.isFresh ?? false }
 
     static func createEmpty(hasStorage: Bool) -> ReplicaState<T> {
         let observingState = ReplicaObservingState(observerIds: [], activeObserverIds: [], observingTime: .never)
