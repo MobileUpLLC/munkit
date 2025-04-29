@@ -6,7 +6,6 @@
 //
 
 import munkit
-import Moya
 import Foundation
 
 private let accessTokenProviderAndRefresher = AccessTokenProviderAndRefresher()
@@ -19,41 +18,21 @@ await networkService.setAuthorizationObjects(
 )
 
 let dndClassesRepository = await DNDClassesRepository(networkService: networkService)
+var task: Task<Void, Never>?
 
-var completedTasks = 0
-let taskCount = 30
-
-await withTaskGroup { group in
-    for id in 1...taskCount {
-        group.addTask {
-            print("👁️🔑", #function, "\(id)")
-            do {
-                let _ = try await dndClassesRepository.getClassesListWithAuth()
-                print("🥳🔑", #function, "\(id)")
-            } catch {
-                print("☠️🔑", #function, "\(id)")
-            }
-
-            await MainActor.run { completedTasks += 1 }
-        }
-
-        group.addTask {
-            print("👁️", #function, "\(id)")
-            do {
-                let _ = try await dndClassesRepository.getClassesListWithoutAuth()
-                print("🥳", #function, "\(id)")
-            } catch {
-                print("☠️", #function, "\(id)")
-            }
-
-            await MainActor.run { completedTasks += 1 }
-        }
+task = Task {
+    do {
+        let _ = try await dndClassesRepository.getClassesListWithAuth()
+        print("🥳")
+    } catch {
+        print(error)
+        print("☠️")
     }
-    await group.waitForAll()
 }
 
-if completedTasks != taskCount * 2 {
-    print("🚨 completedTasks: \(completedTasks) != \(taskCount * 2)")
-} else {
-    print("✅ All tasks finished (maybe without success)!")
+Task {
+    try? await Task.sleep(for: .seconds(3))
+    task?.cancel()
 }
+
+try await Task.sleep(for: .seconds(100))
