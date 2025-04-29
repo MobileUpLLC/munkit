@@ -10,11 +10,11 @@ import munkit
 public actor DNDClassesRepository {
     private let networkService: MUNNetworkService<DNDAPITarget>
 
-    public let replica: any PhysicalReplica<DNDClassesListModel>
+    public let replica: any SingleReplica<DNDClassesListModel>
 
     public init(networkService: MUNNetworkService<DNDAPITarget>) async {
         self.networkService = networkService
-        self.replica = await ReplicaClient.shared.createReplica(
+        self.replica = await ReplicasHolder.shared.getReplica(
             name: "DndReplica",
             settings: .init(
                 staleTime: 1,

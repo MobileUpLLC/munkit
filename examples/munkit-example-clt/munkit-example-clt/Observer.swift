@@ -10,12 +10,12 @@ import munkit_example_core
 
 actor Observer: Sendable {
     private let name: String
-    private let replica: any Replica<DNDClassesListModel>
+    private let replica: any SingleReplica<DNDClassesListModel>
     private let observer: ReplicaObserver<DNDClassesListModel>
     private let activityStream: AsyncStreamBundle<Bool>
     private var observingStateTask: Task<Void, Never>?
 
-    init(name: String, replica: any Replica<DNDClassesListModel>) async {
+    init(name: String, replica: any SingleReplica<DNDClassesListModel>) async {
         self.name = name
         self.replica = replica
         self.activityStream = AsyncStream<Bool>.makeStream()

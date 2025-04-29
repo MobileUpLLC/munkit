@@ -18,16 +18,3 @@ public struct ReplicaData<T>: Sendable where T: Sendable {
         self.changingDate = changingDate
     }
 }
-
-// Оптимистичное обновление
-public final class OptimisticUpdate<T>: Sendable where T: Sendable {
-    private let _apply: @Sendable (T) -> T
-
-    public init(apply: @escaping @Sendable (T) -> T) {
-        self._apply = apply
-    }
-
-    func apply(_ data: T) -> T {
-        _apply(data)
-    }
-}

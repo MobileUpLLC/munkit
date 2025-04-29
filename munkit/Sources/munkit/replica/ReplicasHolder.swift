@@ -7,38 +7,37 @@
 
 import Foundation
 
-public actor ReplicaClient {
-    private var replicas: [any PhysicalReplica] = []
+public actor ReplicasHolder {
+    private var singleReplicas: [any SingleReplica] = []
 
-    public static let shared = ReplicaClient()
+    public static let shared = ReplicasHolder()
     
     private init() {}
 
-    public func createReplica<T: Sendable>(
+    public func getReplica<T: Sendable>(
         name: String,
         settings: ReplicaSettings,
         storage: (any ReplicaStorage<T>)?,
         fetcher: @Sendable @escaping () async throws -> T
-    ) async -> any PhysicalReplica<T> {
-        if let replica = await findReplica(by: name) as? any PhysicalReplica<T> {
+    ) async -> any SingleReplica<T> {
+        if let replica = await findReplica(by: name) as? any SingleReplica<T> {
             return replica
         }
 
-        let replica = PhysicalReplicaImplementation(
+        let replica = SingleReplicaImplementation(
             name: name,
             settings: settings,
             storage: storage,
             fetcher: fetcher
         )
 
-        if replicas.isEmpty {
-            replicas.append(replica)
-        }
+        singleReplicas.append(replica)
+
         return replica
     }
 
-    private func findReplica(by name: String) async -> (any PhysicalReplica)? {
-        for replica in replicas {
+    private func findReplica(by name: String) async -> (any SingleReplica)? {
+        for replica in singleReplicas {
             if await replica.name == name {
                 return replica
             }

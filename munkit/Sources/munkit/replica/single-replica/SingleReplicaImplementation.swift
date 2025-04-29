@@ -1,13 +1,13 @@
 //
-//  PhysicalReplicaImplementation.swift
+//  SingleReplicaImplementation.swift
 //  MUNKit
 //
-//  Created by Natalia Luzyanina on 01.04.2025.
+//  Created by Ilia Chub on 29.04.2025.
 //
 
 import Foundation
 
-public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
+public actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
     public let name: String
     public var settings: ReplicaSettings
 
@@ -266,7 +266,7 @@ public actor PhysicalReplicaImplementation<T: Sendable>: PhysicalReplica {
     }
 }
 
-extension PhysicalReplicaImplementation: ReplicaObserverDelegate {
+extension SingleReplicaImplementation: ReplicaObserverDelegate {
     func handleObserverAdded(observerId: UUID, isActive: Bool) async {
         [errorClearingTask, dataClearingTask, cancelTask].forEach { $0?.cancel() }
 

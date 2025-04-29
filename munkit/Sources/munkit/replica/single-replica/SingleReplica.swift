@@ -1,5 +1,5 @@
 //
-//  Replica.swift
+//  SingleReplica.swift
 //  MUNKit
 //
 //  Created by Natalia Luzyanina on 01.04.2025.
@@ -7,9 +7,18 @@
 
 import Foundation
 
-/// Protocol for a base replica with minimal API.
-public protocol Replica<T>: Actor where T: Sendable {
+public protocol SingleReplica<T>: Actor {
     associatedtype T: Sendable
+
+    var name: String { get }
+    var settings: ReplicaSettings { get }
+
+    init(
+        name: String,
+        settings: ReplicaSettings,
+        storage: (any ReplicaStorage<T>)?,
+        fetcher: @Sendable @escaping () async throws -> T
+    )
 
     /// Starts observing the replica's state.
     func observe(activityStream: AsyncStream<Bool>) async -> ReplicaObserver<T>
