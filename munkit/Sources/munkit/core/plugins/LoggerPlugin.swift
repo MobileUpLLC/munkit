@@ -5,7 +5,7 @@
 //  Created by Natalia Luzyanina on 01.04.2025.
 //
 
-import Moya
+@preconcurrency import Moya
 
 public actor MUNLoggerPlugin {
     public static let instance = NetworkLoggerPlugin(configuration: configuration)

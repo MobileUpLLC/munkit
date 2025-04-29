@@ -6,15 +6,33 @@
 //
 
 import munkit
-import munkit_example_core
 import Foundation
 
-let tokenProvider = AccessTokenProviderAndRefresher()
-let networkService = MUNNetworkService<DNDAPITarget>()
-let repository = await DNDClassesRepository(networkService: networkService)
+private let accessTokenProviderAndRefresher = AccessTokenProviderAndRefresher()
 
-let observer1 = await Observer(name: "observer1", replica: repository.replica)
-try await Task.sleep(for: .seconds(2))
-await observer1.stopObserving()
+private let networkService = MUNNetworkService<DNDAPITarget>(plugins: [MockAuthPlugin()])
+await networkService.setAuthorizationObjects(
+    provider: accessTokenProviderAndRefresher,
+    refresher: accessTokenProviderAndRefresher,
+    tokenRefreshFailureHandler: { print("🧨 Token refresh failed handler called") }
+)
 
-try await _Concurrency.Task.sleep(for: .seconds(20))
+let dndClassesRepository = await DNDClassesRepository(networkService: networkService)
+var task: Task<Void, Never>?
+
+task = Task {
+    do {
+        let _ = try await dndClassesRepository.getClassesListWithAuth()
+        print("🥳")
+    } catch {
+        print(error)
+        print("☠️")
+    }
+}
+
+Task {
+    try? await Task.sleep(for: .seconds(3))
+    task?.cancel()
+}
+
+try await Task.sleep(for: .seconds(100))

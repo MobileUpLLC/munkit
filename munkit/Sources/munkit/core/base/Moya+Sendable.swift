@@ -5,7 +5,7 @@
 //  Created by Ilia Chub on 11.04.2025.
 //
 
-import Moya
+@preconcurrency import Moya
 
 extension MoyaError: Sendable {}
 extension Response: @unchecked @retroactive Sendable {}

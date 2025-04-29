@@ -52,7 +52,7 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
         let requestId = startRequest(isAccessTokenRequired: target.isAccessTokenRequired)
         defer { completeRequest(requestId) }
 
-        switch await performRequest(target: target) {
+        switch try await performRequest(target: target) {
         case .success(let response):
             let filteredResponse = try response.filterSuccessfulStatusCodes()
             return try filteredResponse.map(T.self)
@@ -71,7 +71,7 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
         let requestId = startRequest(isAccessTokenRequired: target.isAccessTokenRequired)
         defer { completeRequest(requestId) }
 
-        switch await performRequest(target: target) {
+        switch try await performRequest(target: target) {
         case .success(let response):
             let _ = try response.filterSuccessfulStatusCodes()
         case .failure(let error):
@@ -93,10 +93,13 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
         return requestId
     }
 
-    private func performRequest(target: Target) async -> Result<Response, MoyaError> {
-        return await withCheckedContinuation { continuation in
+    private func performRequest(target: Target) async throws -> Result<Response, MoyaError> {
+        try await _Concurrency.Task.checkCancellation()
+        let result = await withCheckedContinuation { continuation in
             moyaProvider.request(target) { continuation.resume(returning: $0) }
         }
+        try await _Concurrency.Task.checkCancellation()
+        return result
     }
 
     private func completeRequest(_ requestId: UUID) {

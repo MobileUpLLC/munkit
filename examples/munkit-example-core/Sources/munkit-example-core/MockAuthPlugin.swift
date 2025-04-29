@@ -6,7 +6,7 @@
 //
 
 import munkit
-import Moya
+@preconcurrency import Moya
 import Foundation
 
 public struct MockAuthPlugin: PluginType {
