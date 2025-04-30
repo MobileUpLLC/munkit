@@ -12,7 +12,10 @@ import munkit_example_core
 struct DNDClassesListView: View {
     @Environment(NavigationModel.self) private var navigationModel
     @Environment(DNDClassesRepository.self) private var dndClassesRepository
+
     @State private var replicaState: ReplicaState<DNDClassesListModel>?
+    @State private var replicaSetupped = false
+
     private let activityStream = AsyncStream<Bool>.makeStream()
 
     var body: some View {
@@ -42,25 +45,28 @@ struct DNDClassesListView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                     Button("Retry") {
-                        Task { activityStream.continuation.yield(true) }
+                        Task { await dndClassesRepository.getDNDClassesListReplica().refresh() }
                     }
                     .buttonStyle(.borderedProminent)
                 }
             case .some(let state) where state.data != nil:
                 if let classes = state.data?.value.results, !classes.isEmpty {
-                    List {
-                        ForEach(classes, id: \.index) { dndClass in
-                            DNDClassListRowView(dndClass: dndClass)
-                                .listRowBackground(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(Color(.systemBackground))
-                                        .padding(.vertical, 2)
-                                )
+                    VStack {
+                        List {
+                            ForEach(classes, id: \.index) { dndClass in
+                                DNDClassListRowView(dndClass: dndClass)
+                                    .listRowBackground(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .fill(Color(.systemBackground))
+                                            .padding(.vertical, 2)
+                                    )
+                            }
                         }
-                    }
-                    .listStyle(.plain)
-                    .refreshable {
-                        Task { await dndClassesRepository.getDNDClassesListReplica().revalidate() }
+                        .listStyle(.plain)
+                        .refreshable {
+                            Task { await dndClassesRepository.getDNDClassesListReplica().revalidate() }
+                        }
+                        LinkButton(title: "D&D Classes List", value: .dndClasses(.dndClassesList))
                     }
                     .overlay {
                         if !state.hasFreshData {
@@ -104,24 +110,35 @@ struct DNDClassesListView: View {
                 }
             }
         }
-        .task {
-            navigationModel.performActionAfterPop { activityStream.continuation.finish() }
+        .onAppear {
+            guard !replicaSetupped else {
+                activityStream.continuation.yield(true)
+                return
+            }
 
-            let observer = await dndClassesRepository.getDNDClassesListReplica().observe(
-                activityStream: activityStream.stream
-            )
+            replicaSetupped = true
+
             Task {
+                navigationModel.performActionAfterPop { activityStream.continuation.finish() }
+
+                let observer = await dndClassesRepository.getDNDClassesListReplica().observe(
+                    activityStream: activityStream.stream
+                )
+                activityStream.continuation.yield(true)
+
                 for await state in await observer.stateStream {
                     replicaState = state
                 }
             }
         }
-        .onAppear { Task { activityStream.continuation.yield(true) } }
-        .onDisappear { Task { activityStream.continuation.yield(false) } }
+        .onDisappear {
+            activityStream.continuation.yield(false)
+        }
     }
 }
 
 #Preview {
     DNDClassesListView()
         .environment(DNDClassesRepository(networkService: NetworkService()))
+        .environment(NavigationModel())
 }

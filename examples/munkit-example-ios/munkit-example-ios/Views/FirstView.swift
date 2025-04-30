@@ -13,15 +13,8 @@ struct FirstView: View {
             Color.white
                 .ignoresSafeArea()
             VStack {
-                NavigationLink("D&D Classes List", value: Destination.dndClasses(.dndClassesList))
-                    .foregroundStyle(.black)
-                    .font(.system(size: 20, weight: .bold))
-                    .padding()
-                    .background {
-                        Capsule()
-                            .fill(.thinMaterial)
-                            .stroke(.black, lineWidth: 1)
-                    }
+                LinkButton(title: "D&D Classes List 1", value: .dndClasses(.dndClassesList))
+                LinkButton(title: "D&D Classes List 2", value: .dndClasses(.dndClassesList))
             }
         }
         .navigationTitle("munkit Example iOS")

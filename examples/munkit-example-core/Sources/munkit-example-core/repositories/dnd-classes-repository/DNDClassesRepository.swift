@@ -28,7 +28,7 @@ public actor DNDClassesRepository {
         self.dndClassesListReplica = await ReplicasHolder.shared.getReplica(
             name: "DNDClassesListReplica",
             settings: .init(
-                staleTime: 5,
+                staleTime: 10,
                 clearTime: 5,
                 clearErrorTime: 1,
                 cancelTime: 0.05,

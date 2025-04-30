@@ -29,10 +29,11 @@ public actor ReplicaObserver<T> where T: Sendable {
     private func startObserverControl() async {
         let observerId = UUID()
 
-        await observerDelegate.handleObserverAdded(observerId: observerId, isActive: true)
+        await observerDelegate.handleObserverAdded(observerId: observerId, isActive: false)
 
         Task {
             for await isActive in activityStream {
+                print(observerId, "isActive:", isActive)
                 if isActive {
                     await observerDelegate.handleObserverActivated(observerId: observerId)
                 } else {

@@ -12,7 +12,7 @@ actor Observer: Sendable {
     private let name: String
     private let replica: any SingleReplica<DNDClassesListModel>
     private let observer: ReplicaObserver<DNDClassesListModel>
-    private let activityStream: AsyncStreamBundle<Bool>
+    let activityStream: AsyncStreamBundle<Bool>
     private var observingStateTask: Task<Void, Never>?
 
     init(name: String, replica: any SingleReplica<DNDClassesListModel>) async {
