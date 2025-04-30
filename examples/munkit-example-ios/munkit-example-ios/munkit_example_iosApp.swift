@@ -9,11 +9,9 @@ import SwiftUI
 import munkit
 import munkit_example_core
 
-extension NetworkService: @retroactive Observable {}
-extension DNDClassesRepository: @retroactive Observable {}
-
 @main
 struct munkit_example_iosApp: App {
+    let navigationModel = NavigationModel()
     let dndClassesRepository: DNDClassesRepository
 
     init() {
@@ -23,8 +21,23 @@ struct munkit_example_iosApp: App {
 
     var body: some Scene {
         WindowGroup {
-            FirstView()
-                .environment(dndClassesRepository)
+            @Bindable var navigationModel = navigationModel
+            NavigationStack(path: $navigationModel.path) {
+                FirstView()
+                    .navigationDestination(for: Destination.self, destination: destination)
+            }
+            .environment(dndClassesRepository)
+            .environment(navigationModel)
+        }
+    }
+
+    @ViewBuilder private func destination(for path: Destination) -> some View {
+        switch path {
+        case .dndClasses(let destination):
+            switch destination {
+            case .dndClassesList:
+                DNDClassesListView()
+            }
         }
     }
 }

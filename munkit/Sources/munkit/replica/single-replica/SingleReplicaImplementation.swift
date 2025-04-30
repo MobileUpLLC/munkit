@@ -230,7 +230,10 @@ public actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
         if oldState.error?.localizedDescription != newState.error?.localizedDescription {
             changes.append("error: \(oldState.error?.localizedDescription ?? "none") → \(newState.error?.localizedDescription ?? "none")")
         }
-        if oldState.observingState.observerIds != newState.observingState.observerIds {
+        if
+            oldState.observingState.observerIds != newState.observingState.observerIds
+            || oldState.observingState.activeObserverIds != newState.observingState.activeObserverIds
+        {
             changes.append("observing: \(oldState.observingState) → \(newState.observingState)")
         }
         if oldState.hasFreshData != newState.hasFreshData {

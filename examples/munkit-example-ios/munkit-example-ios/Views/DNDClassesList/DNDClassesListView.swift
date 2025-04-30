@@ -10,6 +10,7 @@ import munkit
 import munkit_example_core
 
 struct DNDClassesListView: View {
+    @Environment(NavigationModel.self) private var navigationModel
     @Environment(DNDClassesRepository.self) private var dndClassesRepository
     @State private var replicaState: ReplicaState<DNDClassesListModel>?
     private let activityStream = AsyncStream<Bool>.makeStream()
@@ -94,10 +95,6 @@ struct DNDClassesListView: View {
         .navigationTitle("D&D Classes")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink(
-                    destination: { Color.red },
-                    label: { Text("Open") }
-                )
                 if replicaState?.hasFreshData == false {
                     Button {
                         Task { await dndClassesRepository.getDNDClassesListReplica().refresh() }
@@ -108,6 +105,8 @@ struct DNDClassesListView: View {
             }
         }
         .task {
+            navigationModel.performActionAfterPop { activityStream.continuation.finish() }
+
             let observer = await dndClassesRepository.getDNDClassesListReplica().observe(
                 activityStream: activityStream.stream
             )

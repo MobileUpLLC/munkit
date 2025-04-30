@@ -10,7 +10,7 @@ import munkit
 public actor DNDClassesRepository {
     private let networkService: NetworkService
 
-    private var dndClassesListReplica: (any SingleReplica<DNDClassesListModel>)?
+    public var dndClassesListReplica: (any SingleReplica<DNDClassesListModel>)?
 
     public init(networkService: NetworkService) {
         self.networkService = networkService
@@ -28,7 +28,7 @@ public actor DNDClassesRepository {
         self.dndClassesListReplica = await ReplicasHolder.shared.getReplica(
             name: "DNDClassesListReplica",
             settings: .init(
-                staleTime: 60,
+                staleTime: 5,
                 clearTime: 5,
                 clearErrorTime: 1,
                 cancelTime: 0.05,
