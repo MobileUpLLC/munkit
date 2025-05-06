@@ -21,6 +21,6 @@ public actor MUNLoggerPlugin {
 
         logMessage.append(contentsOf: "\n\n---------------------------REQUEST END-----------------------------\n\n")
         
-        print(logMessage)
+        MUNLogger.shared?.logDebug(logMessage)
     }
 }

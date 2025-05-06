@@ -102,7 +102,7 @@ public actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
     }
 
     private func loadData() async {
-        print("🔄 \(name) \(#function)")
+        MUNLogger.shared?.logDebug("🔄 \(name) \(#function)")
 
         do {
             let data: T
@@ -241,9 +241,11 @@ public actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
         }
 
         if changes.isEmpty {
-            print("⚖️ \(name) \(#function): No changes in state")
+            MUNLogger.shared?.logDebug("⚖️ \(name) \(#function): No changes in state")
         } else {
-            print("⚖️ \(name) \(#function): Changed fields:\n  " + changes.joined(separator: "\n  "))
+            MUNLogger.shared?.logDebug(
+                "⚖️ \(name) \(#function): Changed fields:\n  " + changes.joined(separator: "\n  ")
+            )
         }
     }
 }

@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		4AA70B412DC13FDA003AEADA /* munkit in Frameworks */ = {isa = PBXBuildFile; productRef = 4AA70B402DC13FDA003AEADA /* munkit */; };
 		4AA70B442DC14028003AEADA /* munkit-example-core in Frameworks */ = {isa = PBXBuildFile; productRef = 4AA70B432DC14028003AEADA /* munkit-example-core */; };
+		6D3E98B02DC9F6550097E7A4 /* MUDKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6D3E98AF2DC9F6550097E7A4 /* MUDKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +30,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4AA70B442DC14028003AEADA /* munkit-example-core in Frameworks */,
+				6D3E98B02DC9F6550097E7A4 /* MUDKit in Frameworks */,
 				4AA70B412DC13FDA003AEADA /* munkit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -74,6 +76,7 @@
 			packageProductDependencies = (
 				4AA70B402DC13FDA003AEADA /* munkit */,
 				4AA70B432DC14028003AEADA /* munkit-example-core */,
+				6D3E98AF2DC9F6550097E7A4 /* MUDKit */,
 			);
 			productName = "munkit-example-ios";
 			productReference = 4AA70B2B2DC13F30003AEADA /* munkit-example-ios.app */;
@@ -106,6 +109,7 @@
 			packageReferences = (
 				4AA70B3F2DC13FDA003AEADA /* XCLocalSwiftPackageReference "../../munkit" */,
 				4AA70B422DC14028003AEADA /* XCLocalSwiftPackageReference "../munkit-example-core" */,
+				6D3E98AE2DC9F6550097E7A4 /* XCLocalSwiftPackageReference "../../../../../MobileUp/MUDKit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4AA70B2C2DC13F30003AEADA /* Products */;
@@ -349,6 +353,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "../munkit-example-core";
 		};
+		6D3E98AE2DC9F6550097E7A4 /* XCLocalSwiftPackageReference "../../../../../MobileUp/MUDKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../../../../MobileUp/MUDKit;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -359,6 +367,10 @@
 		4AA70B432DC14028003AEADA /* munkit-example-core */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = "munkit-example-core";
+		};
+		6D3E98AF2DC9F6550097E7A4 /* MUDKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MUDKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

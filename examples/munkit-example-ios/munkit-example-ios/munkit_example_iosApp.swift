@@ -16,6 +16,7 @@ struct munkit_example_iosApp: App {
 
     init() {
         let networkService = NetworkService()
+        MUNLogger.setupLogger(MUDKitLoggerAdapter())
         self.dndClassesRepository = DNDClassesRepository(networkService: networkService)
     }
 

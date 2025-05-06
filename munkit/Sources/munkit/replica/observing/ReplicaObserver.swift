@@ -33,7 +33,7 @@ public actor ReplicaObserver<T> where T: Sendable {
 
         Task {
             for await isActive in activityStream {
-                print(observerId, "isActive:", isActive)
+                MUNLogger.shared?.logDebug("\(observerId), isActive:, \(isActive)")
                 if isActive {
                     await observerDelegate.handleObserverActivated(observerId: observerId)
                 } else {
