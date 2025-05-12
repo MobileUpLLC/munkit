@@ -8,40 +8,41 @@
 import Foundation
 
 public actor ReplicaObserver<T> where T: Sendable {
+    public let observerId = UUID()
     public let stateStream: AsyncStream<ReplicaState<T>>
 
+    let eventStream: AsyncStream<ReplicaObserverEvent>
+
+    private let eventStreamContinuation: AsyncStream<ReplicaObserverEvent>.Continuation
     private let activityStream: AsyncStream<Bool>
-    private let observerDelegate: ReplicaObserverDelegate
 
     init(
         activityStream: AsyncStream<Bool>,
-        stateStream: AsyncStream<ReplicaState<T>>,
-        observerDelegate: ReplicaObserverDelegate
+        stateStream: AsyncStream<ReplicaState<T>>
     ) async {
         self.activityStream = activityStream
-        self.observerDelegate = observerDelegate
         self.stateStream = stateStream
+
+        (self.eventStream, self.eventStreamContinuation) = AsyncStream<ReplicaObserverEvent>.makeStream()
 
         await startObserverControl()
     }
 
     /// Monitors the observer's activity state.
     private func startObserverControl() async {
-        let observerId = UUID()
-
-        await observerDelegate.handleObserverAdded(observerId: observerId, isActive: false)
+        await eventStreamContinuation.yield(.observerAdded)
 
         Task {
             for await isActive in activityStream {
                 print(observerId, "isActive:", isActive)
                 if isActive {
-                    await observerDelegate.handleObserverActivated(observerId: observerId)
+                    await eventStreamContinuation.yield(.observerActivated)
                 } else {
-                    await observerDelegate.handleObserverDeactivated(observerId: observerId)
+                    await eventStreamContinuation.yield(.observerDeactivated)
                 }
             }
 
-            await observerDelegate.handleObserverRemoved(observerId: observerId)
+            await eventStreamContinuation.yield(.observerRemoved)
         }
     }
 }

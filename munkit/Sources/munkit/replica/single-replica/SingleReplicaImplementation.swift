@@ -39,11 +39,31 @@ public actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
         let stateStreamBundle = AsyncStream<ReplicaState<T>>.makeStream()
         observerStateStreams.append(stateStreamBundle)
 
-        return await ReplicaObserver<T>(
+        let observer = await ReplicaObserver<T>(
             activityStream: activityStream,
             stateStream: stateStreamBundle.stream,
-            observerDelegate: self
         )
+
+        Task {
+            for await event in observer.eventStream {
+                await handleObserverEvent(event, observerId: observer.observerId)
+            }
+        }
+
+        return observer
+    }
+
+    private func handleObserverEvent(_ event: ReplicaObserverEvent, observerId: UUID ) async {
+        switch event {
+        case .observerAdded:
+            await handleObserverAdded(observerId: observerId)
+        case .observerRemoved:
+            await handleObserverRemoved(observerId: observerId)
+        case .observerActivated:
+            await handleObserverActivated(observerId: observerId)
+        case .observerDeactivated:
+            await handleObserverDeactivated(observerId: observerId)
+        }
     }
 
     public func refresh() async {
@@ -246,27 +266,21 @@ public actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
             print("⚖️ \(name) \(#function): Changed fields:\n  " + changes.joined(separator: "\n  "))
         }
     }
-}
 
-extension SingleReplicaImplementation: ReplicaObserverDelegate {
-    func handleObserverAdded(observerId: UUID, isActive: Bool) async {
+    private func handleObserverAdded(observerId: UUID) async {
         [errorClearingTask, dataClearingTask, cancelTask].forEach { $0?.cancel() }
 
         let currentObservingState = replicaState.observingState
-        let updatedActiveObserverIds = isActive
-            ? currentObservingState.activeObserverIds.union([observerId])
-            : currentObservingState.activeObserverIds
-        let updatedObservingTime = isActive ? .now : currentObservingState.observingTime
         let newObservingState = ReplicaObservingState(
             observerIds: currentObservingState.observerIds.union([observerId]),
-            activeObserverIds: updatedActiveObserverIds,
-            observingTime: updatedObservingTime
+            activeObserverIds: currentObservingState.activeObserverIds,
+            observingTime: currentObservingState.observingTime
         )
 
         await emitObserverCountChangedIfNeeded(from: currentObservingState, to: newObservingState)
     }
 
-    func handleObserverRemoved(observerId: UUID) async {
+    private func handleObserverRemoved(observerId: UUID) async {
         let currentObservingState = replicaState.observingState
         let isLastActive = currentObservingState.activeObserverIds.count == 1
             && currentObservingState.activeObserverIds.contains(observerId)
@@ -302,7 +316,7 @@ extension SingleReplicaImplementation: ReplicaObserverDelegate {
         }
     }
 
-    func handleObserverActivated(observerId: UUID) async {
+    private func handleObserverActivated(observerId: UUID) async {
         let currentObservingState = replicaState.observingState
         var updatedActiveObserverIds = currentObservingState.activeObserverIds
         updatedActiveObserverIds.insert(observerId)
@@ -315,7 +329,7 @@ extension SingleReplicaImplementation: ReplicaObserverDelegate {
         await emitObserverCountChangedIfNeeded(from: currentObservingState, to: newObservingState)
     }
 
-    func handleObserverDeactivated(observerId: UUID) async {
+    private func handleObserverDeactivated(observerId: UUID) async {
         let currentObservingState = replicaState.observingState
         let isLastActive = currentObservingState.activeObserverIds.count == 1
             && currentObservingState.activeObserverIds.contains(observerId)
