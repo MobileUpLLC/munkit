@@ -7,7 +7,7 @@
 
 import Foundation
 
-public actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
+actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
     public let name: String
     public var settings: ReplicaSettings
 
@@ -22,7 +22,7 @@ public actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
     private var staleTask: Task<Void, Error>?
     private var loadingTask: Task<Void, Never>?
 
-    public init(
+    init(
         name: String,
         settings: ReplicaSettings,
         storage: (any ReplicaStorage<T>)?,
