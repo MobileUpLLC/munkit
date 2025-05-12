@@ -8,6 +8,15 @@ munkit is a Swift library designed to streamline network operations by providing
 - macOS 15.0+
 - Swift 6.1+
 
+## Features
+
+- **Flexible API Targets**: Define API endpoints with support for access token requirements and mock data.
+- **Access Token Management**: Optional automatic handling of token refresh.
+- **Replica System**: Manage network data with caching, state observation, and automatic refresh for reactive and efficient data handling.
+- **Mock Data**: Seamlessly switch between real and mock data for testing.
+- **Extensibility**: Leverage Moya plugins to customize behavior.
+- **Logging**: Inject custom loggers for network operations.
+
 ## Installation
 
 To integrate munkit into your Swift project, add it as a dependency in your `Package.swift` file:
@@ -177,12 +186,92 @@ public class CustomLoggerAdapter: MUNLoggable {
     let networkService = NetworkService(plugins: [MUNLoggerPlugin.instance])
 ```
 
-## Features
+## Replica
 
-- **Flexible API Targets**: Define API endpoints with support for access token requirements and mock data.
-- **Access Token Management**: Optional automatic handling of token refresh.
-- **Mock Data**: Seamlessly switch between real and mock data for testing.
-- **Extensibility**: Leverage Moya plugins to customize behavior.
+munkit provides a powerful `Replica` system. Replicas encapsulate data fetching, storage, and observation logic, making it easy to handle API responses in a reactive and efficient manner.
+
+### Key Components
+
+- **`SingleReplica`**: An actor-based protocol for managing a single data type, supporting fetching, refreshing, and state observation.
+- **`ReplicaState`**: Tracks the loading state, data, errors, and observer status for a replica.
+- **`ReplicaSettings`**: Configures replica behavior, including stale time, data/error clearing, and revalidation policies.
+- **`ReplicaStorage`**: An optional protocol for persisting replica data to disk.
+- **`ReplicaObserver`**: Monitors replica state changes and observer activity via async streams.
+
+### Usage Example
+
+Define a repository to manage a replica for API data:
+
+```swift
+import munkit
+
+public actor DNDClassesRepository {
+    private let networkService: NetworkService
+    private var dndClassesListReplica: (any SingleReplica<DNDClassesListModel>)?
+
+    public init(networkService: NetworkService) {
+        self.networkService = networkService
+    }
+
+    public func getDNDClassesListReplica() async -> any SingleReplica<DNDClassesListModel> {
+        if let replica = dndClassesListReplica { return replica }
+        dndClassesListReplica = await ReplicasHolder.shared.getReplica(
+            name: "DNDClassesListReplica",
+            settings: .init(
+                staleTime: 10,
+                clearTime: 5,
+                clearErrorTime: 1,
+                cancelTime: 0.05,
+                revalidateOnActiveObserverAdded: true
+            ),
+            storage: nil,
+            fetcher: { [weak self] in
+                guard let networkService = self?.networkService else { throw CancellationError() }
+                return try await networkService.executeRequest(target: .classes)
+            }
+        )
+        return dndClassesListReplica!
+    }
+}
+```
+
+In a SwiftUI view, observe the replica's state:
+
+```swift
+import SwiftUI
+import munkit
+
+struct DNDClassesListView: View {
+    @Environment(DNDClassesRepository.self) private var dndClassesRepository
+    @State private var replicaState: ReplicaState<DNDClassesListModel>?
+    @State private var replicaSetupped = false
+    private let activityStream = AsyncStream<Bool>.makeStream()
+
+    var body: some View {
+        ZStack {
+            if let state = replicaState, let data = state.data?.value.results, !data.isEmpty {
+                List(data, id: \.index) { dndClass in
+                    Text(dndClass.name)
+                }
+                .refreshable { Task { await dndClassesRepository.getDNDClassesListReplica().revalidate() } }
+            }
+        }
+        .onAppear {
+            guard !replicaSetupped else { activityStream.continuation.yield(true); return }
+            replicaSetupped = true
+            Task {
+                let observer = await dndClassesRepository.getDNDClassesListReplica().observe(
+                    activityStream: activityStream.stream
+                )
+                activityStream.continuation.yield(true)
+                for await state in await observer.stateStream {
+                    replicaState = state
+                }
+            }
+        }
+    }
+}
+```
 
 ## Contributing
 
