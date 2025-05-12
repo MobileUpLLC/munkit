@@ -20,29 +20,27 @@ public actor ReplicasHolder {
         storage: (any ReplicaStorage<T>)?,
         fetcher: @Sendable @escaping () async throws -> T
     ) async -> any SingleReplica<T> {
-        if let replica = await findReplica(by: name) as? any SingleReplica<T> {
+        var replica: (any SingleReplica)? = nil
+        for singleReplica in singleReplicas {
+            if await singleReplica.name == name {
+                replica = singleReplica
+                break
+            }
+        }
+        if let replica = replica as? any SingleReplica<T> {
             return replica
         }
 
-        let replica = SingleReplicaImplementation(
+        let newReplica = SingleReplicaImplementation(
             name: name,
             settings: settings,
             storage: storage,
             fetcher: fetcher
         )
 
-        singleReplicas.append(replica)
+        singleReplicas.append(newReplica)
 
-        return replica
-    }
-
-    private func findReplica(by name: String) async -> (any SingleReplica)? {
-        for replica in singleReplicas {
-            if await replica.name == name {
-                return replica
-            }
-        }
-        return nil
+        return newReplica
     }
 }
 
