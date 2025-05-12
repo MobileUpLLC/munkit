@@ -67,11 +67,11 @@ public actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
     }
 
     public func refresh() async {
-        await setLoadingStateAndloadData(skipLoadingIfFresh: false)
+        await setLoadingStateAndLoadData(skipLoadingIfFresh: false)
     }
 
     public func revalidate() async {
-        await setLoadingStateAndloadData(skipLoadingIfFresh: true)
+        await setLoadingStateAndLoadData(skipLoadingIfFresh: true)
     }
 
     private func cancel() async {
@@ -107,7 +107,7 @@ public actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
         await revalidate()
     }
 
-    private func setLoadingStateAndloadData(skipLoadingIfFresh: Bool) async {
+    private func setLoadingStateAndLoadData(skipLoadingIfFresh: Bool) async {
         guard !replicaState.loading, !(skipLoadingIfFresh && replicaState.hasFreshData) else {
             return
         }
