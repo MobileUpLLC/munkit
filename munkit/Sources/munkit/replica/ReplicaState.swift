@@ -6,15 +6,15 @@
 //
 
 public struct ReplicaState<T>: Sendable where T: Sendable {
-    /// Указывает, загружаются ли данные в данный момент.
+    /// Indicates whether data is currently being loaded.
     public var loading: Bool
-    /// Содержит загруженные данные, если они доступны.
+    /// Contains the loaded data, if available.
     public var data: ReplicaData<T>?
-    /// Представляет ошибку, произошедшую во время загрузки.
+    /// Represents an error that occurred during loading.
     public var error: Error?
-    /// Состояние наблюдения.
+    /// The observation state.
     var observingState: ReplicaObservingState
-    
+
     public var hasFreshData: Bool { data?.isFresh ?? false }
 }
 
