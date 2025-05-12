@@ -66,7 +66,14 @@ struct DNDClassesListView: View {
                         .refreshable {
                             Task { await dndClassesRepository.getDNDClassesListReplica().revalidate() }
                         }
-                        LinkButton(title: "D&D Classes List", value: .dndClasses(.dndClassesList))
+                        Button {
+                            activityStream.continuation.yield(false)
+                            navigationModel.path.append(Destination.dndClasses(.dndClassesList))
+                        } label: {
+                            Text("D&D Classes List")
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                        }
                     }
                     .overlay {
                         if !state.hasFreshData {
@@ -131,9 +138,9 @@ struct DNDClassesListView: View {
                 }
             }
         }
-        .onDisappear {
-            activityStream.continuation.yield(false)
-        }
+//        .onDisappear {
+//            activityStream.continuation.yield(false)
+//        }
     }
 }
 
