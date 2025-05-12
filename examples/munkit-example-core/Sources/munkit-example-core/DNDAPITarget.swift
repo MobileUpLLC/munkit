@@ -11,6 +11,7 @@ import Foundation
 
 public enum DNDAPITarget {
     case classes
+    case monsters(challengeRatings: [Double]?)
 }
 
 extension DNDAPITarget: MUNAPITarget {
@@ -30,26 +31,33 @@ extension DNDAPITarget: MUNAPITarget {
         switch self {
         case .classes:
             return [:]
+        case .monsters(let challengeRatings):
+            if let ratings = challengeRatings {
+                // Convert array of doubles to comma-separated string
+                let ratingsString = ratings.map { String($0) }.joined(separator: ",")
+                return ["challenge_rating": ratingsString]
+            }
+            return [:]
         }
     }
 
     private func getIsAccessTokenRequired() -> Bool {
         switch self {
-        case .classes:
+        case .classes, .monsters:
             return false
         }
     }
 
     private func getIsRefreshTokenRequest() -> Bool {
         switch self {
-        case .classes:
+        case .classes, .monsters:
             return false
         }
     }
 
     private func getBaseURL() -> URL {
         switch self {
-        case .classes:
+        case .classes, .monsters:
             return URL(string: "https://www.dnd5eapi.co")!
         }
     }
@@ -58,12 +66,14 @@ extension DNDAPITarget: MUNAPITarget {
         switch self {
         case .classes:
             return "/api/2014/classes"
+        case .monsters:
+            return "/api/2014/monsters"
         }
     }
 
     private func getMethod() -> Moya.Method {
         switch self {
-        case .classes:
+        case .classes, .monsters:
             return .get
         }
     }
@@ -72,19 +82,27 @@ extension DNDAPITarget: MUNAPITarget {
         switch self {
         case .classes:
             return .requestPlain
+        case .monsters(let challengeRatings):
+            if challengeRatings != nil {
+                return .requestParameters(
+                    parameters: getParameters(),
+                    encoding: URLEncoding.queryString
+                )
+            }
+            return .requestPlain
         }
     }
 
     private func getHeaders() -> [String: String]? {
         switch self {
-        case .classes:
-            return [:]
+        case .classes, .monsters:
+            return ["Accept": "application/json"]
         }
     }
 
     private func getAuthorizationType() -> Moya.AuthorizationType? {
         switch self {
-        case .classes:
+        case .classes, .monsters:
             return nil
         }
     }
