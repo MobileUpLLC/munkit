@@ -93,11 +93,11 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
     }
 
     private func performRequest(target: Target) async throws -> Result<Response, MoyaError> {
-        try await _Concurrency.Task.checkCancellation()
+        try _Concurrency.Task.checkCancellation()
         let result = await withCheckedContinuation { continuation in
             moyaProvider.request(target) { continuation.resume(returning: $0) }
         }
-        try await _Concurrency.Task.checkCancellation()
+        try _Concurrency.Task.checkCancellation()
         return result
     }
 

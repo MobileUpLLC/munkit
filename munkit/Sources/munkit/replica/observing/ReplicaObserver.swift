@@ -26,18 +26,18 @@ public actor ReplicaObserver<T> where T: Sendable {
     }
 
     private func startObserverControl() async {
-        await eventStreamContinuation.yield(.observerAdded)
+        eventStreamContinuation.yield(.observerAdded)
 
         Task {
             for await isActive in activityStream {
                 if isActive {
-                    await eventStreamContinuation.yield(.observerActivated)
+                    eventStreamContinuation.yield(.observerActivated)
                 } else {
-                    await eventStreamContinuation.yield(.observerDeactivated)
+                    eventStreamContinuation.yield(.observerDeactivated)
                 }
             }
 
-            await eventStreamContinuation.yield(.observerRemoved)
+            eventStreamContinuation.yield(.observerRemoved)
         }
     }
 }
