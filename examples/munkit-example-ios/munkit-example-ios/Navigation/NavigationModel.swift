@@ -7,7 +7,8 @@
 
 import SwiftUI
 
-@Observable class NavigationModel {
+@Observable
+class NavigationModel {
     var path: NavigationPath = .init() { didSet { handleNavigationPathDidSet(oldPath: oldValue) } }
 
     private var actionsAfterPop: [Int: () -> Void] = [:]

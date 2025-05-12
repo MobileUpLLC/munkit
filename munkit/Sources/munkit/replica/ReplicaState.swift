@@ -16,17 +16,6 @@ public struct ReplicaState<T>: Sendable where T: Sendable {
     var observingState: ReplicaObservingState
     
     public var hasFreshData: Bool { data?.isFresh ?? false }
-
-    static func createEmpty(hasStorage: Bool) -> ReplicaState<T> {
-        let observingState = ReplicaObservingState(observerIds: [], activeObserverIds: [], observingTime: .never)
-
-        return ReplicaState(
-            loading: false,
-            data: nil,
-            error: nil,
-            observingState: observingState
-        )
-    }
 }
 
 extension ReplicaState: CustomStringConvertible {
@@ -41,10 +30,3 @@ extension ReplicaState: CustomStringConvertible {
         """
     }
 }
-
-extension ReplicaObservingState: CustomStringConvertible {
-    public var description: String {
-        "observers: \(observerIds.count), active: \(activeObserverIds.count), observingSince: \(observingTime)"
-    }
-}
-

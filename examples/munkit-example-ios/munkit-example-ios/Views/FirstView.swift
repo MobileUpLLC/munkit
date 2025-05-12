@@ -22,6 +22,23 @@ struct FirstView: View {
     }
 }
 
+private struct LinkButton: View {
+    let title: String
+    let value: Destination
+
+    var body: some View {
+        NavigationLink(title, value: value)
+            .foregroundStyle(.black)
+            .font(.system(size: 20, weight: .bold))
+            .padding()
+            .background {
+                Capsule()
+                    .fill(.thinMaterial)
+                    .stroke(.black, lineWidth: 1)
+            }
+    }
+}
+
 #Preview {
     FirstView()
 }

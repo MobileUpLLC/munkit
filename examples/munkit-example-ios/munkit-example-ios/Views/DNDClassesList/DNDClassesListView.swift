@@ -138,9 +138,6 @@ struct DNDClassesListView: View {
                 }
             }
         }
-//        .onDisappear {
-//            activityStream.continuation.yield(false)
-//        }
     }
 }
 

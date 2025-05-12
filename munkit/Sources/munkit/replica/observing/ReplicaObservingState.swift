@@ -7,14 +7,13 @@
 
 import Foundation
 
-/// Содержит информацию о наблюдателях реплики.
+/// Contains information about the observers of a replica.
 public struct ReplicaObservingState: Sendable {
     let observerIds: Set<UUID>
     let activeObserverIds: Set<UUID>
-    /// Время последнего наблюдения за репликой.
-    let observingTime: ObservingTime
+    let lastObservingTime: ReplicaLastObservingTime
 
-    /// Текущий статус наблюдения, основанный на количестве наблюдателей.
+    /// The current observation status based on the number of observers.
     var status: ObservingStatus {
         if activeObserverIds.count > 0 {
             return .active
@@ -26,22 +25,25 @@ public struct ReplicaObservingState: Sendable {
     }
 }
 
-/// Представляет статус наблюдателей для реплики.
-/// - none - нет наблюдателей
-/// - inactive - eсть неактивные наблюдатели
-/// - active - eсть активные наблюдатели
+/// Represents the status of observers for a replica.
 enum ObservingStatus {
+    /// No observers
     case none
+    /// There are inactive observers
     case inactive
+    /// There are active observers
     case active
 }
 
-/// Представляет время последнего наблюдения за репликой.
-/// - never - никогда не наблюдалась
-/// - timeInPast -  время в прошлом
-/// - now - сейчас наблюдается
-enum ObservingTime {
+/// Represents the time of the last observation of a replica.
+enum ReplicaLastObservingTime {
     case never
     case timeInPast(Date)
     case now
+}
+
+extension ReplicaObservingState: CustomStringConvertible {
+    public var description: String {
+        "observers: \(observerIds.count), active: \(activeObserverIds.count), observingSince: \(lastObservingTime)"
+    }
 }

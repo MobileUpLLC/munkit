@@ -5,16 +5,16 @@
 //  Created by Natalia Luzyanina on 01.04.2025.
 //
 
-/// Интерфейс для сохранения данных реплики в постоянное хранилище.
+/// Interface for saving replica data to persistent storage.
 public protocol ReplicaStorage<T>: Sendable {
     associatedtype T: Sendable
 
-    /// Записывает данные в хранилище.
+    /// Writes data to the storage.
     func write(data: T) async throws
 
-    /// Читает данные из хранилища.
+    /// Reads data from the storage.
     func read() async throws -> T?
 
-    /// Удаляет данные из хранилища.
+    /// Removes data from the storage.
     func remove() async throws
 }

@@ -32,7 +32,18 @@ public actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
         self.settings = settings
         self.storage = storage
         self.dataFetcher = fetcher
-        self.replicaState = ReplicaState<T>.createEmpty(hasStorage: storage != nil)
+
+        let observingState = ReplicaObservingState(
+            observerIds: [],
+            activeObserverIds: [],
+            lastObservingTime: .never
+        )
+        self.replicaState = ReplicaState(
+            loading: false,
+            data: nil,
+            error: nil,
+            observingState: observingState
+        )
     }
 
     public func observe(activityStream: AsyncStream<Bool>) async -> ReplicaObserver<T> {
@@ -274,7 +285,7 @@ public actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
         let newObservingState = ReplicaObservingState(
             observerIds: currentObservingState.observerIds.union([observerId]),
             activeObserverIds: currentObservingState.activeObserverIds,
-            observingTime: currentObservingState.observingTime
+            lastObservingTime: currentObservingState.lastObservingTime
         )
 
         await emitObserverCountChangedIfNeeded(from: currentObservingState, to: newObservingState)
@@ -284,11 +295,11 @@ public actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
         let currentObservingState = replicaState.observingState
         let isLastActive = currentObservingState.activeObserverIds.count == 1
             && currentObservingState.activeObserverIds.contains(observerId)
-        let updatedObservingTime = isLastActive ? .timeInPast(.now) : currentObservingState.observingTime
+        let updatedlastObservingTime = isLastActive ? .timeInPast(.now) : currentObservingState.lastObservingTime
         let newObservingState = ReplicaObservingState(
             observerIds: currentObservingState.observerIds.subtracting([observerId]),
             activeObserverIds: currentObservingState.activeObserverIds.subtracting([observerId]),
-            observingTime: updatedObservingTime
+            lastObservingTime: updatedlastObservingTime
         )
 
         await emitObserverCountChangedIfNeeded(from: currentObservingState, to: newObservingState)
@@ -323,7 +334,7 @@ public actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
         let newObservingState = ReplicaObservingState(
             observerIds: currentObservingState.observerIds,
             activeObserverIds: updatedActiveObserverIds,
-            observingTime: .now
+            lastObservingTime: .now
         )
 
         await emitObserverCountChangedIfNeeded(from: currentObservingState, to: newObservingState)
@@ -333,11 +344,11 @@ public actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
         let currentObservingState = replicaState.observingState
         let isLastActive = currentObservingState.activeObserverIds.count == 1
             && currentObservingState.activeObserverIds.contains(observerId)
-        let updatedObservingTime = isLastActive ? .timeInPast(.now) : currentObservingState.observingTime
+        let updatedlastObservingTime = isLastActive ? .timeInPast(.now) : currentObservingState.lastObservingTime
         let newObservingState = ReplicaObservingState(
             observerIds: currentObservingState.observerIds,
             activeObserverIds: currentObservingState.activeObserverIds.subtracting([observerId]),
-            observingTime: updatedObservingTime
+            lastObservingTime: updatedlastObservingTime
         )
 
         await emitObserverCountChangedIfNeeded(from: currentObservingState, to: newObservingState)
