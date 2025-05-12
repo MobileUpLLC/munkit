@@ -13,14 +13,12 @@ public actor MUNLoggerPlugin {
     private static let configuration = NetworkLoggerPlugin.Configuration(output: defaultOutput, logOptions: .verbose)
     
     private static func defaultOutput(target: TargetType, items: [String]) {
-        var logMessage = "---------------------------REQUEST START---------------------------\n"
+        var logMessage = "🕸️📥📤"
 
         for item in items {
             logMessage.append(contentsOf: "\n" + item)
         }
 
-        logMessage.append(contentsOf: "\n\n---------------------------REQUEST END-----------------------------\n\n")
-        
-        print(logMessage)
+        MUNLogger.shared?.log(type: .debug, logMessage)
     }
 }
