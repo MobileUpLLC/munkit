@@ -148,6 +148,35 @@ To enable mock data for a target, set `isMockEnabled` to `true` and specify a `m
 
 For paginated APIs, use the `MUNMockablePaginationAPITarget` protocol and specify `pageIndexParameterName` and `pageSizeParameterName`.
 
+### Logging
+
+The munkit library allows clients to inject a custom logger to handle logging for network operations. To enable logging, you need:
+
+1. Implement the MUNLoggable protocol to define how debug, info, and error messages are logged.
+
+```swift
+public class CustomLoggerAdapter: MUNLoggable {
+    public func logDebug(_ message: String) {
+        ...
+    }
+
+    public func logInfo(_ message: String) {
+        ...
+    }
+
+    public func logError(_ message: String) {
+        ...
+    }
+}
+```
+2. Configure the MUNLogger with your custom logger implementation.
+3. Initialize the NetworkService with the MUNLoggerPlugin.
+
+```swift
+    MUNLogger.setupLogger(CustomLoggerAdapter())
+    let networkService = NetworkService(plugins: [MUNLoggerPlugin.instance])
+```
+
 ## Features
 
 - **Flexible API Targets**: Define API endpoints with support for access token requirements and mock data.

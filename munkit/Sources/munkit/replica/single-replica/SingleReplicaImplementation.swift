@@ -9,12 +9,12 @@ import Foundation
 
 actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
     public let name: String
-    public var settings: ReplicaSettings
 
+    private let settings: ReplicaSettings
     private let storage: (any ReplicaStorage<T>)?
     private let dataFetcher: @Sendable () async throws -> T
-    private var replicaState: ReplicaState<T>
 
+    private var replicaState: ReplicaState<T>
     private var observerStateStreams: [AsyncStreamBundle<ReplicaState<T>>] = []
     private var dataClearingTask: Task<Void, Error>?
     private var errorClearingTask: Task<Void, Error>?

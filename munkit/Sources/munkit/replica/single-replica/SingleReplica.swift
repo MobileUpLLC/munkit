@@ -11,7 +11,6 @@ public protocol SingleReplica<T>: Actor {
     associatedtype T: Sendable
 
     var name: String { get }
-    var settings: ReplicaSettings { get }
 
     init(
         name: String,
