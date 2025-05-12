@@ -64,19 +64,6 @@ actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
         return observer
     }
 
-    private func handleObserverEvent(_ event: ReplicaObserverEvent, observerId: UUID ) async {
-        switch event {
-        case .observerAdded:
-            await handleObserverAdded(observerId: observerId)
-        case .observerRemoved:
-            await handleObserverRemoved(observerId: observerId)
-        case .observerActivated:
-            await handleObserverActivated(observerId: observerId)
-        case .observerDeactivated:
-            await handleObserverDeactivated(observerId: observerId)
-        }
-    }
-
     public func refresh() async {
         await setLoadingStateAndLoadData(skipLoadingIfFresh: false)
     }
@@ -275,6 +262,19 @@ actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
             print("⚖️ \(name) \(#function): No changes in state")
         } else {
             print("⚖️ \(name) \(#function): Changed fields:\n  " + changes.joined(separator: "\n  "))
+        }
+    }
+
+    private func handleObserverEvent(_ event: ReplicaObserverEvent, observerId: UUID ) async {
+        switch event {
+        case .observerAdded:
+            await handleObserverAdded(observerId: observerId)
+        case .observerRemoved:
+            await handleObserverRemoved(observerId: observerId)
+        case .observerActivated:
+            await handleObserverActivated(observerId: observerId)
+        case .observerDeactivated:
+            await handleObserverDeactivated(observerId: observerId)
         }
     }
 
