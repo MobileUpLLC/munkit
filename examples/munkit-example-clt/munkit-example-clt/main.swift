@@ -9,23 +9,10 @@ import munkit
 import munkit_example_core
 import Foundation
 
-struct Logger: MUNLoggable {
-    func logDebug(_ message: String) {
-        print(message)
-    }
-
-    func logInfo(_ message: String) {
-        print(message)
-    }
-
-    func logError(_ message: String) {
-        print(message)
-    }
-}
-
 let tokenProvider = AccessTokenProviderAndRefresher()
-let networkService = MUNNetworkService<DNDAPITarget>(plugins: [MUNLoggerPlugin.instance])
+let networkService = MUNNetworkService<DNDAPITarget>()
 MUNLogger.setupLogger(Logger())
+
 let repository = DNDMonstersRepository(networkService: networkService)
 
 let observer1 = await Observer(

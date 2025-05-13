@@ -17,9 +17,10 @@ public actor KeyedReplicaObserver<K: Sendable & Hashable, T: Sendable> {
     private let activityStream: AsyncStream<Bool>
     private var currentActivity: Bool = false
 
-    private var childActivityStreams: [AsyncStream<Bool>.Continuation] = []
-
     private var replicaObservingTask: Task<Void, Never>?
+
+    private var activeChild: K?
+    private var childs: [K: (observer: SingleReplicaObserver<T>, activityStream: AsyncStream<Bool>.Continuation)] = [:]
 
     init(
         activityStream: AsyncStream<Bool>,
@@ -35,7 +36,7 @@ public actor KeyedReplicaObserver<K: Sendable & Hashable, T: Sendable> {
         Task {
             for await activity in activityStream {
                 await updateCurrentActivity(activity)
-                await childActivityStreams.forEach { $0.yield(activity) }
+                await childs.values.forEach { $0.activityStream.yield(activity) }
             }
         }
 
@@ -48,15 +49,28 @@ public actor KeyedReplicaObserver<K: Sendable & Hashable, T: Sendable> {
 
     private func startKeyObserving() async {
         for await key in keyStream {
+            guard activeChild != key else { continue }
+            if let activeChild, let activeChild = childs[activeChild] {
+                await activeChild.activityStream.yield(false)
+            }
+
+            activeChild = key
             replicaObservingTask?.cancel()
-            replicaObservingTask = Task {
+
+            let child: (observer: SingleReplicaObserver<T>, activityStream: AsyncStream<Bool>.Continuation)
+            if let existingChild = childs[key] {
+                child = existingChild
+            } else {
                 let internalActivityStreamBundle = AsyncStream<Bool>.makeStream()
-                childActivityStreams.append(internalActivityStreamBundle.continuation)
-
                 let observer = await replicaProvider(key).observe(activityStream: internalActivityStreamBundle.stream)
-                internalActivityStreamBundle.continuation.yield(currentActivity)
+                child = (observer: observer, activityStream: internalActivityStreamBundle.continuation)
+                childs[key] = child
+            }
 
-                for await state in observer.stateStream {
+            await child.activityStream.yield(currentActivity)
+
+            replicaObservingTask = Task {
+                for await state in child.observer.stateStream {
                     stateStreamContinuation.yield(state)
                 }
             }

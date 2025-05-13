@@ -62,11 +62,16 @@ actor KeyedReplicaImplementation<K: Hashable & Sendable, T: Sendable>: KeyedRepl
             return replica
         }
 
-        return await ReplicasHolder.shared.getSingleReplica(
+        print("Creating replica for key \(key)")
+
+        let replica = await ReplicasHolder.shared.getSingleReplica(
             name: childNameFacroty(key),
             settings: childSettingsFactory(key),
             storage: nil,
             fetcher: { try await self.fetcher(key) },
         )
+
+        replicas[key] = replica
+        return replica
     }
 }
