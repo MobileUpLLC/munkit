@@ -46,11 +46,11 @@ actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
         )
     }
 
-    public func observe(activityStream: AsyncStream<Bool>) async -> ReplicaObserver<T> {
+    public func observe(activityStream: AsyncStream<Bool>) async -> SingleReplicaObserver<T> {
         let stateStreamBundle = AsyncStream<ReplicaState<T>>.makeStream()
         observerStateStreams.append(stateStreamBundle)
 
-        let observer = await ReplicaObserver<T>(
+        let observer = await SingleReplicaObserver<T>(
             activityStream: activityStream,
             stateStream: stateStreamBundle.stream,
         )

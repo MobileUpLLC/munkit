@@ -5,7 +5,7 @@
 //  Created by Ilia Chub on 12.05.2025.
 //
 
-struct DNDMonsterSpecialAbilityModel: Decodable {
+public struct DNDMonsterSpecialAbilityModel: Sendable, Decodable {
     let name: String
     let desc: String
     let damage: [DNDMonsterDamageModel]

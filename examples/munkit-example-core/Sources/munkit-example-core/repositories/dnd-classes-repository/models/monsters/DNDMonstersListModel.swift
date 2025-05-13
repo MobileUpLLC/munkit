@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct DNDMonstersListModel: Decodable {
-    let count: Int
-    let results: [DNDMonsterShortModel]
+public struct DNDMonstersListModel: Sendable, Decodable {
+    public let count: Int
+    public let results: [DNDMonsterShortModel]
 }

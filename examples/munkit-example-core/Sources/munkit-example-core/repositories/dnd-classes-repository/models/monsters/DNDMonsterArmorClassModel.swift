@@ -5,7 +5,7 @@
 //  Created by Ilia Chub on 12.05.2025.
 //
 
-struct DNDMonsterArmorClassModel: Decodable {
+public struct DNDMonsterArmorClassModel: Sendable, Decodable {
     let type: String
     let value: Int
 }

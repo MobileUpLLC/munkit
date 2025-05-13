@@ -5,7 +5,7 @@
 //  Created by Ilia Chub on 12.05.2025.
 //
 
-struct DNDMonsterSenses: Decodable {
+public struct DNDMonsterSenses: Sendable, Decodable {
     let darkvision: String?
     let passivePerception: Int
 

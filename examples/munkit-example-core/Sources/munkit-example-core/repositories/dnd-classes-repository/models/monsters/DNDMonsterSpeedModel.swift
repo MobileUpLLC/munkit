@@ -5,7 +5,7 @@
 //  Created by Ilia Chub on 12.05.2025.
 //
 
-struct DNDMonsterSpeedModel: Decodable {
+public struct DNDMonsterSpeedModel: Sendable, Decodable {
     let walk: String?
     let swim: String?
 }

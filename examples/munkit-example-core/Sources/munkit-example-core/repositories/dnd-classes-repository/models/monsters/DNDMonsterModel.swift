@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct DNDMonsterModel: Decodable {
+public struct DNDMonsterModel: Sendable, Decodable {
     let index: String
     let name: String
     let size: String

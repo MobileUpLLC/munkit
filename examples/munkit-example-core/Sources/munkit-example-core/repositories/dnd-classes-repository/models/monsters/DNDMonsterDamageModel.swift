@@ -5,7 +5,7 @@
 //  Created by Ilia Chub on 12.05.2025.
 //
 
-struct DNDMonsterDamageModel: Decodable {
+public struct DNDMonsterDamageModel: Sendable, Decodable {
     let damageType: DNDMonsterDamageTypeModel
     let damageDice: String
 

@@ -5,7 +5,7 @@
 //  Created by Ilia Chub on 12.05.2025.
 //
 
-struct DNDMonsterUsageModel: Decodable {
+public struct DNDMonsterUsageModel: Sendable, Decodable {
     let type: String
     let times: Int
 }

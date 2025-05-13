@@ -9,12 +9,13 @@ import Foundation
 
 public actor ReplicasHolder {
     private var singleReplicas: [any SingleReplica] = []
+    private var keydReplicas: [any KeyedReplica] = []
 
     public static let shared = ReplicasHolder()
     
     private init() {}
 
-    public func getReplica<T: Sendable>(
+    public func getSingleReplica<T: Sendable>(
         name: String,
         settings: ReplicaSettings,
         storage: (any ReplicaStorage<T>)?,
@@ -41,6 +42,37 @@ public actor ReplicasHolder {
         singleReplicas.append(newReplica)
 
         return newReplica
+    }
+
+    public func getKeydReplica<K: Hashable & Sendable, T: Sendable>(
+        name: String,
+        childNameFacroty: @Sendable @escaping (K) -> String,
+        childSettingsFactory: @Sendable @escaping (K) -> ReplicaSettings,
+        settings: KeyedReplicaSettings,
+        fetcher: @escaping @Sendable (K) async throws -> T
+    ) async -> any KeyedReplica<K, T> {
+        var replica: (any KeyedReplica)? = nil
+        for keydReplica in keydReplicas {
+            if await keydReplica.name == name {
+                replica = keydReplica
+                break
+            }
+        }
+        if let replica = replica as? any KeyedReplica<K, T> {
+            return replica
+        }
+
+        let newKeydReplica = KeyedReplicaImplementation<K, T>(
+            name: name,
+            settings: settings,
+            childNameFacroty: childNameFacroty,
+            childSettingsFactory: childSettingsFactory,
+            fetcher: fetcher
+        )
+
+        keydReplicas.append(newKeydReplica)
+
+        return newKeydReplica
     }
 }
 

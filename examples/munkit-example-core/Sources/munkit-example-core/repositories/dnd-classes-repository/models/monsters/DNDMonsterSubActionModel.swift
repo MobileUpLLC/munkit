@@ -5,7 +5,7 @@
 //  Created by Ilia Chub on 12.05.2025.
 //
 
-struct DNDMonsterSubActionModel: Decodable {
+public struct DNDMonsterSubActionModel: Sendable, Decodable {
     let actionName: String
     let count: String
     let type: String

@@ -20,7 +20,7 @@ public protocol SingleReplica<T>: Actor {
     )
 
     /// Starts observing the replica's state.
-    func observe(activityStream: AsyncStream<Bool>) async -> ReplicaObserver<T>
+    func observe(activityStream: AsyncStream<Bool>) async -> SingleReplicaObserver<T>
 
     /// Fetches fresh data from the network.
     /// - Note: Does not trigger a new request if one is already in progress.

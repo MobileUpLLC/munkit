@@ -5,7 +5,7 @@
 //  Created by Ilia Chub on 12.05.2025.
 //
 
-struct DNDMonsterAbilityScoreModel: Decodable {
+public struct DNDMonsterAbilityScoreModel: Sendable, Decodable {
     let index: String
     let name: String
     let url: String
