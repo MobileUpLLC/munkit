@@ -76,5 +76,7 @@ public actor KeyedReplicaObserver<K: Sendable & Hashable, T: Sendable> {
                 stateStreamContinuation.finish()
             }
         }
+
+        print(123)
     }
 }
