@@ -6,17 +6,20 @@
 //
 
 import munkit
+import os
 
 struct Logger: MUNLoggable {
+    let logger = os.Logger(subsystem: "MUNKit", category: "general")
+
     func logDebug(_ message: String) {
-        print(message)
+        logger.debug("\(message)")
     }
 
     func logInfo(_ message: String) {
-        print(message)
+        logger.info("\(message)")
     }
 
     func logError(_ message: String) {
-        print(message)
+        logger.error("\(message)")
     }
 }

@@ -65,7 +65,7 @@ public actor DNDMonstersRepository {
                     revalidateOnActiveObserverAdded: true
                 )
             },
-            settings: .init(),
+            settings: .init(maxCount: 2),
             fetcher: { [weak self] key in
                 guard let networkService = self?.networkService else {
                     throw CancellationError()

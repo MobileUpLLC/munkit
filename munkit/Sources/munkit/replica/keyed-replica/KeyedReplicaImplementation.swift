@@ -62,7 +62,12 @@ actor KeyedReplicaImplementation<K: Hashable & Sendable, T: Sendable>: KeyedRepl
             return replica
         }
 
-        print("Creating replica for key \(key)")
+        if replicas.count == settings.maxCount, let firstReplicasKey = replicas.keys.first {
+            MUNLogger.shared?.logDebug("🕸️🧙☠️ Removing replica for key \(firstReplicasKey)")
+            replicas.removeValue(forKey: firstReplicasKey)
+        }
+
+        MUNLogger.shared?.logDebug("🕸️🧙🆕 Creating replica for key \(key)")
 
         let replica = await ReplicasHolder.shared.getSingleReplica(
             name: childNameFacroty(key),

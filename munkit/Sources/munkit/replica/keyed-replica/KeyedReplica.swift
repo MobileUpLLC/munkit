@@ -30,7 +30,3 @@ public protocol KeyedReplica<K, T>: Actor {
     /// Loads fresh data from the network for a given key if the data is stale.
     func revalidate(key: K) async
 }
-
-public struct KeyedReplicaSettings: Sendable {
-    public init() {}
-}
