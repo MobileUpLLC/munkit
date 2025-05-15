@@ -13,10 +13,12 @@ import munkit_example_core
 struct munkit_example_iosApp: App {
     let navigationModel = NavigationModel()
     let dndClassesRepository: DNDClassesRepository
+    let dndMonstersRepository: DNDMonstersRepository
 
     init() {
         let networkService = NetworkService()
         self.dndClassesRepository = DNDClassesRepository(networkService: networkService)
+        self.dndMonstersRepository = DNDMonstersRepository(networkService: networkService)
     }
 
     var body: some Scene {
@@ -27,7 +29,9 @@ struct munkit_example_iosApp: App {
                     .navigationDestination(for: Destination.self, destination: destination)
             }
             .environment(dndClassesRepository)
+            .environment(dndMonstersRepository)
             .environment(navigationModel)
+            .onAppear { MUNLogger.setupLogger(Logger()) }
         }
     }
 
@@ -37,6 +41,11 @@ struct munkit_example_iosApp: App {
             switch destination {
             case .dndClassesList:
                 DNDClassesListView()
+            }
+        case .dndMonsters(let destination):
+            switch destination {
+            case .dndMonstersList:
+                DNDMonstersListView()
             }
         }
     }

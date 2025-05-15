@@ -8,40 +8,40 @@
 import Foundation
 
 public struct DNDMonsterModel: Sendable, Decodable {
-    let index: String
-    let name: String
-    let size: String
-    let type: String
-    let alignment: String
-    let armorClass: [DNDMonsterArmorClassModel]
-    let hitPoints: Int
-    let hitDice: String
-    let hitPointsRoll: String
-    let speed: DNDMonsterSpeedModel
-    let strength: Int
-    let dexterity: Int
-    let constitution: Int
-    let intelligence: Int
-    let wisdom: Int
-    let charisma: Int
-    let proficiencies: [DNDMonsterProficiencyModel]
-    let damageVulnerabilities: [String]
-    let damageResistances: [String]
-    let damageImmunities: [String]
-    let conditionImmunities: [String]
-    let senses: DNDMonsterSenses
-    let languages: String
-    let challengeRating: Float
-    let proficiencyBonus: Int
-    let xp: Int
-    let specialAbilities: [DNDMonsterSpecialAbilityModel]
-    let actions: [DNDMonsterActionModel]
-    let legendaryActions: [DNDMonsterLegendaryActionModel]
-    let image: String
-    let url: String
-    let updatedAt: String
-    let forms: [String]
-    let reactions: [String]
+    public let index: String
+    public let name: String
+    public let size: String
+    public let type: String
+    public let alignment: String
+    public let armorClass: [DNDMonsterArmorClassModel]
+    public let hitPoints: Int
+    public let hitDice: String
+    public let hitPointsRoll: String
+    public let speed: DNDMonsterSpeedModel
+    public let strength: Int
+    public let dexterity: Int
+    public let constitution: Int
+    public let intelligence: Int
+    public let wisdom: Int
+    public let charisma: Int
+    public let proficiencies: [DNDMonsterProficiencyModel]
+    public let damageVulnerabilities: [String]
+    public let damageResistances: [String]
+    public let damageImmunities: [String]
+    public let conditionImmunities: [String]
+    public let senses: DNDMonsterSenses
+    public let languages: String
+    public let challengeRating: Float
+    public let proficiencyBonus: Int
+    public let xp: Int
+    public let specialAbilities: [DNDMonsterSpecialAbilityModel]
+    public let actions: [DNDMonsterActionModel]
+    public let legendaryActions: [DNDMonsterLegendaryActionModel]
+    public let image: String
+    public let url: String
+    public let updatedAt: String
+    public let forms: [String]
+    public let reactions: [String]
 
     enum CodingKeys: String, CodingKey {
         case index
