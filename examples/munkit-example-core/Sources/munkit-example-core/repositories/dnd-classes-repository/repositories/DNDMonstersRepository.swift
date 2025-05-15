@@ -36,7 +36,7 @@ public actor DNDMonstersRepository {
         self.dndMonstersListReplica = await ReplicasHolder.shared.getSingleReplica(
             name: "DNDMonstersListReplica",
             settings: .init(
-                staleTime: 120,
+                staleTime: 10,
                 clearTime: 5,
                 clearErrorTime: 1,
                 cancelTime: 0.05,
@@ -58,7 +58,7 @@ public actor DNDMonstersRepository {
             childNameFacroty: { "DNDMonstersChildReplica-\($0)" },
             childSettingsFactory: { _ in
                 ReplicaSettings(
-                    staleTime: 120,
+                    staleTime: 10,
                     clearTime: 5,
                     clearErrorTime: 5,
                     cancelTime: 10,

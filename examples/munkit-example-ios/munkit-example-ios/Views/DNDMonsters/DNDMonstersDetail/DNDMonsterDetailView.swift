@@ -70,7 +70,9 @@ struct DNDMonsterDetailView: View {
             replicaSetupped = true
 
             Task {
-                navigationModel.performActionAfterPop { activityStream.continuation.finish() }
+                navigationModel.performActionAfterPop {
+                    activityStream.continuation.finish()
+                }
 
                 let observer = await dndMonstersRepository
                     .getDNDMonstersReplica()

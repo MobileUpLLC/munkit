@@ -19,8 +19,11 @@ public actor KeyedReplicaObserver<K: Sendable & Hashable, T: Sendable> {
 
     private var replicaObservingTask: Task<Void, Never>?
 
-    private var activeChild: K?
-    private var childs: [K: (observer: SingleReplicaObserver<T>, activityStream: AsyncStream<Bool>.Continuation)] = [:]
+    private var activeChild: (
+        key: K,
+        observer: SingleReplicaObserver<T>,
+        activityStream: AsyncStream<Bool>.Continuation
+    )?
 
     init(
         activityStream: AsyncStream<Bool>,
@@ -33,13 +36,7 @@ public actor KeyedReplicaObserver<K: Sendable & Hashable, T: Sendable> {
         self.replicaProvider = replicaProvider
         self.activityStream = activityStream
 
-        Task {
-            for await activity in activityStream {
-                await updateCurrentActivity(activity)
-                await childs.values.forEach { $0.activityStream.yield(activity) }
-            }
-        }
-
+        Task { await startActivityObserving() }
         Task { await startKeyObserving() }
     }
 
@@ -47,32 +44,36 @@ public actor KeyedReplicaObserver<K: Sendable & Hashable, T: Sendable> {
         currentActivity = newValue
     }
 
+    private func startActivityObserving() async {
+        for await activity in activityStream {
+            await updateCurrentActivity(activity)
+            await activeChild?.activityStream.yield(activity)
+        }
+        await activeChild?.activityStream.finish()
+    }
+
     private func startKeyObserving() async {
         for await key in keyStream {
-            guard activeChild != key else { continue }
-            if let activeChild, let activeChild = childs[activeChild] {
-                await activeChild.activityStream.yield(false)
-            }
+            guard activeChild?.key != key else { continue }
 
-            activeChild = key
-            replicaObservingTask?.cancel()
+            await activeChild?.activityStream.finish()
 
-            let child: (observer: SingleReplicaObserver<T>, activityStream: AsyncStream<Bool>.Continuation)
-            if let existingChild = childs[key] {
-                child = existingChild
-            } else {
-                let internalActivityStreamBundle = AsyncStream<Bool>.makeStream()
-                let observer = await replicaProvider(key).observe(activityStream: internalActivityStreamBundle.stream)
-                child = (observer: observer, activityStream: internalActivityStreamBundle.continuation)
-                childs[key] = child
-            }
+            let internalActivityStreamBundle = AsyncStream<Bool>.makeStream()
+            let observer = await replicaProvider(key).observe(activityStream: internalActivityStreamBundle.stream)
+            let activeChild = (
+                key: key,
+                observer: observer,
+                activityStream: internalActivityStreamBundle.continuation
+            )
+            self.activeChild = activeChild
 
-            await child.activityStream.yield(currentActivity)
+            activeChild.activityStream.yield(currentActivity)
 
             replicaObservingTask = Task {
-                for await state in child.observer.stateStream {
+                for await state in activeChild.observer.stateStream {
                     stateStreamContinuation.yield(state)
                 }
+                stateStreamContinuation.finish()
             }
         }
     }

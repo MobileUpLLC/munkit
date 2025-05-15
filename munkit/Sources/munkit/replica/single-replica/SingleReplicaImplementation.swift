@@ -218,7 +218,9 @@ actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
     }
 
     private func performDataStaling(after seconds: TimeInterval) async {
+        print("performDataStaling 1", self, Date().timeIntervalSince1970)
         try? await Task.sleep(for: .seconds(settings.staleTime))
+        print("performDataStaling 2", self, Date().timeIntervalSince1970)
 
         guard let data = currentState.data, data.isFresh else {
             return
