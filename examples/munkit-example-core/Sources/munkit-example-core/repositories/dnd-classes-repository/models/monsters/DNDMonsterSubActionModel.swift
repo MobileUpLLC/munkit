@@ -6,9 +6,9 @@
 //
 
 public struct DNDMonsterSubActionModel: Sendable, Decodable {
-    let actionName: String
-    let count: String
-    let type: String
+    public let actionName: String
+    public let count: String
+    public let type: String
 
     enum CodingKeys: String, CodingKey {
         case actionName = "action_name"

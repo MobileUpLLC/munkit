@@ -16,7 +16,7 @@ struct munkit_example_iosApp: App {
     let dndMonstersRepository: DNDMonstersRepository
 
     init() {
-        let networkService = NetworkService()
+        let networkService = NetworkService(plugins: [MUNLoggerPlugin.instance])
         self.dndClassesRepository = DNDClassesRepository(networkService: networkService)
         self.dndMonstersRepository = DNDMonstersRepository(networkService: networkService)
     }
@@ -46,6 +46,8 @@ struct munkit_example_iosApp: App {
             switch destination {
             case .dndMonstersList:
                 DNDMonstersListView()
+            case .dndMonster(let index):
+                DNDMonsterDetailView(monsterIndex: index)
             }
         }
     }

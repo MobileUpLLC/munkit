@@ -6,13 +6,13 @@
 //
 
 public struct DNDMonsterActionModel: Sendable, Decodable {
-    let name: String
-    let desc: String
-    let multiattackType: String?
-    let attackBonus: Int?
-    let usage: DNDMonsterUsageModel?
-    let damage: [DNDMonsterDamageModel]
-    let actions: [DNDMonsterSubActionModel]
+    public let name: String
+    public let desc: String
+    public let multiattackType: String?
+    public let attackBonus: Int?
+    public let usage: DNDMonsterUsageModel?
+    public let damage: [DNDMonsterDamageModel]
+    public let actions: [DNDMonsterSubActionModel]
 
     enum CodingKeys: String, CodingKey {
         case name

@@ -6,6 +6,6 @@
 //
 
 public struct DNDMonsterSpeedModel: Sendable, Decodable {
-    let walk: String?
-    let swim: String?
+    public let walk: String?
+    public let swim: String?
 }

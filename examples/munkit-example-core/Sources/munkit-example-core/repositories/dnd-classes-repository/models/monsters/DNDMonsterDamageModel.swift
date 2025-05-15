@@ -6,8 +6,8 @@
 //
 
 public struct DNDMonsterDamageModel: Sendable, Decodable {
-    let damageType: DNDMonsterDamageTypeModel
-    let damageDice: String
+    public let damageType: DNDMonsterDamageTypeModel
+    public let damageDice: String
 
     enum CodingKeys: String, CodingKey {
         case damageType = "damage_type"

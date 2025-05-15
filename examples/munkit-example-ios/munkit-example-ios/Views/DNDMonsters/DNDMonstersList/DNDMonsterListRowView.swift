@@ -9,6 +9,8 @@ import SwiftUI
 import munkit_example_core
 
 struct DNDMonsterListRowView: View {
+    @Environment(NavigationModel.self) private var navigationModel
+
     let monster: DNDMonsterShortModel
 
     var body: some View {
@@ -22,5 +24,8 @@ struct DNDMonsterListRowView: View {
         }
         .padding()
         .contentShape(Rectangle())
+        .onTapGesture {
+            navigationModel.path.append(Destination.dndMonsters(.dndMonster(monster.index)))
+        }
     }
 }

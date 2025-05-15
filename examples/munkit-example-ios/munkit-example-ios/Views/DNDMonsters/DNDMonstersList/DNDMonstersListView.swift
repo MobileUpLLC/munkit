@@ -1,5 +1,5 @@
 //
-//  DNDClassesListView.swift
+//  DNDMonstersListView.swift
 //  munkit-example-ios
 //
 //  Created by Ilia Chub on 29.04.2025.
@@ -9,11 +9,11 @@ import SwiftUI
 import munkit
 import munkit_example_core
 
-struct DNDClassesListView: View {
+struct DNDMonstersListView: View {
     @Environment(NavigationModel.self) private var navigationModel
-    @Environment(DNDClassesRepository.self) private var dndClassesRepository
+    @Environment(DNDMonstersRepository.self) private var dndMonstersRepository
 
-    @State private var replicaState: ReplicaState<DNDClassesListModel>?
+    @State private var replicaState: ReplicaState<DNDMonstersListModel>?
     @State private var replicaSetupped = false
 
     private let activityStream = AsyncStream<Bool>.makeStream()
@@ -22,12 +22,12 @@ struct DNDClassesListView: View {
         ReplicaStateView(
             replicaState: replicaState,
             refreshAction: {
-                await dndClassesRepository.getDNDClassesListReplica().revalidate()
+                await dndMonstersRepository.getDNDMonstersListReplica().revalidate()
             },
             content: { data in
                 List {
-                    ForEach(data.results, id: \.index) { dndClass in
-                        DNDClassListRowView(dndClass: dndClass)
+                    ForEach(data.results, id: \.index) { monster in
+                        DNDMonsterListRowView(monster: monster)
                             .listRowBackground(
                                 RoundedRectangle(cornerRadius: 10)
                                     .fill(Color(.systemBackground))
@@ -42,7 +42,7 @@ struct DNDClassesListView: View {
                     Image(systemName: "book.closed.fill")
                         .foregroundStyle(.secondary)
                         .font(.system(size: 40))
-                    Text("No Classes Found")
+                    Text("No Monsters Found")
                         .font(.headline)
                     Text("Try pulling to refresh")
                         .font(.subheadline)
@@ -50,12 +50,12 @@ struct DNDClassesListView: View {
                 }
             }
         )
-        .navigationTitle("D&D Classes")
+        .navigationTitle("D&D Monsters")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if replicaState?.hasFreshData == false {
                     Button {
-                        Task { await dndClassesRepository.getDNDClassesListReplica().refresh() }
+                        Task { await dndMonstersRepository.getDNDMonstersListReplica().refresh() }
                     } label: {
                         Image(systemName: "arrow.clockwise")
                     }
@@ -73,7 +73,7 @@ struct DNDClassesListView: View {
             Task {
                 navigationModel.performActionAfterPop { activityStream.continuation.finish() }
 
-                let observer = await dndClassesRepository.getDNDClassesListReplica().observe(
+                let observer = await dndMonstersRepository.getDNDMonstersListReplica().observe(
                     activityStream: activityStream.stream
                 )
                 activityStream.continuation.yield(true)

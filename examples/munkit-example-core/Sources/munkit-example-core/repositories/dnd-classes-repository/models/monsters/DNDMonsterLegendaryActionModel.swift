@@ -6,7 +6,7 @@
 //
 
 public struct DNDMonsterLegendaryActionModel: Sendable, Decodable {
-    let name: String
-    let desc: String
-    let damage: [DNDMonsterDamageModel]
+    public let name: String
+    public let desc: String
+    public let damage: [DNDMonsterDamageModel]
 }

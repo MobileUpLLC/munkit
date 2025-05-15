@@ -6,6 +6,6 @@
 //
 
 public struct DNDMonsterArmorClassModel: Sendable, Decodable {
-    let type: String
-    let value: Int
+    public let type: String
+    public let value: Int
 }

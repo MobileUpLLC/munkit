@@ -6,7 +6,7 @@
 //
 
 public struct DNDMonsterDamageTypeModel: Sendable, Decodable {
-    let index: String
-    let name: String
-    let url: String
+    public let index: String
+    public let name: String
+    public let url: String
 }

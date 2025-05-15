@@ -6,6 +6,6 @@
 //
 
 public struct DNDMonsterUsageModel: Sendable, Decodable {
-    let type: String
-    let times: Int
+    public let type: String
+    public let times: Int?
 }

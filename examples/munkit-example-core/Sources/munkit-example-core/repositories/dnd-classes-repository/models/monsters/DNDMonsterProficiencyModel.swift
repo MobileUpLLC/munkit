@@ -6,6 +6,6 @@
 //
 
 public struct DNDMonsterProficiencyModel: Sendable, Decodable {
-    let value: Int
-    let proficiency: DNDMonsterProficiencyDetailModel
+    public let value: Int
+    public let proficiency: DNDMonsterProficiencyDetailModel
 }

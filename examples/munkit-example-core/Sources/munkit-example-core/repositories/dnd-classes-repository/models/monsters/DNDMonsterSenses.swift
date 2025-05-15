@@ -6,8 +6,8 @@
 //
 
 public struct DNDMonsterSenses: Sendable, Decodable {
-    let darkvision: String?
-    let passivePerception: Int
+    public let darkvision: String?
+    public let passivePerception: Int
 
     enum CodingKeys: String, CodingKey {
         case darkvision

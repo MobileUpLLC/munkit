@@ -15,5 +15,6 @@ enum DNDClassesDestination: Hashable {
 }
 
 enum DNDMonstersDestination: Hashable {
+    case dndMonster(String)
     case dndMonstersList
 }
