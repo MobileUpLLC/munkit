@@ -17,16 +17,7 @@ public protocol MUNAPITarget: TargetType, AccessTokenAuthorizable {
 }
 
 extension MUNAPITarget {
-    var sampleData: Data { getSampleData() }
-
-    private func getSampleData() -> Data {
-        guard let mockFileName else {
-            print("🕸️💽🆓 The request \(path) does not use mock data.")
-            return Data()
-        }
-
-        return getSampleDataFromFileWithName(mockFileName)
-    }
+    public var sampleData: Data { getSampleData() }
 
     func getSampleDataFromFileWithName(_ mockFileName: String) -> Data {
         let logStart = "For the request \(path), mock data"
@@ -45,5 +36,14 @@ extension MUNAPITarget {
             print("🕸️💽🚨\n\(logStart) from file \(mockFileName).\(mockExtension) could not be read.\nError: \(error)")
             return Data()
         }
+    }
+
+    private func getSampleData() -> Data {
+        guard let mockFileName else {
+            print("🕸️💽🆓 The request \(path) does not use mock data.")
+            return Data()
+        }
+
+        return getSampleDataFromFileWithName(mockFileName)
     }
 }

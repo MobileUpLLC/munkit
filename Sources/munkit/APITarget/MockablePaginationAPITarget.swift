@@ -13,7 +13,7 @@ public protocol MUNMockablePaginationAPITarget: MUNAPITarget {
 }
 
 extension MUNMockablePaginationAPITarget {
-    var sampleData: Data { getSampleData() }
+    public var sampleData: Data { getSampleData() }
 
     private func getSampleData() -> Data {
         guard var mockFileName else {
