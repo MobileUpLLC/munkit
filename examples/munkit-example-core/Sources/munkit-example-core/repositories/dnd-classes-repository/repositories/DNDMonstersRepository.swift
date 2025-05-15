@@ -65,7 +65,10 @@ public actor DNDMonstersRepository {
                     revalidateOnActiveObserverAdded: true
                 )
             },
-            settings: .init(maxCount: 2),
+            settings: KeyedReplicaSettings(
+                maxCount: 3,
+                childRemovingPolicy: .byObservingTime
+            ),
             fetcher: { [weak self] key in
                 guard let networkService = self?.networkService else {
                     throw CancellationError()

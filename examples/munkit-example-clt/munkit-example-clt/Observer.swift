@@ -69,11 +69,14 @@ actor Observer: Sendable {
         try? await Task.sleep(for: .seconds(2))
         keyStreamBundle.continuation.yield(data.value.results[1].index)
 
+        try? await Task.sleep(for: .seconds(2))
+        keyStreamBundle.continuation.yield(data.value.results[0].index)
+
         try? await Task.sleep(for: .seconds(3))
         keyStreamBundle.continuation.yield(data.value.results[2].index)
 
-        try? await Task.sleep(for: .seconds(2))
-        keyStreamBundle.continuation.yield(data.value.results[0].index)
+        try? await Task.sleep(for: .seconds(3))
+        keyStreamBundle.continuation.yield(data.value.results[3].index)
     }
 
     private func handleNewMonstersState(_ state: ReplicaState<DNDMonsterModel>) async {

@@ -48,7 +48,7 @@ public actor ReplicasHolder {
         name: String,
         childNameFacroty: @Sendable @escaping (K) -> String,
         childSettingsFactory: @Sendable @escaping (K) -> ReplicaSettings,
-        settings: KeyedReplicaSettings,
+        settings: KeyedReplicaSettings<K, T>,
         fetcher: @escaping @Sendable (K) async throws -> T
     ) async -> any KeyedReplica<K, T> {
         var replica: (any KeyedReplica)? = nil

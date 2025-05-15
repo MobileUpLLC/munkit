@@ -15,7 +15,7 @@ public protocol KeyedReplica<K, T>: Actor {
 
     init(
         name: String,
-        settings: KeyedReplicaSettings,
+        settings: KeyedReplicaSettings<K, T>,
         childNameFacroty: @Sendable @escaping (K) -> String,
         childSettingsFactory: @Sendable @escaping (K) -> ReplicaSettings,
         fetcher: @escaping @Sendable (K) async throws -> T

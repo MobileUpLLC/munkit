@@ -10,10 +10,9 @@ import Foundation
 actor KeyedReplicaImplementation<K: Hashable & Sendable, T: Sendable>: KeyedReplica {
     var name: String
 
-    private let settings: KeyedReplicaSettings
+    private let settings: KeyedReplicaSettings<K, T>
     private let fetcher: @Sendable (K) async throws -> T
     private let replicaState: KeyedReplicaState
-    private var observerStateStreams: [AsyncStreamBundle<KeyedReplicaState>] = []
     private let childNameFacroty: @Sendable (K) -> String
     private let childSettingsFactory: @Sendable (K) -> ReplicaSettings
 
@@ -21,7 +20,7 @@ actor KeyedReplicaImplementation<K: Hashable & Sendable, T: Sendable>: KeyedRepl
     
     init(
         name: String,
-        settings: KeyedReplicaSettings,
+        settings: KeyedReplicaSettings<K, T>,
         childNameFacroty: @Sendable @escaping (K) -> String,
         childSettingsFactory: @Sendable @escaping (K) -> ReplicaSettings,
         fetcher: @escaping @Sendable (K) async throws -> T
@@ -39,9 +38,6 @@ actor KeyedReplicaImplementation<K: Hashable & Sendable, T: Sendable>: KeyedRepl
     }
 
     func observe(activityStream: AsyncStream<Bool>, keyStream: AsyncStream<K>) async -> KeyedReplicaObserver<K, T> {
-        let stateStreamBundle = AsyncStream<KeyedReplicaState>.makeStream()
-        observerStateStreams.append(stateStreamBundle)
-
         return KeyedReplicaObserver<K, T>(
             activityStream: activityStream,
             keyStream: keyStream,
@@ -62,9 +58,22 @@ actor KeyedReplicaImplementation<K: Hashable & Sendable, T: Sendable>: KeyedRepl
             return replica
         }
 
-        if replicas.count == settings.maxCount, let firstReplicasKey = replicas.keys.first {
-            MUNLogger.shared?.logDebug("🕸️🧙☠️ Removing replica for key \(firstReplicasKey)")
-            replicas.removeValue(forKey: firstReplicasKey)
+        var replicasCurrentValueByKey: [(K, ReplicaState<T>)] = []
+        for replica in replicas {
+            replicasCurrentValueByKey.append(await (replica.key, replica.value.currentState))
+        }
+
+        if
+            replicas.count == settings.maxCount,
+            let keyForRemoving = replicasCurrentValueByKey.sorted(
+                by: settings.childRemovingPolicy.comparator
+            ).first?.0
+        {
+            MUNLogger.shared?
+                .logDebug(
+                    "🕸️🧙☠️ Removing replica for key \(keyForRemoving) with policy: \(settings.childRemovingPolicy)"
+                )
+            replicas.removeValue(forKey: keyForRemoving)
         }
 
         MUNLogger.shared?.logDebug("🕸️🧙🆕 Creating replica for key \(key)")
