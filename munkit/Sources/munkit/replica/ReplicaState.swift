@@ -14,8 +14,6 @@ public struct ReplicaState<T>: Sendable where T: Sendable {
     public var error: Error?
     /// The observation state.
     var observingState: ReplicaObservingState
-
-    public var hasFreshData: Bool { data?.isFresh ?? false }
 }
 
 extension ReplicaState: CustomStringConvertible {
@@ -26,7 +24,6 @@ extension ReplicaState: CustomStringConvertible {
           data: \(data != nil ? "present" : "absent")
           error: \(error?.localizedDescription ?? "none")
           observing: \(observingState)
-          hasFreshData: \(hasFreshData)
         """
     }
 }

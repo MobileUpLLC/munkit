@@ -56,7 +56,7 @@ struct ReplicaStateView<T: Sendable, Content: View, EmptyContent: View>: View {
                             }
                     }
                     .overlay {
-                        if !state.hasFreshData {
+                        if !(state.data?.isFresh ?? false) {
                             VStack {
                                 Text("Data may be outdated")
                                     .font(.caption)

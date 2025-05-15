@@ -51,17 +51,6 @@ struct DNDMonstersListView: View {
             }
         )
         .navigationTitle("D&D Monsters")
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                if replicaState?.hasFreshData == false {
-                    Button {
-                        Task { await dndMonstersRepository.getDNDMonstersListReplica().refresh() }
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
-                    }
-                }
-            }
-        }
         .onAppear {
             guard !replicaSetupped else {
                 activityStream.continuation.yield(true)

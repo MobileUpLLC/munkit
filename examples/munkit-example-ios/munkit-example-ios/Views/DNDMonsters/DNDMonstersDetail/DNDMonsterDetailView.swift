@@ -50,17 +50,6 @@ struct DNDMonsterDetailView: View {
         )
         .navigationTitle(replicaState?.data?.value.name ?? "Monster Details")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                if replicaState?.hasFreshData == false {
-                    Button {
-                        Task { await dndMonstersRepository.getDNDMonstersReplica().refresh(key: monsterIndex) }
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
-                    }
-                }
-            }
-        }
         .onAppear {
             guard !replicaSetupped else {
                 activityStream.continuation.yield(true)
@@ -69,11 +58,9 @@ struct DNDMonsterDetailView: View {
 
             replicaSetupped = true
 
-            Task {
-                navigationModel.performActionAfterPop {
-                    activityStream.continuation.finish()
-                }
+            navigationModel.performActionAfterPop { activityStream.continuation.finish() }
 
+            Task {
                 let observer = await dndMonstersRepository
                     .getDNDMonstersReplica()
                     .observe(activityStream: activityStream.stream, keyStream: monsterIndexStream.stream)

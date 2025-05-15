@@ -15,7 +15,6 @@ public actor SingleReplicaObserver<T> where T: Sendable {
 
     private let eventStreamContinuation: AsyncStream<ReplicaObserverEvent>.Continuation
     private let activityStream: AsyncStream<Bool>
-    private var observingTask: Task<Void, Never>?
 
     init(activityStream: AsyncStream<Bool>, stateStream: AsyncStream<ReplicaState<T>>) async {
         self.activityStream = activityStream
@@ -23,26 +22,20 @@ public actor SingleReplicaObserver<T> where T: Sendable {
 
         (self.eventStream, self.eventStreamContinuation) = AsyncStream<ReplicaObserverEvent>.makeStream()
 
-        await startObserverControl()
-    }
-
-    deinit {
-        print(123)
+        eventStreamContinuation.yield(.observerAdded)
+        Task { [weak self] in await self?.startObserverControl() }
     }
 
     private func startObserverControl() async {
-        eventStreamContinuation.yield(.observerAdded)
-
-        observingTask = Task {
-            for await isActive in activityStream {
-                if isActive {
-                    eventStreamContinuation.yield(.observerActivated)
-                } else {
-                    eventStreamContinuation.yield(.observerDeactivated)
-                }
+        for await isActive in activityStream {
+            if isActive {
+                eventStreamContinuation.yield(.observerActivated)
+            } else {
+                eventStreamContinuation.yield(.observerDeactivated)
             }
-
-            eventStreamContinuation.yield(.observerRemoved)
         }
+
+        eventStreamContinuation.yield(.observerRemoved)
+        eventStreamContinuation.finish()
     }
 }

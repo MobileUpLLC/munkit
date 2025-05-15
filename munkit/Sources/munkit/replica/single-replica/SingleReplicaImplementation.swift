@@ -16,11 +16,11 @@ actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
     private let storage: (any ReplicaStorage<T>)?
     private let dataFetcher: @Sendable () async throws -> T
 
-    private var observerStateStreams: [AsyncStreamBundle<ReplicaState<T>>] = []
-    private var dataClearingTask: Task<Void, Error>?
-    private var errorClearingTask: Task<Void, Error>?
-    private var cancelTask: Task<Void, Error>?
-    private var staleTask: Task<Void, Error>?
+    private var observerStateStreams: [UUID: AsyncStreamBundle<ReplicaState<T>>] = [:]
+    private var dataClearingTask: Task<Void, Never>?
+    private var errorClearingTask: Task<Void, Never>?
+    private var cancelTask: Task<Void, Never>?
+    private var staleTask: Task<Void, Never>?
     private var loadingTask: Task<Void, Never>?
 
     init(
@@ -49,12 +49,13 @@ actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
 
     public func observe(activityStream: AsyncStream<Bool>) async -> SingleReplicaObserver<T> {
         let stateStreamBundle = AsyncStream<ReplicaState<T>>.makeStream()
-        observerStateStreams.append(stateStreamBundle)
 
         let observer = await SingleReplicaObserver<T>(
             activityStream: activityStream,
             stateStream: stateStreamBundle.stream,
         )
+
+        observerStateStreams[await observer.observerId] = stateStreamBundle
 
         Task {
             for await event in observer.eventStream {
@@ -107,7 +108,7 @@ actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
     }
 
     private func setLoadingStateAndLoadData(skipLoadingIfFresh: Bool) async {
-        guard !currentState.loading, !(skipLoadingIfFresh && currentState.hasFreshData) else {
+        guard !currentState.loading, !(skipLoadingIfFresh && (currentState.data?.isFresh ?? false)) else {
             return
         }
 
@@ -117,6 +118,7 @@ actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
 
         await updateState(updatedState)
 
+        loadingTask?.cancel()
         loadingTask = Task { [weak self] in await self?.loadData() }
     }
 
@@ -151,7 +153,9 @@ actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
             }
 
             staleTask?.cancel()
-            staleTask = Task { [weak self] in await self?.performDataStaling(after: staleTime) }
+            staleTask = Task { [weak self] in
+                await self?.performDataStaling(after: staleTime)
+            }
         } catch is CancellationError {
             return
         } catch {
@@ -163,25 +167,23 @@ actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
         }
     }
 
-    private func clearData(removeFromStorage: Bool) async throws {
+    private func clearData() async throws {
         var updatedState = currentState
         updatedState.data = nil
         updatedState.error = nil
         await updateState(updatedState)
-
-        if removeFromStorage {
-            try await storage?.remove()
-        }
+        try await storage?.remove()
     }
 
     private func updateState(_ newState: ReplicaState<T>) async {
         logStateChange(from: currentState, to: newState)
         currentState = newState
-        observerStateStreams.forEach { $0.continuation.yield(currentState) }
+        observerStateStreams.forEach { $0.value.continuation.yield(currentState) }
     }
 
     private func performDataClearing(after seconds: TimeInterval) async {
-        try? await Task.sleep(for: .seconds(seconds))
+        do { try await Task.sleep(for: .seconds(seconds)) } catch { return }
+
         let currentState = currentState
 
         guard
@@ -192,11 +194,12 @@ actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
             return
         }
 
-        try? await clearData(removeFromStorage: false)
+        try? await clearData()
     }
 
     private func performErrorClearing(after seconds: TimeInterval) async {
-        try? await Task.sleep(for: .seconds(seconds))
+        do { try await Task.sleep(for: .seconds(seconds)) } catch { return }
+
         let currentState = currentState
 
         guard currentState.error != nil, !currentState.loading, case .none = currentState.observingState.status else {
@@ -207,7 +210,8 @@ actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
     }
 
     private func performCanceling(after seconds: TimeInterval) async {
-        try? await Task.sleep(for: .seconds(seconds))
+        do { try await Task.sleep(for: .seconds(seconds)) } catch { return }
+
         let currentState = currentState
 
         guard currentState.loading, case .none = currentState.observingState.status else {
@@ -218,9 +222,7 @@ actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
     }
 
     private func performDataStaling(after seconds: TimeInterval) async {
-        print("performDataStaling 1", self, Date().timeIntervalSince1970)
-        try? await Task.sleep(for: .seconds(settings.staleTime))
-        print("performDataStaling 2", self, Date().timeIntervalSince1970)
+        do { try await Task.sleep(for: .seconds(settings.staleTime)) } catch { return }
 
         guard let data = currentState.data, data.isFresh else {
             return
@@ -271,8 +273,12 @@ actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
         {
             changes.append("observing: \(oldState.observingState) → \(newState.observingState)")
         }
-        if oldState.hasFreshData != newState.hasFreshData {
-            changes.append("hasFreshData: \(oldState.hasFreshData) → \(newState.hasFreshData)")
+        if
+            let oldHasFreshData = oldState.data?.isFresh,
+            let newHasFreshData = newState.data?.isFresh,
+            oldHasFreshData != newHasFreshData
+        {
+            changes.append("hasFreshData: \(oldHasFreshData) → \(newHasFreshData)")
         }
 
         if changes.isEmpty {
@@ -311,6 +317,9 @@ actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
     }
 
     private func handleObserverRemoved(observerId: UUID) async {
+        observerStateStreams[observerId]?.continuation.finish()
+        observerStateStreams[observerId] = nil
+
         let currentObservingState = currentState.observingState
         let isLastActive = currentObservingState.activeObserverIds.count == 1
             && currentObservingState.activeObserverIds.contains(observerId)

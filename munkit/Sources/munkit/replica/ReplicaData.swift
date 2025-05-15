@@ -9,7 +9,7 @@ import Foundation
 
 public struct ReplicaData<T>: Sendable where T: Sendable {
     public var value: T
-    var isFresh: Bool
+    public var isFresh: Bool
     var changingDate: Date
 
     init(value: T, isFresh: Bool, changingDate: Date) {
