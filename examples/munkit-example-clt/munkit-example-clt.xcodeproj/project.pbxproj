@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		4A03A3B92DAC5B3700E1F7B5 /* munkit-example-core in Frameworks */ = {isa = PBXBuildFile; productRef = 4A03A3B82DAC5B3700E1F7B5 /* munkit-example-core */; };
 		4A56356C2DB967E0001CA021 /* (null) in Frameworks */ = {isa = PBXBuildFile; };
-		4A9030A32DD5E1BE00B94346 /* KeyedReplicaChildRemovingPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A9030A22DD5E1BE00B94346 /* KeyedReplicaChildRemovingPolicy.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,7 +24,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		4A9030A22DD5E1BE00B94346 /* KeyedReplicaChildRemovingPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyedReplicaChildRemovingPolicy.swift; sourceTree = "<group>"; };
 		4AFFC1032DA86E65005D6A81 /* munkit-example-clt */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "munkit-example-clt"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -55,7 +53,6 @@
 			children = (
 				4AFFC1052DA86E65005D6A81 /* munkit-example-clt */,
 				4AFFC1042DA86E65005D6A81 /* Products */,
-				4A9030A22DD5E1BE00B94346 /* KeyedReplicaChildRemovingPolicy.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -136,7 +133,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4A9030A32DD5E1BE00B94346 /* KeyedReplicaChildRemovingPolicy.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
