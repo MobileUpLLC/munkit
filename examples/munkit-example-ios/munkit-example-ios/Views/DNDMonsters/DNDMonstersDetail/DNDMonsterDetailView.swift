@@ -32,21 +32,7 @@ struct DNDMonsterDetailView: View {
             refreshAction: {
                 await dndMonstersRepository.getDNDMonstersReplica().revalidate(key: monsterIndex)
             },
-            content: { monster in
-                DNDMonsterDetailDataView(monster: monster)
-            },
-            emptyContent: {
-                VStack(spacing: 16) {
-                    Image(systemName: "book.closed.fill")
-                        .foregroundStyle(.secondary)
-                        .font(.system(size: 40))
-                    Text("Monster Not Found")
-                        .font(.headline)
-                    Text("Try refreshing or check the monster index")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-            }
+            content: { DataView(monster: $0) }
         )
         .navigationTitle(replicaState?.data?.value.name ?? "Monster Details")
         .navigationBarTitleDisplayMode(.inline)
@@ -80,10 +66,4 @@ struct DNDMonsterDetailView: View {
             activityStream.continuation.yield(false)
         }
     }
-}
-
-#Preview {
-    DNDMonsterDetailView(monsterIndex: "dragon")
-        .environment(DNDMonstersRepository(networkService: NetworkService()))
-        .environment(NavigationModel())
 }

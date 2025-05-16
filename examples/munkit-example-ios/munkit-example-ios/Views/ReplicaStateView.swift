@@ -9,11 +9,10 @@ import SwiftUI
 
 import munkit
 
-struct ReplicaStateView<T: Sendable, Content: View, EmptyContent: View>: View {
+struct ReplicaStateView<T: Sendable, Content: View>: View {
     let replicaState: ReplicaState<T>?
     let refreshAction: () async -> Void
     let content: (T) -> Content
-    let emptyContent: () -> EmptyContent
 
     var body: some View {
         ZStack {
@@ -69,8 +68,6 @@ struct ReplicaStateView<T: Sendable, Content: View, EmptyContent: View>: View {
                             .padding(.top, 8)
                         }
                     }
-                } else {
-                    emptyContent()
                 }
             default:
                 EmptyView()

@@ -45,18 +45,6 @@ struct DNDClassesListView: View {
                     }
                 }
                 .listStyle(.plain)
-            },
-            emptyContent: {
-                VStack(spacing: 16) {
-                    Image(systemName: "book.closed.fill")
-                        .foregroundStyle(.secondary)
-                        .font(.system(size: 40))
-                    Text("No Classes Found")
-                        .font(.headline)
-                    Text("Try pulling to refresh")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
             }
         )
         .navigationTitle("D&D Classes")

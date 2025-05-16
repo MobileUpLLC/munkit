@@ -21,9 +21,7 @@ struct DNDMonstersListView: View {
     var body: some View {
         ReplicaStateView(
             replicaState: replicaState,
-            refreshAction: {
-                await dndMonstersRepository.getDNDMonstersListReplica().revalidate()
-            },
+            refreshAction: { await dndMonstersRepository.getDNDMonstersListReplica().revalidate() },
             content: { data in
                 List {
                     ForEach(data.results, id: \.index) { monster in
@@ -48,18 +46,6 @@ struct DNDMonstersListView: View {
                     }
                 }
                 .listStyle(.plain)
-            },
-            emptyContent: {
-                VStack(spacing: 16) {
-                    Image(systemName: "book.closed.fill")
-                        .foregroundStyle(.secondary)
-                        .font(.system(size: 40))
-                    Text("No Monsters Found")
-                        .font(.headline)
-                    Text("Try pulling to refresh")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
             }
         )
         .navigationTitle("D&D Monsters")
@@ -83,8 +69,6 @@ struct DNDMonstersListView: View {
                 }
             }
         }
-        .onDisappear {
-            activityStream.continuation.yield(false)
-        }
+        .onDisappear { activityStream.continuation.yield(false) }
     }
 }
