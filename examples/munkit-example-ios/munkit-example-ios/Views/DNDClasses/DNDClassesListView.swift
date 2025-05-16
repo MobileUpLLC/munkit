@@ -27,12 +27,21 @@ struct DNDClassesListView: View {
             content: { data in
                 List {
                     ForEach(data.results, id: \.index) { dndClass in
-                        DNDClassListRowView(dndClass: dndClass)
-                            .listRowBackground(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(Color(.systemBackground))
-                                    .padding(.vertical, 2)
-                            )
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(dndClass.name)
+                                    .font(.headline)
+                                    .foregroundStyle(.primary)
+                            }
+                            Spacer()
+                        }
+                        .padding()
+                        .contentShape(Rectangle())
+                        .listRowBackground(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color(.systemBackground))
+                                .padding(.vertical, 2)
+                        )
                     }
                 }
                 .listStyle(.plain)
@@ -71,6 +80,9 @@ struct DNDClassesListView: View {
                     replicaState = state
                 }
             }
+        }
+        .onDisappear {
+            activityStream.continuation.yield(false)
         }
     }
 }

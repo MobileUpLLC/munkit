@@ -28,11 +28,8 @@ public actor SingleReplicaObserver<T> where T: Sendable {
 
     private func startObserverControl() async {
         for await isActive in activityStream {
-            if isActive {
-                eventStreamContinuation.yield(.observerActivated)
-            } else {
-                eventStreamContinuation.yield(.observerDeactivated)
-            }
+            print("🎆", observerId, isActive)
+            eventStreamContinuation.yield(isActive ? .observerActivated : .observerDeactivated)
         }
 
         eventStreamContinuation.yield(.observerRemoved)

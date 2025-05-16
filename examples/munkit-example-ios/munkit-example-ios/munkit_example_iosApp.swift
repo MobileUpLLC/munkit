@@ -26,29 +26,27 @@ struct munkit_example_iosApp: App {
             @Bindable var navigationModel = navigationModel
             NavigationStack(path: $navigationModel.path) {
                 FirstView()
-                    .navigationDestination(for: Destination.self, destination: destination)
+                    .navigationDestination(for: Destination.self) {
+                        switch $0 {
+                        case .dndClasses(let destination):
+                            switch destination {
+                            case .dndClassesList:
+                                DNDClassesListView()
+                            }
+                        case .dndMonsters(let destination):
+                            switch destination {
+                            case .dndMonstersList:
+                                DNDMonstersListView()
+                            case .dndMonster(let index):
+                                DNDMonsterDetailView(monsterIndex: index)
+                            }
+                        }
+                    }
             }
             .environment(dndClassesRepository)
             .environment(dndMonstersRepository)
             .environment(navigationModel)
             .onAppear { MUNLogger.setupLogger(Logger()) }
-        }
-    }
-
-    @ViewBuilder private func destination(for path: Destination) -> some View {
-        switch path {
-        case .dndClasses(let destination):
-            switch destination {
-            case .dndClassesList:
-                DNDClassesListView()
-            }
-        case .dndMonsters(let destination):
-            switch destination {
-            case .dndMonstersList:
-                DNDMonstersListView()
-            case .dndMonster(let index):
-                DNDMonsterDetailView(monsterIndex: index)
-            }
         }
     }
 }

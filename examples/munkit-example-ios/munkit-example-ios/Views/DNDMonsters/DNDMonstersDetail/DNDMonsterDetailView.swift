@@ -76,6 +76,9 @@ struct DNDMonsterDetailView: View {
                 }
             }
         }
+        .onDisappear {
+            activityStream.continuation.yield(false)
+        }
     }
 }
 

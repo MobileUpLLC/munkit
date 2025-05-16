@@ -20,6 +20,14 @@ struct DNDMonsterDetailDataView: View {
                 VStack(spacing: 16) {
                     // Header Section
                     VStack(spacing: 8) {
+                        AsyncImage(url: URL(string: "https://www.dnd5eapi.co"+monster.image)) {
+                            $0
+                                .resizable()
+                                .clipShape(.circle)
+                        } placeholder: {
+                            ProgressView()
+                        }
+                            .frame(width: 200, height: 200)
                         Text(monster.name)
                             .font(.largeTitle)
                             .fontWeight(.bold)
@@ -136,7 +144,7 @@ struct DNDMonsterDetailDataView: View {
                                                 .foregroundStyle(.secondary)
                                         }
                                         if let usage = action.usage {
-                                            Text("Usage: \(usage.type) \(usage.times) times")
+                                            Text("Usage: \(usage.type) \(String(describing: usage.times)) times")
                                                 .font(.caption)
                                                 .foregroundStyle(.secondary)
                                         }

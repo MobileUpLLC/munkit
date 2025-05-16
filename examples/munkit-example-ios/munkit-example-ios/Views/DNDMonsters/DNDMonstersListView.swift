@@ -27,12 +27,24 @@ struct DNDMonstersListView: View {
             content: { data in
                 List {
                     ForEach(data.results, id: \.index) { monster in
-                        DNDMonsterListRowView(monster: monster)
-                            .listRowBackground(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(Color(.systemBackground))
-                                    .padding(.vertical, 2)
-                            )
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(monster.name)
+                                    .font(.headline)
+                                    .foregroundStyle(.primary)
+                            }
+                            Spacer()
+                        }
+                        .padding()
+                        .contentShape(Rectangle())
+                        .listRowBackground(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color(.systemBackground))
+                                .padding(.vertical, 2)
+                        )
+                        .onTapGesture {
+                            navigationModel.path.append(Destination.dndMonsters(.dndMonster(monster.index)))
+                        }
                     }
                 }
                 .listStyle(.plain)
@@ -56,7 +68,6 @@ struct DNDMonstersListView: View {
                 activityStream.continuation.yield(true)
                 return
             }
-
             replicaSetupped = true
 
             Task {
@@ -71,6 +82,9 @@ struct DNDMonstersListView: View {
                     replicaState = state
                 }
             }
+        }
+        .onDisappear {
+            activityStream.continuation.yield(false)
         }
     }
 }
