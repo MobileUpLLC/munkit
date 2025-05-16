@@ -77,6 +77,7 @@ public actor KeyedReplicaObserver<K: Sendable & Hashable, T: Sendable> {
             }
         }
 
-        print(123)
+        await activeChild?.activityStream.finish()
+        activeChild = nil
     }
 }
