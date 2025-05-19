@@ -114,6 +114,7 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
         target: Target,
         isTokenRefreshed: Bool
     ) async throws {
+        MUNLogger.shared?.log(type: .error, error.localizedDescription)
         guard let moyaError = error as? MoyaError,
             target.isAccessTokenRequired,
             target.isRefreshTokenRequest == false,
@@ -121,7 +122,6 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
             let statusCode = moyaError.response?.statusCode,
             [401, 403, 409].contains(statusCode)
         else {
-            MUNLogger.shared?.log(type: .error, error.localizedDescription)
             throw error
         }
 
