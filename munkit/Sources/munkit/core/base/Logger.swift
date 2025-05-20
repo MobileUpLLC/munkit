@@ -5,10 +5,10 @@
 //  Created by Natalia Luzyanina on 06.05.2025.
 //
 
+import os
+
 public protocol MUNLoggable {
-    func logDebug(_ message: String)
-    func logInfo(_ message: String)
-    func logError(_ message: String)
+    func log(type: OSLogType, _ message: String)
 }
 
 public actor MUNLogger {
@@ -17,9 +17,6 @@ public actor MUNLogger {
     private init() {}
 
     public static func setupLogger(_ logger: MUNLoggable) {
-        guard shared == nil else {
-            return
-        }
         shared = logger
     }
 }
