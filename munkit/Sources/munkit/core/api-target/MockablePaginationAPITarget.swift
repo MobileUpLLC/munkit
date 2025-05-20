@@ -13,11 +13,11 @@ public protocol MUNMockablePaginationAPITarget: MUNAPITarget {
 }
 
 extension MUNMockablePaginationAPITarget {
-    var sampleData: Data { getSampleData() }
+    public var sampleData: Data { getSampleData() }
 
     private func getSampleData() -> Data {
         guard var mockFileName else {
-            MUNLogger.shared?.logDebug("🕸️💽🆓 The request \(path) does not use mock data.")
+            MUNLogger.shared?.log(type: .debug, "🕸️💽🆓 The request \(path) does not use mock data.")
             return Data()
         }
 

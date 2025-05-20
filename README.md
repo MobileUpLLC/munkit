@@ -161,19 +161,11 @@ For paginated APIs, use the `MUNMockablePaginationAPITarget` protocol and specif
 
 The munkit library allows clients to inject a custom logger to handle logging for network operations. To enable logging, you need:
 
-1. Implement the MUNLoggable protocol to define how debug, info, and error messages are logged.
+1. Implement the MUNLoggable protocol to define how messages are logged.
 
 ```swift
-public class CustomLoggerAdapter: MUNLoggable {
-    public func logDebug(_ message: String) {
-        ...
-    }
-
-    public func logInfo(_ message: String) {
-        ...
-    }
-
-    public func logError(_ message: String) {
+class CustomLoggerAdapter: MUNLoggable {
+    func log(type: OSLogType, _ message: String) {
         ...
     }
 }

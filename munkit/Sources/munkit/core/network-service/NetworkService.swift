@@ -51,11 +51,11 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
         let requestId = startRequest(isAccessTokenRequired: target.isAccessTokenRequired)
         defer { completeRequest(requestId) }
 
-        switch try await performRequest(target: target) {
-        case .success(let response):
+        do {
+            let response = try await performRequest(target: target).get()
             let filteredResponse = try response.filterSuccessfulStatusCodes()
             return try filteredResponse.map(T.self)
-        case .failure(let error):
+        } catch {
             try await resolveRequestError(
                 error,
                 requestId: requestId,
@@ -70,10 +70,10 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
         let requestId = startRequest(isAccessTokenRequired: target.isAccessTokenRequired)
         defer { completeRequest(requestId) }
 
-        switch try await performRequest(target: target) {
-        case .success(let response):
+        do {
+            let response = try await performRequest(target: target).get()
             let _ = try response.filterSuccessfulStatusCodes()
-        case .failure(let error):
+        } catch {
             try await resolveRequestError(
                 error,
                 requestId: requestId,
@@ -109,16 +109,17 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
     }
 
     private func resolveRequestError(
-        _ error: MoyaError,
+        _ error: Error,
         requestId: UUID,
         target: Target,
         isTokenRefreshed: Bool
     ) async throws {
-        guard
+        MUNLogger.shared?.log(type: .error, error.localizedDescription)
+        guard let moyaError = error as? MoyaError,
             target.isAccessTokenRequired,
             target.isRefreshTokenRequest == false,
             isTokenRefreshed == false,
-            let statusCode = error.response?.statusCode,
+            let statusCode = moyaError.response?.statusCode,
             [401, 403, 409].contains(statusCode)
         else {
             throw error
