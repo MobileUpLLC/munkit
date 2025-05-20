@@ -17,8 +17,6 @@ public actor KeyedReplicaObserver<K: Sendable & Hashable, T: Sendable> {
     private let activityStream: AsyncStream<Bool>
     private var currentActivity: Bool = false
 
-    private var replicaObservingTask: Task<Void, Never>?
-
     private var activeChild: (
         key: K,
         observer: SingleReplicaObserver<T>,
@@ -69,7 +67,7 @@ public actor KeyedReplicaObserver<K: Sendable & Hashable, T: Sendable> {
 
             activeChild.activityStream.yield(currentActivity)
 
-            replicaObservingTask = Task {
+            Task {
                 for await state in activeChild.observer.stateStream {
                     stateStreamContinuation.yield(state)
                 }

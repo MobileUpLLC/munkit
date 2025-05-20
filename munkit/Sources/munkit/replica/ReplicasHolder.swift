@@ -65,9 +65,14 @@ public actor ReplicasHolder {
         let newKeydReplica = KeyedReplicaImplementation<K, T>(
             name: name,
             settings: settings,
-            childNameFacroty: childNameFacroty,
-            childSettingsFactory: childSettingsFactory,
-            fetcher: fetcher
+            childFactory: { key in
+                SingleReplicaImplementation(
+                    name: childNameFacroty(key),
+                    settings: childSettingsFactory(key),
+                    storage: nil,
+                    fetcher: { try await fetcher(key) }
+                )
+            }
         )
 
         keydReplicas.append(newKeydReplica)

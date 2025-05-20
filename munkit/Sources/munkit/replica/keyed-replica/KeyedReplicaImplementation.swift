@@ -11,30 +11,18 @@ actor KeyedReplicaImplementation<K: Hashable & Sendable, T: Sendable>: KeyedRepl
     var name: String
 
     private let settings: KeyedReplicaSettings<K, T>
-    private let fetcher: @Sendable (K) async throws -> T
-    private let replicaState: KeyedReplicaState
-    private let childNameFacroty: @Sendable (K) -> String
-    private let childSettingsFactory: @Sendable (K) -> SingleReplicaSettings
+    private let childFactory: @Sendable (K) -> any SingleReplica<T>
 
     private var replicas: [K: any SingleReplica<T>] = [:]
     
     init(
         name: String,
         settings: KeyedReplicaSettings<K, T>,
-        childNameFacroty: @Sendable @escaping (K) -> String,
-        childSettingsFactory: @Sendable @escaping (K) -> SingleReplicaSettings,
-        fetcher: @escaping @Sendable (K) async throws -> T
+        childFactory: @Sendable @escaping (K) -> any SingleReplica<T>
     ) {
         self.name = name
         self.settings = settings
-        self.fetcher = fetcher
-        self.replicaState = KeyedReplicaState(
-            replicaCount: 0,
-            replicaWithObserversCount: 0,
-            replicaWithActiveObserversCount: 0
-        )
-        self.childNameFacroty = childNameFacroty
-        self.childSettingsFactory = childSettingsFactory
+        self.childFactory = childFactory
     }
 
     func observe(activityStream: AsyncStream<Bool>, keyStream: AsyncStream<K>) async -> KeyedReplicaObserver<K, T> {
@@ -82,12 +70,7 @@ actor KeyedReplicaImplementation<K: Hashable & Sendable, T: Sendable>: KeyedRepl
             "🕸️🧙🆕 Creating replica for key \(key)"
         )
 
-        let replica = await ReplicasHolder.shared.getSingleReplica(
-            name: childNameFacroty(key),
-            settings: childSettingsFactory(key),
-            storage: nil,
-            fetcher: { try await self.fetcher(key) },
-        )
+        let replica = childFactory(key)
 
         replicas[key] = replica
         return replica

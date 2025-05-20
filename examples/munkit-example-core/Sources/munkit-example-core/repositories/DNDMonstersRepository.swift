@@ -66,7 +66,7 @@ public actor DNDMonstersRepository {
                 )
             },
             settings: KeyedReplicaSettings(
-                maxCount: 3,
+                maxCount: 2,
                 childRemovingPolicy: .byObservingTime
             ),
             fetcher: { [weak self] key in

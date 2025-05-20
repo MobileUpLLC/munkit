@@ -16,9 +16,7 @@ public protocol KeyedReplica<K, T>: Actor {
     init(
         name: String,
         settings: KeyedReplicaSettings<K, T>,
-        childNameFacroty: @Sendable @escaping (K) -> String,
-        childSettingsFactory: @Sendable @escaping (K) -> SingleReplicaSettings,
-        fetcher: @escaping @Sendable (K) async throws -> T
+        childFactory: @Sendable @escaping (K) -> any SingleReplica<T>,
     )
 
     /// Starts observing a keyed replica. Returns a ReplicaObserver that provides access to replica state and error events.
