@@ -55,7 +55,7 @@ actor SingleReplicaImplementation<T: Sendable>: SingleReplica {
             stateStream: stateStreamBundle.stream,
         )
 
-        observerStateStreams[await observer.observerId] = stateStreamBundle
+        observerStateStreams[observer.observerId] = stateStreamBundle
 
         Task {
             for await event in observer.eventStream {

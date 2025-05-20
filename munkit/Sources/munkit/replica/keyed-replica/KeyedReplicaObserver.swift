@@ -46,17 +46,17 @@ public actor KeyedReplicaObserver<K: Sendable & Hashable, T: Sendable> {
 
     private func startActivityObserving() async {
         for await activity in activityStream {
-            await updateCurrentActivity(activity)
-            await activeChild?.activityStream.yield(activity)
+            updateCurrentActivity(activity)
+            activeChild?.activityStream.yield(activity)
         }
-        await activeChild?.activityStream.finish()
+        activeChild?.activityStream.finish()
     }
 
     private func startKeyObserving() async {
         for await key in keyStream {
             guard activeChild?.key != key else { continue }
 
-            await activeChild?.activityStream.finish()
+            activeChild?.activityStream.finish()
 
             let internalActivityStreamBundle = AsyncStream<Bool>.makeStream()
             let observer = await replicaProvider(key).observe(activityStream: internalActivityStreamBundle.stream)
@@ -77,7 +77,7 @@ public actor KeyedReplicaObserver<K: Sendable & Hashable, T: Sendable> {
             }
         }
 
-        await activeChild?.activityStream.finish()
+        activeChild?.activityStream.finish()
         activeChild = nil
     }
 }

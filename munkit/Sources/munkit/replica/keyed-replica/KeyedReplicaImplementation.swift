@@ -70,13 +70,17 @@ actor KeyedReplicaImplementation<K: Hashable & Sendable, T: Sendable>: KeyedRepl
             ).first?.0
         {
             MUNLogger.shared?
-                .logDebug(
+                .log(
+                    type: .debug,
                     "🕸️🧙☠️ Removing replica for key \(keyForRemoving) with policy: \(settings.childRemovingPolicy)"
                 )
             replicas.removeValue(forKey: keyForRemoving)
         }
 
-        MUNLogger.shared?.logDebug("🕸️🧙🆕 Creating replica for key \(key)")
+        MUNLogger.shared?.log(
+            type: .debug,
+            "🕸️🧙🆕 Creating replica for key \(key)"
+        )
 
         let replica = await ReplicasHolder.shared.getSingleReplica(
             name: childNameFacroty(key),
