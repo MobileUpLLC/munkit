@@ -9,13 +9,13 @@
 public enum KeyedReplicaChildRemovingPolicy<K: Sendable, T: Sendable>: Sendable, CustomStringConvertible {
     case byObservingTime
     case byDataChangingTime
-    case customComparator(@Sendable ((K, ReplicaState<T>), (K, ReplicaState<T>)) -> Bool)
+    case customComparator(@Sendable ((K, SingleReplicaState<T>), (K, SingleReplicaState<T>)) -> Bool)
 
     public var description: String { getDescription() }
 
-    var comparator: @Sendable ((K, ReplicaState<T>), (K, ReplicaState<T>)) -> Bool { getComparator() }
+    var comparator: @Sendable ((K, SingleReplicaState<T>), (K, SingleReplicaState<T>)) -> Bool { getComparator() }
 
-    private func getComparator() -> @Sendable ((K, ReplicaState<T>), (K, ReplicaState<T>)) -> Bool {
+    private func getComparator() -> @Sendable ((K, SingleReplicaState<T>), (K, SingleReplicaState<T>)) -> Bool {
         switch self {
         case .byObservingTime:
             return { $0.1.observingState.lastObservingTime < $1.1.observingState.lastObservingTime }

@@ -13,7 +13,7 @@ struct DNDClassesListView: View {
     @Environment(NavigationModel.self) private var navigationModel
     @Environment(DNDClassesRepository.self) private var dndClassesRepository
 
-    @State private var replicaState: ReplicaState<DNDClassesListModel>?
+    @State private var replicaState: SingleReplicaState<DNDClassesListModel>?
     @State private var replicaSetupped = false
 
     private let activityStream = AsyncStream<Bool>.makeStream()

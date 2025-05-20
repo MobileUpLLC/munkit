@@ -11,12 +11,12 @@ public protocol SingleReplica<T>: Actor {
     associatedtype T: Sendable
 
     var name: String { get }
-    var currentState: ReplicaState<T> { get }
+    var currentState: SingleReplicaState<T> { get }
 
     init(
         name: String,
-        settings: ReplicaSettings,
-        storage: (any ReplicaStorage<T>)?,
+        settings: SingleReplicaSettings,
+        storage: (any SingleReplicaStorage<T>)?,
         fetcher: @Sendable @escaping () async throws -> T
     )
 

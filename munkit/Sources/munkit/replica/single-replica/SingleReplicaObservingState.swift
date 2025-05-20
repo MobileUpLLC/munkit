@@ -8,7 +8,7 @@
 import Foundation
 
 /// Contains information about the observers of a replica.
-public struct ReplicaObservingState: Sendable, CustomStringConvertible {
+public struct SingleReplicaObservingState: Sendable, CustomStringConvertible {
     let observerIds: Set<UUID>
     let activeObserverIds: Set<UUID>
     let lastObservingTime: ReplicaLastObservingTime

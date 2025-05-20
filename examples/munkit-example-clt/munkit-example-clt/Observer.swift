@@ -60,7 +60,7 @@ actor Observer: Sendable {
         activityStreams.forEach { $0.continuation.finish() }
     }
 
-    private func handleNewMonstersListState(_ state: ReplicaState<DNDMonstersListModel>) async {
+    private func handleNewMonstersListState(_ state: SingleReplicaState<DNDMonstersListModel>) async {
         guard let data = state.data else { return }
 
         try? await Task.sleep(for: .seconds(1))
@@ -79,7 +79,7 @@ actor Observer: Sendable {
         keyStreamBundle.continuation.yield(data.value.results[3].index)
     }
 
-    private func handleNewMonstersState(_ state: ReplicaState<DNDMonsterModel>) async {
+    private func handleNewMonstersState(_ state: SingleReplicaState<DNDMonsterModel>) async {
         print("🦖")
     }
 }

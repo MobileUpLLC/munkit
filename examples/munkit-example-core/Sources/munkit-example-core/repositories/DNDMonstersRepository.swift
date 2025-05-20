@@ -57,7 +57,7 @@ public actor DNDMonstersRepository {
             name: "DNDMonstersReplica",
             childNameFacroty: { "DNDMonstersChildReplica-\($0)" },
             childSettingsFactory: { _ in
-                ReplicaSettings(
+                SingleReplicaSettings(
                     staleTime: 60,
                     clearTime: 60,
                     clearErrorTime: 5,

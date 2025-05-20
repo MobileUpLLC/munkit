@@ -14,7 +14,7 @@ actor KeyedReplicaImplementation<K: Hashable & Sendable, T: Sendable>: KeyedRepl
     private let fetcher: @Sendable (K) async throws -> T
     private let replicaState: KeyedReplicaState
     private let childNameFacroty: @Sendable (K) -> String
-    private let childSettingsFactory: @Sendable (K) -> ReplicaSettings
+    private let childSettingsFactory: @Sendable (K) -> SingleReplicaSettings
 
     private var replicas: [K: any SingleReplica<T>] = [:]
     
@@ -22,7 +22,7 @@ actor KeyedReplicaImplementation<K: Hashable & Sendable, T: Sendable>: KeyedRepl
         name: String,
         settings: KeyedReplicaSettings<K, T>,
         childNameFacroty: @Sendable @escaping (K) -> String,
-        childSettingsFactory: @Sendable @escaping (K) -> ReplicaSettings,
+        childSettingsFactory: @Sendable @escaping (K) -> SingleReplicaSettings,
         fetcher: @escaping @Sendable (K) async throws -> T
     ) {
         self.name = name
@@ -58,7 +58,7 @@ actor KeyedReplicaImplementation<K: Hashable & Sendable, T: Sendable>: KeyedRepl
             return replica
         }
 
-        var replicasCurrentValueByKey: [(K, ReplicaState<T>)] = []
+        var replicasCurrentValueByKey: [(K, SingleReplicaState<T>)] = []
         for replica in replicas {
             replicasCurrentValueByKey.append(await (replica.key, replica.value.currentState))
         }

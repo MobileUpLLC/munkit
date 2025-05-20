@@ -13,7 +13,7 @@ struct DNDMonstersListView: View {
     @Environment(NavigationModel.self) private var navigationModel
     @Environment(DNDMonstersRepository.self) private var dndMonstersRepository
 
-    @State private var replicaState: ReplicaState<DNDMonstersListModel>?
+    @State private var replicaState: SingleReplicaState<DNDMonstersListModel>?
     @State private var replicaSetupped = false
 
     private let activityStream = AsyncStream<Bool>.makeStream()

@@ -1,5 +1,5 @@
 //
-//  ReplicaData.swift
+//  SingleReplicaStateData.swift
 //  MUNKit
 //
 //  Created by Natalia Luzyanina on 01.04.2025.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct ReplicaData<T>: Sendable where T: Sendable {
+public struct SingleReplicaStateData<T>: Sendable where T: Sendable {
     public var value: T
     public var isFresh: Bool
     var changingDate: Date

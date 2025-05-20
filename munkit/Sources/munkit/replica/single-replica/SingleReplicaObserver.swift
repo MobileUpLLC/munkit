@@ -8,19 +8,19 @@
 import Foundation
 
 public actor SingleReplicaObserver<T> where T: Sendable {
-    public let stateStream: AsyncStream<ReplicaState<T>>
+    public let stateStream: AsyncStream<SingleReplicaState<T>>
 
     let observerId = UUID()
-    let eventStream: AsyncStream<ReplicaObserverEvent>
+    let eventStream: AsyncStream<SingleReplicaObserverEvent>
 
-    private let eventStreamContinuation: AsyncStream<ReplicaObserverEvent>.Continuation
+    private let eventStreamContinuation: AsyncStream<SingleReplicaObserverEvent>.Continuation
     private let activityStream: AsyncStream<Bool>
 
-    init(activityStream: AsyncStream<Bool>, stateStream: AsyncStream<ReplicaState<T>>) async {
+    init(activityStream: AsyncStream<Bool>, stateStream: AsyncStream<SingleReplicaState<T>>) async {
         self.activityStream = activityStream
         self.stateStream = stateStream
 
-        (self.eventStream, self.eventStreamContinuation) = AsyncStream<ReplicaObserverEvent>.makeStream()
+        (self.eventStream, self.eventStreamContinuation) = AsyncStream<SingleReplicaObserverEvent>.makeStream()
 
         eventStreamContinuation.yield(.observerAdded)
         Task { [weak self] in await self?.startObserverControl() }

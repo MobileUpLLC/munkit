@@ -8,9 +8,9 @@
 import Foundation
 
 public actor KeyedReplicaObserver<K: Sendable & Hashable, T: Sendable> {
-    public let stateStream: AsyncStream<ReplicaState<T>>
+    public let stateStream: AsyncStream<SingleReplicaState<T>>
 
-    private let stateStreamContinuation: AsyncStream<ReplicaState<T>>.Continuation
+    private let stateStreamContinuation: AsyncStream<SingleReplicaState<T>>.Continuation
     private let keyStream: AsyncStream<K>
     private let replicaProvider: (K) async -> any SingleReplica<T>
 
@@ -30,7 +30,7 @@ public actor KeyedReplicaObserver<K: Sendable & Hashable, T: Sendable> {
         keyStream: AsyncStream<K>,
         replicaProvider: @escaping (K) async -> any SingleReplica<T>
     ) {
-        (self.stateStream, self.stateStreamContinuation) = AsyncStream<ReplicaState<T>>.makeStream()
+        (self.stateStream, self.stateStreamContinuation) = AsyncStream<SingleReplicaState<T>>.makeStream()
 
         self.keyStream = keyStream
         self.replicaProvider = replicaProvider

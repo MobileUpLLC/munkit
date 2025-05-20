@@ -17,8 +17,8 @@ public actor ReplicasHolder {
 
     public func getSingleReplica<T: Sendable>(
         name: String,
-        settings: ReplicaSettings,
-        storage: (any ReplicaStorage<T>)?,
+        settings: SingleReplicaSettings,
+        storage: (any SingleReplicaStorage<T>)?,
         fetcher: @Sendable @escaping () async throws -> T
     ) async -> any SingleReplica<T> {
         var replica: (any SingleReplica)? = nil
@@ -47,7 +47,7 @@ public actor ReplicasHolder {
     public func getKeydReplica<K: Hashable & Sendable, T: Sendable>(
         name: String,
         childNameFacroty: @Sendable @escaping (K) -> String,
-        childSettingsFactory: @Sendable @escaping (K) -> ReplicaSettings,
+        childSettingsFactory: @Sendable @escaping (K) -> SingleReplicaSettings,
         settings: KeyedReplicaSettings<K, T>,
         fetcher: @escaping @Sendable (K) async throws -> T
     ) async -> any KeyedReplica<K, T> {

@@ -13,7 +13,7 @@ struct DNDMonsterDetailView: View {
     @Environment(NavigationModel.self) private var navigationModel
     @Environment(DNDMonstersRepository.self) private var dndMonstersRepository
 
-    @State private var replicaState: ReplicaState<DNDMonsterModel>?
+    @State private var replicaState: SingleReplicaState<DNDMonsterModel>?
     @State private var replicaSetupped = false
 
     private let monsterIndexStream: AsyncStreamBundle<String>

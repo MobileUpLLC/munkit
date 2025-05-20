@@ -10,7 +10,7 @@ import SwiftUI
 import munkit
 
 struct ReplicaStateView<T: Sendable, Content: View>: View {
-    let replicaState: ReplicaState<T>?
+    let replicaState: SingleReplicaState<T>?
     let refreshAction: () async -> Void
     let content: (T) -> Content
 
