@@ -17,7 +17,11 @@ extension MUNMockablePaginationAPITarget {
 
     private func getSampleData() -> Data {
         guard var mockFileName else {
-            MUNLogger.shared?.log(type: .debug, "🕸️💽🆓 The request \(path) does not use mock data.")
+            let path = path
+            Task { @MUNLogger in
+                MUNLogger.sharedLoggable?.log(type: .debug, "🕸️💽🆓 The request \(path) does not use mock data.")
+            }
+
             return Data()
         }
 

@@ -114,7 +114,10 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
         target: Target,
         isTokenRefreshed: Bool
     ) async throws {
-        MUNLogger.shared?.log(type: .error, error.localizedDescription)
+        _Concurrency.Task { @MUNLogger in
+            MUNLogger.sharedLoggable?.log(type: .error, error.localizedDescription)
+        }
+
         guard let moyaError = error as? MoyaError,
             target.isAccessTokenRequired,
             target.isRefreshTokenRequest == false,
