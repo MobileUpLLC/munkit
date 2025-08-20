@@ -8,7 +8,7 @@
 import Moya
 import Foundation
 
-public protocol MUNAPITarget: TargetType, AccessTokenAuthorizable {
+public protocol MUNAPITarget: TargetType, AccessTokenAuthorizable, Sendable {
     var parameters: [String: Any] { get }
     var isAccessTokenRequired: Bool { get }
     var isRefreshTokenRequest: Bool { get }
@@ -24,26 +24,39 @@ extension MUNAPITarget {
         let mockExtension = "json"
 
         guard let mockFileUrl = Bundle.main.url(forResource: mockFileName, withExtension: mockExtension) else {
-            MUNLogger.shared?.log(type: .debug, "🕸️💽🚨 \(logStart) \(mockFileName).\(mockExtension) not found.")
+            _Concurrency.Task { @MUNLogger in
+                MUNLogger.sharedLoggable?
+                    .log(type: .debug, "🕸️💽🚨 \(logStart) \(mockFileName).\(mockExtension) not found.")
+            }
             return Data()
         }
 
         do {
             let data = try Data(contentsOf: mockFileUrl)
-            MUNLogger.shared?.log(type: .debug, "🕸️💽✅ \(logStart) successfully read from URL: \(mockFileUrl).")
+            _Concurrency.Task { @MUNLogger in
+                MUNLogger.sharedLoggable?.log(
+                    type: .debug,
+                    "🕸️💽✅ \(logStart) successfully read from URL: \(mockFileUrl)."
+                )
+            }
             return data
         } catch {
-            MUNLogger.shared?.log(
-                type: .debug,
-                "🕸️💽🚨\n\(logStart) from file \(mockFileName).\(mockExtension) could not be read.\nError: \(error)"
-            )
+            _Concurrency.Task { @MUNLogger in
+                MUNLogger.sharedLoggable?.log(
+                    type: .debug,
+                    "🕸️💽🚨\n\(logStart) from file \(mockFileName).\(mockExtension) could not be read.\nError: \(error)"
+                )
+            }
             return Data()
         }
     }
 
     private func getSampleData() -> Data {
         guard let mockFileName else {
-            MUNLogger.shared?.log(type: .debug, "🕸️💽🆓 The request \(path) does not use mock data.")
+            let path = path
+            _Concurrency.Task { @MUNLogger in
+                MUNLogger.sharedLoggable?.log(type: .debug, "🕸️💽🆓 The request \(path) does not use mock data.")
+            }
             return Data()
         }
 

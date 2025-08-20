@@ -19,6 +19,8 @@ public actor MUNLoggerPlugin {
             logMessage.append(contentsOf: "\n" + item)
         }
 
-        MUNLogger.shared?.log(type: .debug, logMessage)
+        _Concurrency.Task { @MUNLogger in
+            MUNLogger.sharedLoggable?.log(type: .debug, logMessage)
+        }
     }
 }
