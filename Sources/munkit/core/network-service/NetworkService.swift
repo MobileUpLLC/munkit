@@ -31,7 +31,7 @@ public actor MUNNetworkService<Target: MUNAPITarget> {
     public func setAuthorizationObjects(
         provider: MUNAccessTokenProvider,
         refresher: MUNAccessTokenRefresher,
-        tokenRefreshFailureHandler: @escaping () async -> Void
+        tokenRefreshFailureHandler: @escaping @Sendable () async -> Void
     ) {
         self.accessTokenRefresher = refresher
         self.tokenRefreshFailureHandler = tokenRefreshFailureHandler
